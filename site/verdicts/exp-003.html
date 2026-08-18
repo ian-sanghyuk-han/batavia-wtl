@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- STATUS: MEASURED verdict page — real data, preregistered, machine-graded. -->
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>EXP-003 Verdict — Batavia WTL</title><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet"><style>
+:root{--bg:#060B15;--panel:rgba(12,18,32,.92);--line:#243352;--ink:#E8EEFA;--sub:#9AABC9;--dim:#5E7095;
+--acc:#5B8DEF;--up:#FF5D6E;--gold:#D9A441;--ok:#3FE0A0;--mono:'IBM Plex Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans KR',sans-serif;padding:0 0 60px}
+.top{position:sticky;top:0;display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--panel);
+border-bottom:1px solid var(--line);backdrop-filter:blur(8px);z-index:5}
+.top h1{font-size:15px;font-weight:700}.top h1 b{color:var(--acc)}
+.top a{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--sub);text-decoration:none;
+border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+main{max-width:640px;margin:0 auto;padding:16px 14px;display:flex;flex-direction:column;gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;position:relative}
+.k{font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;color:var(--dim);margin-bottom:5px}
+h2{font-size:18px} p{font-size:13px;color:var(--sub);line-height:1.8;margin-top:8px}
+.stamp{position:absolute;top:18px;right:16px;font-family:var(--mono);font-weight:700;font-size:13px;
+border-radius:8px;padding:5px 12px;transform:rotate(-6deg);letter-spacing:.06em;border:2.5px solid}
+table{width:100%;border-collapse:collapse;margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--sub)}
+td{padding:5px 4px;border-top:1px solid var(--line)}td:first-child{color:var(--dim)}
+.repro{background:rgba(94,112,149,.12);border-radius:8px;padding:9px 12px;font-family:var(--mono);font-size:11px;margin-top:8px}
+.ko{border-left:3px solid var(--acc);padding:8px 12px;background:rgba(91,141,239,.06);border-radius:0 8px 8px 0;
+font-size:12px;color:var(--sub);line-height:1.8;margin-top:8px}
+a.vlink{display:block;text-decoration:none;color:inherit}
+a.vlink:hover .card{border-color:var(--acc)}
+</style>
+</head>
+<body>
+<div class="top"><h1>BATAVIA <b>WTL</b> — Verdict Archive</h1><a href="index.html">⚖ Archive</a></div>
+<main>
+<div class="card">
+  <div class="stamp" style="color:#D9A441;border-color:#D9A441">NOT CONFIRMED</div>
+  <div class="k">EXP-003 · MEASURED · 2026-08-18</div>
+  <h2>Credit leads equities — does a HY-spread shock predict weak weeks?</h2>
+  <p><b>Hypothesis:</b> a sharp 5-day widening of the credit spread (≥1.5σ, trailing) precedes weaker S&P 500 weeks.</p>
+  <p><b>Verdict:</b> forward 5-day returns after 140 credit-shock signals averaged 0.064% vs 0.179% on ordinary days — the hypothesized direction, but p=0.2755: not significant under the preregistered test. Scope note: this verdict binds THIS proxy (Baa−10Y) at THIS horizon; a true HY-OAS retest awaits data we are now archiving daily.</p>
+  <div class="ko">한국어 요약 — 크레딧 급확대 신호 140건 뒤 5일 수익률 0.064% vs 평상시 0.179%: 방향은 이론대로였으나 p=0.2755로 유의하지 않았다. <b>미확증.</b> 간판 카드(A−)라도 봐주지 않는다 — 단, 이 판정의 사정거리는 '이 대용지표·이 지평'까지다. 진짜 HY 스프레드 재검은 데이터가 쌓이는 대로.</div>
+</div>
+<div class="card">
+  <div class="k">NULL DISTRIBUTION — B=2000 vs observed</div>
+  <svg viewBox="0 0 560 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto"><rect x="28.0" y="151.5" width="19.5" height="0.5" fill="#5B8DEF" opacity="0.65"/><rect x="49.0" y="151.5" width="19.5" height="0.5" fill="#5B8DEF" opacity="0.65"/><rect x="70.0" y="151.5" width="19.5" height="0.5" fill="#5B8DEF" opacity="0.65"/><rect x="91.0" y="150.1" width="19.5" height="1.9" fill="#5B8DEF" opacity="0.65"/><rect x="112.0" y="147.8" width="19.5" height="4.2" fill="#5B8DEF" opacity="0.65"/><rect x="133.0" y="146.4" width="19.5" height="5.6" fill="#5B8DEF" opacity="0.65"/><rect x="154.0" y="131.8" width="19.5" height="20.2" fill="#5B8DEF" opacity="0.65"/><rect x="175.0" y="129.9" width="19.5" height="22.1" fill="#5B8DEF" opacity="0.65"/><rect x="196.0" y="110.2" width="19.5" height="41.8" fill="#5B8DEF" opacity="0.65"/><rect x="217.0" y="84.8" width="19.5" height="67.2" fill="#5B8DEF" opacity="0.65"/><rect x="238.0" y="59.9" width="19.5" height="92.1" fill="#5B8DEF" opacity="0.65"/><rect x="259.0" y="61.8" width="19.5" height="90.2" fill="#5B8DEF" opacity="0.65"/><rect x="280.0" y="29.9" width="19.5" height="122.1" fill="#5B8DEF" opacity="0.65"/><rect x="301.0" y="28.0" width="19.5" height="124.0" fill="#5B8DEF" opacity="0.65"/><rect x="322.0" y="46.8" width="19.5" height="105.2" fill="#5B8DEF" opacity="0.65"/><rect x="343.0" y="71.2" width="19.5" height="80.8" fill="#5B8DEF" opacity="0.65"/><rect x="364.0" y="77.3" width="19.5" height="74.7" fill="#5B8DEF" opacity="0.65"/><rect x="385.0" y="110.2" width="19.5" height="41.8" fill="#5B8DEF" opacity="0.65"/><rect x="406.0" y="126.2" width="19.5" height="25.8" fill="#5B8DEF" opacity="0.65"/><rect x="427.0" y="142.1" width="19.5" height="9.9" fill="#5B8DEF" opacity="0.65"/><rect x="448.0" y="145.9" width="19.5" height="6.1" fill="#5B8DEF" opacity="0.65"/><rect x="469.0" y="151.1" width="19.5" height="0.9" fill="#5B8DEF" opacity="0.65"/><rect x="490.0" y="151.1" width="19.5" height="0.9" fill="#5B8DEF" opacity="0.65"/><rect x="511.0" y="151.5" width="19.5" height="0.5" fill="#5B8DEF" opacity="0.65"/><line x1="260.0" y1="18" x2="260.0" y2="152" stroke="#D9A441" stroke-width="2.5"/><text x="266.0" y="30" fill="#D9A441" font-size="11" font-family="monospace">observed 0.064</text><text x="28" y="172" fill="#5E7095" font-size="10" font-family="monospace">-0.609</text><text x="492" y="172" fill="#5E7095" font-size="10" font-family="monospace">0.853</text></svg>
+  <table><tr><td>population</td><td>Baa−10Y spread BAA10Y (FRED) 1986-01-02 … 2026-07-31 · ^GSPC forward 5d</td></tr><tr><td>signals / eligible</td><td>140 / 7085</td></tr><tr><td>mean fwd 5d</td><td>signal 0.064% vs null 0.179% (neg hit 0.464, worst -12.81%)</td></tr><tr><td>one-sided p</td><td>0.2755</td></tr><tr><td>amendment</td><td>HY OAS history truncated at source → Baa−10Y substituted BEFORE the valid run (see prereg)</td></tr>
+    <tr><td>preregistration</td><td>git commit <b>a4ec46105699 + amend ea8b825034ed</b></td></tr>
+    <tr><td>decision rule</td><td>p &lt; 0.05 · zero human override</td></tr>
+    <tr><td>provenance</td><td>코어 2.6 (크레딧 선행) · 원장 크레딧 카드군 (A−)</td></tr>
+  </table>
+  <div class="k" style="margin-top:10px">REPRODUCE</div>
+  <div class="repro">git checkout a4ec46105699 + amend ea8b825034ed &amp;&amp; python lab/exp003_credit.py  <span style="color:#5E7095"># seed 42</span></div>
+</div>
+</main>
+</body>
+</html>

@@ -135,6 +135,33 @@ if os.path.exists(p2):
                     "허스트 게이트: 방향은 이론대로였으나 유의하지 않음 — 미확증, 추정 유지."))
     print("exp-002.html written")
 
+# --- EXP-003 ---
+p3 = os.path.join(DATA, "exp003.json")
+if os.path.exists(p3):
+    d = json.load(open(p3, encoding="utf-8"))
+    st = ("CONFIRMED", "#3FE0A0") if d["confirmed"] else ("NOT CONFIRMED", "#D9A441")
+    rows = (f"<tr><td>population</td><td>{d['population']}</td></tr>"
+            f"<tr><td>signals / eligible</td><td>{d['n_signals']} / {d['n_eligible']}</td></tr>"
+            f"<tr><td>mean fwd 5d</td><td>signal {d['mean_fwd_signal_pct']}% vs null {d['mean_fwd_null_pct']}% "
+            f"(neg hit {d['hit_rate_neg']}, worst {d['worst_pct']}%)</td></tr>"
+            f"<tr><td>one-sided p</td><td>{d['p_value']}</td></tr>"
+            f"<tr><td>amendment</td><td>HY OAS history truncated at source → Baa−10Y substituted "
+            f"BEFORE the valid run (see prereg)</td></tr>")
+    html = page(d, st[0], st[1],
+        "a sharp 5-day widening of the credit spread (≥1.5σ, trailing) precedes weaker S&P 500 weeks.",
+        f"forward 5-day returns after {d['n_signals']} credit-shock signals averaged {d['mean_fwd_signal_pct']}% "
+        f"vs {d['mean_fwd_null_pct']}% on ordinary days — the hypothesized direction, but p={d['p_value']}: "
+        "not significant under the preregistered test. Scope note: this verdict binds THIS proxy (Baa−10Y) at THIS horizon; "
+        "a true HY-OAS retest awaits data we are now archiving daily.",
+        f"한국어 요약 — 크레딧 급확대 신호 {d['n_signals']}건 뒤 5일 수익률 {d['mean_fwd_signal_pct']}% vs 평상시 {d['mean_fwd_null_pct']}%: "
+        f"방향은 이론대로였으나 p={d['p_value']}로 유의하지 않았다. <b>미확증.</b> 간판 카드(A−)라도 봐주지 않는다 — "
+        "단, 이 판정의 사정거리는 '이 대용지표·이 지평'까지다. 진짜 HY 스프레드 재검은 데이터가 쌓이는 대로.",
+        rows)
+    open(os.path.join(OUTDIR, "exp-003.html"), "w", encoding="utf-8").write(html)
+    entries.append((d, st[0], st[1], "exp-003.html",
+                    "크레딧 선행(간판 카드): 방향은 맞았으나 유의하지 않음 — 미확증, HY 재검 대기."))
+    print("exp-003.html written")
+
 # --- index ---
 cards = "".join(
     f'''<a class="vlink" href="{fn}"><div class="card">
