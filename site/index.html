@@ -213,10 +213,10 @@ body.light .lens .spark{background:rgba(91,141,239,.06)}
 <div class="ticker"><div class="tk" id="tkInner"></div></div>
 
 <div class="hud stat">
-  <div class="k">시장 국면 w</div><div class="v" id="s-w" style="color:var(--acc)">0.20</div>
-  <div class="cap">바다의 날씨 — 0 평온 · 1 폭풍</div>
-  <div class="k">수렴도 (평균 |ρ|)</div><div class="v" id="s-conv" style="color:var(--ok)">0.24</div>
-  <div class="cap">자산들이 한 몸이 되는 정도 · 0.55↑ 분산 소멸 경보</div>
+  <div class="k">시장 국면 w <span id="s-w-tag" style="color:var(--gold)">추정</span></div><div class="v" id="s-w" style="color:var(--acc)">0.20</div>
+  <div class="cap">바다의 날씨 — 0 평온 · 1 폭풍 · VIX·크레딧·수렴도 합성(게이트 G1)</div>
+  <div class="k">수렴도 (평균 |ρ|) <span id="s-conv-tag" style="color:var(--gold)">SIM</span></div><div class="v" id="s-conv" style="color:var(--ok)">0.24</div>
+  <div class="cap">자산들이 한 몸이 되는 정도 · 0.55↑ 분산 소멸 경보 · 코어 5.2 (60일 전 페어)</div>
   <div class="k">활성 파급</div><div class="v" id="s-ev" style="color:var(--gold)">0</div>
   <div class="cap">지금 번지고 있는 이벤트 연쇄의 수</div>
   <div class="sz" id="s-size">지구 지름 — px<br>줌 1.00×</div>
@@ -498,6 +498,13 @@ function blockChoke(name,sec){const ci=CHOKE.findIndex(c=>c.n===name);if(ci<0)re
 
 /* ============ 뉴스 · 물결 · 리플레이 ============ */
 let w=0.2,wT=0.2,evAct=0,replay=false;
+let wBase=null,convReal=null,convV=0.296; // 실측 게이지 — regime.json 도착 시 고정
+fetch('data/regime.json').then(r=>r.json()).then(d=>{
+  if(d.w&&typeof d.w.value==='number'){wBase=Math.max(0,Math.min(1,d.w.value));wT=wBase;}
+  if(d.conv&&typeof d.conv.value==='number'){convReal=Math.max(0,Math.min(1,d.conv.value));
+    const tg=document.getElementById('s-conv-tag');
+    if(tg){tg.textContent='실측 '+(d.conv.asof||'');tg.style.color='var(--ok)';}}
+}).catch(()=>{}); // 실패 시 SIM 유지
 const ripples=[],pins=[];const regionNews={};
 const feed=document.getElementById('feed');
 /* 헤드라인 배너 — 최고 심각도 이벤트 한 줄, 없으면 정온 문장 */
@@ -715,9 +722,13 @@ document.getElementById('rp08').onclick=function(){runReplay(R08,this,R08OPPS,'2
 document.getElementById('rp20').onclick=function(){runReplay(R20,this,R20OPPS,'2020 시뮬레이션');};
 
 setInterval(()=>{
-  if(!reduce&&!replay){wT+=(Math.random()-0.5)*0.05;wT=Math.max(0.08,Math.min(0.85,wT));}
+  if(!reduce&&!replay){
+    if(wBase!=null)wT+=(wBase-wT)*0.15; // 실측 기준선으로 복귀 (폭풍 이벤트는 일시 상승 후 감쇠)
+    else{wT+=(Math.random()-0.5)*0.05;wT=Math.max(0.08,Math.min(0.85,wT));}
+  }
   w+=(wT-w)*0.06;
-  const conv=0.2+w*0.48;
+  convV=convReal!=null?convReal:0.2+w*0.48;
+  const conv=convV;
   const sw=document.getElementById('s-w'),sc=document.getElementById('s-conv');
   sw.textContent=w.toFixed(2);sw.style.color=w>0.65?'#FF5D6E':w>0.4?'#D9A441':'#5B8DEF';
   sc.textContent=conv.toFixed(2);sc.style.color=conv>0.55?'#FF5D6E':conv>0.38?'#D9A441':'#3FE0A0';
@@ -1133,7 +1144,7 @@ function draw(now){
     ctx.strokeRect(-4*DPR,-4*DPR,8*DPR,8*DPR);ctx.restore();});}
 
   // 노드
-  const conv=0.2+w*0.48;
+  const conv=convV;
   const ringC=conv>0.55?'255,93,110':conv>0.38?'217,164,65':'63,224,160';
   NODES.forEach(n=>{const p=proj(n.v);if(!p.vis)return;
     n.pulse+=0.05;n.halo*=0.97;
