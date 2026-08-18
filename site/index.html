@@ -599,10 +599,12 @@ function loadNews(){fetch('data/news.json?t='+Date.now()).then(r=>r.json()).then
   if(realQueue.length>60)realQueue.length=60;
   if(realQueue.length)realMode=true;}).catch(()=>{});} // 실패 시 SIM 유지
 loadNews();setInterval(loadNews,5*60*1000);
-function relKo(ts){ // GDELT DATEADDED(YYYYMMDDHHMMSS, UTC) → "몇 분/시간/일 전"
-  if(!ts||ts.length<14)return '';
-  const t=Date.UTC(+ts.slice(0,4),+ts.slice(4,6)-1,+ts.slice(6,8),
+function relKo(ts){ // 발행 시각(ISO) 또는 GDELT 수집 시각(YYYYMMDDHHMMSS UTC) → "몇 분/시간/일 전"
+  if(!ts)return '';
+  let t;
+  if(/^\d{14}$/.test(ts))t=Date.UTC(+ts.slice(0,4),+ts.slice(4,6)-1,+ts.slice(6,8),
     +ts.slice(8,10),+ts.slice(10,12),+ts.slice(12,14));
+  else{const d=new Date(ts);if(isNaN(d))return '';t=d.getTime();}
   const m=Math.max(0,Math.round((Date.now()-t)/60000));
   return m<1?'방금':m<60?m+'분 전':m<1440?Math.round(m/60)+'시간 전':Math.round(m/1440)+'일 전';}
 function fireReal(){
@@ -616,7 +618,7 @@ function fireReal(){
     c:e.tone<=-3?'#FF5D6E':e.tone>=2?'#3FE0A0':'#D9A441',
     sev:e.sev,chain,storm:e.sev>=5,reg,real:true,url:e.url,src,
     cx:`${e.region} · 논조 ${e.tone>0?'+':''}${e.tone} · 보도 ${e.arts}건`,
-    tTxt:relKo(e.ts)});}
+    tTxt:relKo(e.ts_pub||e.ts)+(e.ts_pub?'':' (수집)')});}
 
 /* 리플레이 시나리오 2종 */
 const R08=[
