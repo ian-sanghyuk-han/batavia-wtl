@@ -509,14 +509,31 @@ function setHeadline(ev){hlEl.classList.add('hot');
 function calmHeadline(){hlEl.classList.remove('hot');
   hlTxt.textContent=`정온 국면 — 특이 파급 없음 · 관찰 유지 · SIM`;}
 calmHeadline();
-/* 델타 티커 — 핵심 게이지 흐름 (SIM) */
+/* 델타 티커 — 실데이터(파이프라인 market.json) 우선, 실패 시 SIM 유지 */
 const TKG=[['미2년',4.21,'%'],['DXY',103.2,''],['S&P',5480,''],['KOSPI',2710,''],
   ['WTI',78.4,''],['구리',4.32,''],['VIX',14.8,''],['BTC',64200,'']].map(g=>({n:g[0],v:g[1],u:g[2],d:0}));
 function tkRender(){document.getElementById('tkInner').innerHTML=
   '<b style="color:var(--gold)">SIM</b>'+TKG.map(g=>
    `<span>${g.n} <b style="color:${g.d>=0?'var(--up)':'var(--acc)'}">${g.v>=1000?g.v.toFixed(0):g.v.toFixed(2)}${g.u} ${g.d>=0?'▲':'▼'}${Math.abs(g.d).toFixed(2)}%</b></span>`).join('');}
-setInterval(()=>{TKG.forEach(g=>{const ch=(Math.random()-0.5)*0.3;g.d+=ch;g.v*=(1+ch/100);});tkRender();},2500);
+const tkIv=setInterval(()=>{TKG.forEach(g=>{const ch=(Math.random()-0.5)*0.3;g.d+=ch;g.v*=(1+ch/100);});tkRender();},2500);
 tkRender();
+fetch('data/market.json').then(r=>r.json()).then(d=>{
+  const M=d.series||{};
+  const ORDER=['us2y','dxy','spx','kospi','wti','copper','vix','btc'];
+  const rows=ORDER.filter(k=>M[k]&&M[k].value!=null&&M[k].prev!=null);
+  if(!rows.length)return;
+  clearInterval(tkIv); // 이 위젯만 SIM 해제 — 실데이터 도착
+  const t=new Date(d.updated_utc);
+  const stamp=t.toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+  document.getElementById('tkInner').innerHTML=
+    `<b style="color:var(--ok)">LIVE ${stamp} KST</b>`+rows.map(k=>{const g=M[k];
+      const lvl=g.delta_kind==='level';
+      const dv=lvl?(g.value-g.prev):((g.value-g.prev)/g.prev*100);
+      const up=dv>=0;
+      const val=g.value>=1000?g.value.toFixed(0):g.value.toFixed(2);
+      return `<span>${g.label} <b style="color:${up?'var(--up)':'var(--acc)'}">${val}${g.unit} ${up?'▲':'▼'}${Math.abs(dv).toFixed(2)}${lvl?'p':'%'}</b></span>`;
+    }).join('');
+}).catch(()=>{}); // 실패 시 SIM 지속
 const NEWS=[
  {name:'미 CPI 상방 서프라이즈',la:38.9,lo:-77,c:'#FF5D6E',sev:4,chain:['NY-SEL','NY-TYO','NY-FRA'],cx:'물가 → 금리 경로 3방향 점화',reg:'NY',opp:'금리 재가격 — 성장주 대비 은행 상대우위 관찰(코어 3.1)'},
  {name:'중국 대규모 부양 발표',la:39.9,lo:116.4,c:'#D9A441',sev:3,chain:['SHA-SEL','SHA-SYD','SHA-SP'],cx:'수요 경로 — 구리 박사가 먼저 안다',reg:'SHA',opp:'중국 경로 선행 — 구리→광산국→수출국 파급 순서(3.3)'},

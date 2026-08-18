@@ -1,0 +1,29 @@
+name: Daily market pipeline
+
+on:
+  schedule:
+    - cron: '17 5,21 * * *'   # 05:17 & 21:17 UTC — after Asia close / after US close
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install yfinance
+      - name: Run pipeline
+        run: python pipeline/daily_market.py
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+      - name: Commit updated data
+        run: |
+          git config user.name "batavia-pipeline"
+          git config user.email "actions@users.noreply.github.com"
+          git add site/data/market.json
+          git diff --cached --quiet || (git commit -m "data: market.json 갱신 (daily pipeline)" && git push)
