@@ -114,6 +114,7 @@ select.btn{appearance:none}
   font-size:10.5px;color:var(--sub);background:var(--panel);border:1px solid var(--line);
   border-left:3px solid var(--acc);border-radius:8px;padding:5px 12px;backdrop-filter:blur(5px);z-index:4}
 .headline.hot{border-left-color:var(--up);color:var(--ink)}
+.feedlegend{position:fixed;left:20px;bottom:64px;z-index:5;font-family:var(--mono);font-size:9px;color:var(--dim)}
 .ticker{position:fixed;left:0;right:0;bottom:0;height:calc(26px + env(safe-area-inset-bottom));
   padding-bottom:env(safe-area-inset-bottom);background:var(--panel);border-top:1px solid var(--line);
   backdrop-filter:blur(6px);overflow:hidden;z-index:5;display:flex;align-items:center}
@@ -188,6 +189,8 @@ body.light .lens .spark{background:rgba(91,141,239,.06)}
   .feed{bottom:96px}
   .fitem:nth-child(n+3){display:none}
   .headline{top:auto;bottom:34px;left:12px;right:12px;transform:none;max-width:none}
+  .feedlegend{left:12px;bottom:64px;font-size:8px}
+  .stat .cap.mean{display:block}
   .lens{top:50%;left:50%;transform:translate(-50%,-50%);width:94vw;max-height:78vh}
   .replaydate{font-size:17px;padding:6px 14px;max-width:92vw}
 }
@@ -215,8 +218,10 @@ body.light .lens .spark{background:rgba(91,141,239,.06)}
 <div class="hud stat">
   <div class="k">시장 국면 w <span id="s-w-tag" style="color:var(--gold)">추정</span></div><div class="v" id="s-w" style="color:var(--acc)">0.20</div>
   <div class="cap">바다의 날씨 — 0 평온 · 1 폭풍 · VIX·크레딧·수렴도 합성(게이트 G1)</div>
+  <div class="cap mean" id="s-w-mean"></div>
   <div class="k">수렴도 (평균 |ρ|) <span id="s-conv-tag" style="color:var(--gold)">SIM</span></div><div class="v" id="s-conv" style="color:var(--ok)">0.24</div>
   <div class="cap">자산들이 한 몸이 되는 정도 · 0.55↑ 분산 소멸 경보 · 코어 5.2 (60일 전 페어)</div>
+  <div class="cap mean" id="s-conv-mean"></div>
   <div class="k">활성 파급</div><div class="v" id="s-ev" style="color:var(--gold)">0</div>
   <div class="cap">지금 번지고 있는 이벤트 연쇄의 수</div>
   <div class="sz" id="s-size">지구 지름 — px<br>줌 1.00×</div>
@@ -247,6 +252,7 @@ body.light .lens .spark{background:rgba(91,141,239,.06)}
 </div>
 
 <div class="hud feed" id="feed"></div>
+<div class="feedlegend">카드 색 = 기사 논조 · <span style="color:var(--up)">●</span> 부정 <span style="color:var(--gold)">●</span> 중립 <span style="color:var(--ok)">●</span> 긍정 · 시각 = 보도 후 경과</div>
 
 <div class="hud lens" id="lens">
   <span class="x" id="lensX">ESC ✕</span>
@@ -565,7 +571,7 @@ function boom(ev){
   if(regionNews[ev.reg].length>2)regionNews[ev.reg].pop();
   const d=document.createElement('div');d.className='fitem';d.style.borderLeftColor=ev.c;
   d.title='클릭: 진앙으로 이동';
-  const srcTag=ev.dateTxt?'REPLAY':ev.real?'REAL':'SIM';
+  const srcTag=ev.dateTxt?'REPLAY':(ev.src||'SIM'); // 출처가 곧 신뢰 — REAL 문구 불필요
   d.innerHTML=`<div class="t">${ev.dateTxt||ev.tTxt||new Date().toLocaleTimeString('ko-KR',{hour12:false})} · ${srcTag} · ▸ 진앙 이동${ev.url?` · <a href="${ev.url.replace(/"/g,'')}" target="_blank" rel="noopener" style="color:var(--acc)" onclick="event.stopPropagation()">원문 ↗</a>`:''}</div>
    <b>${ev.name}</b><div class="c">${ev.cx}</div>
    <div class="sev">파급 ${'●'.repeat(ev.sev)}${'○'.repeat(5-ev.sev)}${ev.chain.length?` · 연쇄 ${ev.chain.length}간선`:''}</div>${ev.opp&&(ev.sev>=3||ev.dateTxt||radarOn)?`<div class="sev" style="color:#D9A441">◎ 기회 — ${ev.opp}</div>`:''}`;
@@ -592,16 +598,24 @@ function loadNews(){fetch('data/news.json?t='+Date.now()).then(r=>r.json()).then
   if(realQueue.length>60)realQueue.length=60;
   if(realQueue.length)realMode=true;}).catch(()=>{});} // 실패 시 SIM 유지
 loadNews();setInterval(loadNews,5*60*1000);
+function relKo(ts){ // GDELT DATEADDED(YYYYMMDDHHMMSS, UTC) → "몇 분/시간/일 전"
+  if(!ts||ts.length<14)return '';
+  const t=Date.UTC(+ts.slice(0,4),+ts.slice(4,6)-1,+ts.slice(6,8),
+    +ts.slice(8,10),+ts.slice(10,12),+ts.slice(12,14));
+  const m=Math.max(0,Math.round((Date.now()-t)/60000));
+  return m<1?'방금':m<60?m+'분 전':m<1440?Math.round(m/60)+'시간 전':Math.round(m/1440)+'일 전';}
 function fireReal(){
   const e=realQueue.shift();
   if(!e)return; // 큐 소진 — 조용한 시간은 조용하게(침묵의 권리)
   const reg=nearestNodeId(e.la,e.lo);
   const chain=e.sev>=4?EDGES.filter(x=>x.a===reg||x.b===reg).slice(0,2).map(x=>x.a+'-'+x.b):[];
+  let src=e.src;
+  if(!src&&e.url){try{src=new URL(e.url).hostname.replace(/^www\./,'');}catch(_){}}
   boom({name:e.name,la:e.la,lo:e.lo,
     c:e.tone<=-3?'#FF5D6E':e.tone>=2?'#3FE0A0':'#D9A441',
-    sev:e.sev,chain,storm:e.sev>=5,reg,real:true,url:e.url,
+    sev:e.sev,chain,storm:e.sev>=5,reg,real:true,url:e.url,src,
     cx:`${e.region} · 논조 ${e.tone>0?'+':''}${e.tone} · 보도 ${e.arts}건`,
-    tTxt:e.ts?`${e.ts.slice(8,10)}:${e.ts.slice(10,12)}Z`:null});}
+    tTxt:relKo(e.ts)});}
 
 /* 리플레이 시나리오 2종 */
 const R08=[
@@ -732,6 +746,13 @@ setInterval(()=>{
   const sw=document.getElementById('s-w'),sc=document.getElementById('s-conv');
   sw.textContent=w.toFixed(2);sw.style.color=w>0.65?'#FF5D6E':w>0.4?'#D9A441':'#5B8DEF';
   sc.textContent=conv.toFixed(2);sc.style.color=conv>0.55?'#FF5D6E':conv>0.38?'#D9A441':'#3FE0A0';
+  const wm=document.getElementById('s-w-mean'),cm=document.getElementById('s-conv-mean');
+  if(wm){const t=w<0.3?['지금: 평온 — 순풍 항해','#5B8DEF']:w<0.5?['지금: 주의 — 너울 감지','#D9A441']
+      :w<0.7?['지금: 긴장 — 폭풍 접근','#D9A441']:['지금: 폭풍 — 생존 규칙 우선','#FF5D6E'];
+    wm.textContent=t[0];wm.style.color=t[1];}
+  if(cm){const t=conv<0.38?['지금: 개별 장세 — 분산투자 유효','#3FE0A0']
+      :conv<0.55?['지금: 긴장 — 자산들이 손잡기 시작','#D9A441']:['지금: 수렴 경보 — 분산 효과 소멸','#FF5D6E'];
+    cm.textContent=t[0];cm.style.color=t[1];}
   document.getElementById('s-ev').textContent=evAct;
   document.getElementById('s-size').innerHTML=
     `지구 지름 ${(R*2/DPR|0)}px · 줌 ${zoom.toFixed(2)}×<br>${mode==='3d'?'3D 정사영':'2D 평면'} · ${locked?'위치 고정':'자유 회전'}`;
@@ -801,7 +822,7 @@ function lensOn(n){
   lensEl.classList.add('on');document.body.classList.add('lensopen');}
 function flyToEvent(ev,u){
   flyToLatLon(ev.la,ev.lo,u,1.8,0);
-  document.getElementById('lensName').innerHTML=`${ev.name} <span>EVENT LENS · ${ev.dateTxt||'SIM'}</span>`;
+  document.getElementById('lensName').innerHTML=`${ev.name} <span>EVENT LENS · ${ev.dateTxt||ev.src||'SIM'}</span>`;
   document.getElementById('lensMeta').innerHTML=`<span>진앙 ${ev.la.toFixed(1)}, ${ev.lo.toFixed(1)}</span>`;
   document.getElementById('spark').style.display='none';
   document.getElementById('lh1').style.display='none';

@@ -7,6 +7,16 @@ import json
 import os
 import urllib.request
 import zipfile
+from urllib.parse import urlparse
+
+OUTLETS = {  # well-known outlets get pretty names; everything else shows its domain
+    "reuters.com": "Reuters", "bloomberg.com": "Bloomberg", "apnews.com": "AP",
+    "bbc.com": "BBC", "bbc.co.uk": "BBC", "cnn.com": "CNN", "nytimes.com": "NYT",
+    "wsj.com": "WSJ", "ft.com": "FT", "cnbc.com": "CNBC", "aljazeera.com": "Al Jazeera",
+    "theguardian.com": "Guardian", "afp.com": "AFP", "dw.com": "DW",
+    "yna.co.kr": "연합뉴스", "chosun.com": "조선일보", "hankyung.com": "한국경제",
+    "mk.co.kr": "매일경제", "koreaherald.com": "Korea Herald",
+}
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "..", "site", "data", "news.json")
@@ -59,12 +69,15 @@ for line in lines:
     sev = max(1, min(5, 1 + round(score * 4)))
     label = ROOT_KO.get(root, "이벤트")
     name = f"{actor + ' — ' if actor else ''}{label}"
+    dom = urlparse(f[60]).netloc.lower()
+    dom = dom[4:] if dom.startswith("www.") else dom
     events.append({
         "id": f[0], "ts": f[59],
         "la": round(la, 2), "lo": round(lo, 2),
         "name": name[:60], "region": region[:40],
         "sev": sev, "tone": round(tone, 1), "arts": arts,
         "code": root, "url": f[60][:300],
+        "src": OUTLETS.get(dom, dom[:24]),
     })
 
 # 임팩트 순 상위 40건만 — 큰 뉴스가 크게, 조용한 시간엔 조용하게
