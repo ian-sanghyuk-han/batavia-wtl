@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<!-- STATUS: Event Card v0.1 (charter M1) — pre-pricing/prior/D+0 stats REAL, consensus & beat-miss split labeled 추정. Front door of House B. -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Batavia WTL — 이벤트 카드</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#060B15">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060B15;--panel:rgba(12,18,32,.92);--line:#243352;--ink:#E8EEFA;--sub:#9AABC9;--dim:#5E7095;
+  --acc:#5B8DEF;--up:#FF5D6E;--gold:#D9A441;--ok:#3FE0A0;--vio:#A79BFF;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans KR',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);min-height:100dvh;
+  padding:0 0 60px;touch-action:manipulation}
+.top{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;
+  padding:12px 16px;background:var(--panel);border-bottom:1px solid var(--line);backdrop-filter:blur(8px)}
+.top h1{font-size:15px;font-weight:700}.top h1 b{color:var(--acc)}
+.top .beta{font-family:var(--mono);font-size:8.5px;color:var(--gold);border:1px solid var(--gold);
+  border-radius:5px;padding:1px 5px}
+.top a{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--sub);text-decoration:none;
+  border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+main{max-width:560px;margin:0 auto;padding:14px 14px 0;display:flex;flex-direction:column;gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.card.nocard{border-left:3px solid var(--dim)}
+.card.main{border-color:var(--acc)}
+.k{font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;color:var(--dim);margin-bottom:4px}
+.evname{font-size:17px;font-weight:700}
+.evtime{font-family:var(--mono);font-size:10.5px;color:var(--sub);margin-top:3px;line-height:1.7}
+.dday{font-family:var(--mono);font-size:11px;color:var(--up);font-weight:600}
+.row2{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+.pill{flex:1;min-width:130px;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.pill .pk{font-family:var(--mono);font-size:8px;color:var(--dim)}
+.pill .pv{font-family:var(--mono);font-size:14px;font-weight:600;margin-top:2px}
+.tag-est{font-family:var(--mono);font-size:8px;color:var(--gold)}
+.tag-real{font-family:var(--mono);font-size:8px;color:var(--ok)}
+.gaugewrap{margin-top:6px}
+.gauge{height:10px;background:rgba(94,112,149,.22);border-radius:5px;overflow:hidden;position:relative}
+.gauge i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,var(--acc),var(--gold));transition:width .8s}
+.gnum{font-family:var(--mono);font-size:22px;font-weight:700}
+.gphrase{font-size:12px;color:var(--sub)}
+.asym{border-left:3px solid var(--gold);background:rgba(217,164,65,.07);border-radius:0 10px 10px 0;
+  padding:10px 12px;font-size:13.5px;line-height:1.75}
+.asym .k{color:var(--gold)}
+.chk{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.chk div{display:flex;gap:8px;align-items:baseline;font-size:12px;color:var(--sub)}
+.chk b{font-family:var(--mono);font-size:11px;color:var(--ink);white-space:nowrap}
+details{margin-top:8px;border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+summary{font-family:var(--mono);font-size:9.5px;color:var(--acc);cursor:pointer;user-select:none}
+details table{width:100%;border-collapse:collapse;margin-top:6px;font-family:var(--mono);font-size:9.5px;color:var(--sub)}
+details td,details th{text-align:right;padding:3px 4px;border-top:1px solid var(--line)}
+details th{color:var(--dim);font-weight:400}
+details td:first-child,details th:first-child{text-align:left}
+.note{font-size:10px;color:var(--dim);line-height:1.7;margin-top:8px}
+.foot{font-family:var(--mono);font-size:9px;color:var(--dim);border-top:1px solid var(--line);
+  margin-top:10px;padding-top:8px;line-height:1.8}
+.scn{width:100%;border-collapse:collapse;margin-top:6px;font-size:11.5px}
+.scn th{font-family:var(--mono);font-size:8.5px;color:var(--dim);font-weight:400;text-align:left;padding:4px 4px}
+.scn td{padding:5px 4px;border-top:1px solid var(--line);color:var(--sub)}
+.scn td:first-child{color:var(--ink);font-weight:600}
+.updated{text-align:center;font-family:var(--mono);font-size:9px;color:var(--dim);margin-top:4px}
+</style>
+</head>
+<body>
+<div class="top"><h1>BATAVIA <b>WTL</b> — 이벤트 카드</h1><span class="beta">v0.1 β</span>
+  <a href="index.html">◐ 글로브 콘솔</a></div>
+<main id="main">
+  <div class="card"><div class="k">로딩 중…</div></div>
+</main>
+<div class="updated" id="upd"></div>
+<script>
+(async function(){
+const M=document.getElementById('main');
+let d;
+try{d=await fetch('data/event_card.json?t='+Date.now()).then(r=>r.json());}
+catch(e){M.innerHTML='<div class="card"><div class="k">데이터를 불러오지 못했습니다 — 잠시 후 새로고침</div></div>';return;}
+const ev=d.event,pp=d.prepricing||{},pr=d.prior||{},d0=d.d0_anchor;
+const rel=new Date(ev.release_kst.replace(' ','T')+'+09:00');
+const days=Math.ceil((rel-Date.now())/86400000);
+const cards=[];
+if(d.no_card_today){
+  cards.push(`<div class="card nocard"><div class="k">오늘 — ${d.today}</div>
+   <div style="font-size:13.5px"><b>no-card</b> · 오늘은 등록된 이벤트가 없다 — 관찰 유지.</div>
+   <div class="note">침묵도 기록되고 채점된다 (§1.2). 다음 카드는 아래에.</div></div>`);}
+const assets=pp.assets||{};
+const arows=Object.values(assets).map(a=>
+  `<tr><td>${a.label}</td><td>${a.cur>0?'+':''}${a.cur}${a.unit}</td><td>${a.hist_median>0?'+':''}${a.hist_median}${a.unit}</td><td>${Math.round(a.pctl*100)}%</td><td>${a.n}</td></tr>`).join('');
+cards.push(`<div class="card main">
+  <div class="k">다가오는 카드 · <span class="dday">D${days>0?'-'+days:'-DAY'}</span></div>
+  <div class="evname">${ev.name}</div>
+  <div class="evtime">${ev.release_kst} KST · ${ev.release_et} ET</div>
+  <div class="row2">
+    <div class="pill"><div class="pk">합의 전망 <span class="tag-est">추정·집계 전</span></div>
+      <div class="pv">${ev.consensus??'—'}</div></div>
+    <div class="pill"><div class="pk">직전 실적 <span class="tag-real">실측 FRED</span></div>
+      <div class="pv">${pr.yoy!=null?`YoY +${pr.yoy}% · MoM ${pr.mom>=0?'+':''}${pr.mom}%`:'—'}</div></div>
+  </div>
+  <div class="k" style="margin-top:14px">① 선반영 지수 (선先반영 — 발표 전에 미리 움직인 정도)</div>
+  <div style="display:flex;align-items:baseline;gap:10px">
+    <span class="gnum">${pp.index??'—'}</span><span class="gphrase">/100 · ${pp.phrase??''} <span class="tag-real">실측</span></span>
+  </div>
+  <div class="gaugewrap"><div class="gauge"><i style="width:${pp.index??0}%"></i></div></div>
+  <details><summary>ⓘ 출처·방법 — 공식 F1+F2 · ${ev.ledger.core}</summary>
+    <div class="note">${pp.method||''}</div>
+    <table><tr><th>자산</th><th>최근 5일</th><th>과거 중앙값</th><th>백분위</th><th>n</th></tr>${arows}</table>
+  </details>
+  <div class="k" style="margin-top:14px">② 조건부 시나리오 — 기준자산 S&P 500</div>
+  <table class="scn">
+    <tr><th></th><th>D+0 반응</th><th>비고</th></tr>
+    <tr><td>발표일 변동폭</td><td>평균 ±${d0?d0.avg_abs:'—'}% <span class="tag-real">실측 n=${d0?d0.n:'—'}</span></td>
+      <td>상승 ${d0?d0.up:'—'} · 하락 ${d0?d0.down:'—'} · 극단 +${d0?d0.max_up:'—'}/${d0?d0.max_down:'—'}%</td></tr>
+    <tr><td>beat / inline / miss</td><td colspan="2"><span class="tag-est">추정</span> 합의 이력 수집 후 실측 분해 예정</td></tr>
+  </table>
+  <div class="k" style="margin-top:14px">③ 비대칭 문장 — 이 카드의 심장</div>
+  <div class="asym">${d.asymmetry}</div>
+  <div class="k" style="margin-top:14px">④ 세 개의 체크포인트 (행동 지시 아님 — 스스로의 판단을 확인할 객관적 시각)</div>
+  <div class="chk">${(d.checkpoints||[]).map(c=>{const i=c.indexOf('—');
+    return `<div><b>${c.slice(0,i)}</b><span>${c.slice(i+1)}</span></div>`;}).join('')}</div>
+  <div class="foot">원장 ${ev.ledger.id} · ${ev.ledger.name} · ${ev.ledger.core} · 등급 ${ev.ledger.grade} · P·n ${ev.ledger.p_n}<br>
+  이 카드는 관찰의 기록이다 — 매매 지시가 아니며, 발표 후 세 체크포인트가 자동 채점되어 같은 카드에 도장으로 남는다(예정).</div>
+</div>`);
+M.innerHTML=cards.join('');
+document.getElementById('upd').textContent='데이터 갱신 '+new Date(d.updated_utc).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',hour12:false})+' KST · Batavia Project';
+})();
+</script>
+</body>
+</html>
