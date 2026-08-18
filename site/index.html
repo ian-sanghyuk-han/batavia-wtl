@@ -107,7 +107,20 @@ select.btn{appearance:none}
 .lt2 .d{font-family:var(--mono);font-size:8px;color:var(--dim)}
 .lt2 .st{margin-left:auto;font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:.08em}
 .lt2.on .st{color:var(--ok)}
-.feed{bottom:60px;left:20px;width:326px;display:flex;flex-direction:column;gap:6px}
+.feed{bottom:92px;left:20px;width:326px;display:flex;flex-direction:column;gap:6px}
+/* 가시성 1단계 — 헤드라인 배너 · 델타 티커 */
+.headline{top:58px;left:50%;transform:translateX(-50%);max-width:min(92vw,560px);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--mono);
+  font-size:10.5px;color:var(--sub);background:var(--panel);border:1px solid var(--line);
+  border-left:3px solid var(--acc);border-radius:8px;padding:5px 12px;backdrop-filter:blur(5px);z-index:4}
+.headline.hot{border-left-color:var(--up);color:var(--ink)}
+.ticker{position:fixed;left:0;right:0;bottom:0;height:calc(26px + env(safe-area-inset-bottom));
+  padding-bottom:env(safe-area-inset-bottom);background:var(--panel);border-top:1px solid var(--line);
+  backdrop-filter:blur(6px);overflow:hidden;z-index:5;display:flex;align-items:center}
+.tk{display:inline-flex;gap:22px;white-space:nowrap;font-family:var(--mono);font-size:10px;
+  color:var(--sub);padding-left:100vw;animation:tkm 38s linear infinite}
+@keyframes tkm{to{transform:translateX(-100%)}}
+@media(prefers-reduced-motion:reduce){.tk{animation:none;padding-left:12px}}
 .fitem{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--acc);
   border-radius:10px;padding:7px 10px;font-size:10.5px;line-height:1.5;backdrop-filter:blur(5px);animation:fin .4s ease;cursor:pointer}
 @keyframes fin{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
@@ -147,8 +160,10 @@ body.light .lens .spark{background:rgba(91,141,239,.06)}
 .replaydate .rspd{display:flex;gap:5px;justify-content:center;margin-top:6px}
 .replaydate .rspd span{font-family:var(--mono);font-size:9px;color:var(--dim);border:1px solid var(--line);border-radius:6px;padding:2px 8px;cursor:pointer}
 .replaydate .rspd span.on{color:#fff;background:var(--up);border-color:var(--up)}
-.replaydate .rbar{height:3px;background:rgba(94,112,149,.3);border-radius:2px;margin-top:7px;overflow:hidden}
-.replaydate .rbar i{display:block;height:100%;width:0;background:var(--up)}
+.replaydate .rbar{height:12px;background:rgba(94,112,149,.3);border-radius:6px;margin-top:7px;
+  overflow:hidden;position:relative;cursor:pointer;touch-action:none}
+.replaydate .rbar i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--up);opacity:.75}
+.replaydate .rbar s{position:absolute;top:0;bottom:0;width:2px;background:rgba(255,255,255,.4)}
 /* ===== 모바일 HUD (P1) ===== */
 #layersBtn{display:none}
 @media(max-width:1080px){
@@ -170,8 +185,9 @@ body.light .lens .spark{background:rgba(91,141,239,.06)}
   .stat::after{content:'▾ 상세';font-size:8px;color:var(--dim);font-family:var(--mono)}
   .stat.open .cap,.stat.open .sz{display:block}
   .stat.open::after{content:'▴ 접기'}
-  .feed{bottom:56px}
+  .feed{bottom:96px}
   .fitem:nth-child(n+3){display:none}
+  .headline{top:auto;bottom:34px;left:12px;right:12px;transform:none;max-width:none}
   .lens{top:50%;left:50%;transform:translate(-50%,-50%);width:94vw;max-height:78vh}
   .replaydate{font-size:17px;padding:6px 14px;max-width:92vw}
 }
@@ -192,6 +208,9 @@ body.light .lens .spark{background:rgba(91,141,239,.06)}
   <button class="btn" id="rp20">◉ 2020</button>
   <select class="btn" id="homeSel" title="시작 기준점"></select>
 </div>
+
+<div class="hud headline" id="headline"><span id="headlineTxt">—</span></div>
+<div class="ticker"><div class="tk" id="tkInner"></div></div>
 
 <div class="hud stat">
   <div class="k">시장 국면 w</div><div class="v" id="s-w" style="color:var(--acc)">0.20</div>
@@ -481,6 +500,23 @@ function blockChoke(name,sec){const ci=CHOKE.findIndex(c=>c.n===name);if(ci<0)re
 let w=0.2,wT=0.2,evAct=0,replay=false;
 const ripples=[],pins=[];const regionNews={};
 const feed=document.getElementById('feed');
+/* 헤드라인 배너 — 최고 심각도 이벤트 한 줄, 없으면 정온 문장 */
+const hlEl=document.getElementById('headline'),hlTxt=document.getElementById('headlineTxt');
+let hlTimer=null;
+function setHeadline(ev){hlEl.classList.add('hot');
+  hlTxt.textContent=`${'●'.repeat(ev.sev)} ${ev.name} — ${ev.cx}`;
+  clearTimeout(hlTimer);hlTimer=setTimeout(calmHeadline,18000);}
+function calmHeadline(){hlEl.classList.remove('hot');
+  hlTxt.textContent=`정온 국면 — 특이 파급 없음 · 관찰 유지 · SIM`;}
+calmHeadline();
+/* 델타 티커 — 핵심 게이지 흐름 (SIM) */
+const TKG=[['미2년',4.21,'%'],['DXY',103.2,''],['S&P',5480,''],['KOSPI',2710,''],
+  ['WTI',78.4,''],['구리',4.32,''],['VIX',14.8,''],['BTC',64200,'']].map(g=>({n:g[0],v:g[1],u:g[2],d:0}));
+function tkRender(){document.getElementById('tkInner').innerHTML=
+  '<b style="color:var(--gold)">SIM</b>'+TKG.map(g=>
+   `<span>${g.n} <b style="color:${g.d>=0?'var(--up)':'var(--acc)'}">${g.v>=1000?g.v.toFixed(0):g.v.toFixed(2)}${g.u} ${g.d>=0?'▲':'▼'}${Math.abs(g.d).toFixed(2)}%</b></span>`).join('');}
+setInterval(()=>{TKG.forEach(g=>{const ch=(Math.random()-0.5)*0.3;g.d+=ch;g.v*=(1+ch/100);});tkRender();},2500);
+tkRender();
 const NEWS=[
  {name:'미 CPI 상방 서프라이즈',la:38.9,lo:-77,c:'#FF5D6E',sev:4,chain:['NY-SEL','NY-TYO','NY-FRA'],cx:'물가 → 금리 경로 3방향 점화',reg:'NY',opp:'금리 재가격 — 성장주 대비 은행 상대우위 관찰(코어 3.1)'},
  {name:'중국 대규모 부양 발표',la:39.9,lo:116.4,c:'#D9A441',sev:3,chain:['SHA-SEL','SHA-SYD','SHA-SP'],cx:'수요 경로 — 구리 박사가 먼저 안다',reg:'SHA',opp:'중국 경로 선행 — 구리→광산국→수출국 파급 순서(3.3)'},
@@ -491,6 +527,7 @@ const NEWS=[
  {name:'반도체 수출 서프라이즈',la:37.5,lo:127,c:'#5FD8E8',sev:2,chain:['SEL-NY'],cx:'항공화물 지표 동반 상승',reg:'SEL',opp:'항공화물 동행 확인 — 하이테크 사이클 신호(2.8)'},
 ];
 function boom(ev){
+  if(!replay)setHeadline(ev);
   const u=vec(ev.la,ev.lo);
   const nR=2+Math.ceil(ev.sev/2);for(let i=0;i<nR;i++)ripples.push({u,r:0,max:0.3+ev.sev*0.06,delay:i*0.4,c:ev.c});
   pins.push({u,name:ev.name,c:ev.c,life:20});
@@ -582,19 +619,24 @@ function restoreRadar(prev){
   radarTick();
   if(!prev){radarOn=false;document.getElementById('radarBtn').classList.remove('on');
     radarEl.classList.remove('on');legendEl.style.display='';}}
+let rpCur=null,scrubbing=false; // 스크러버 상태 — 진행바 드래그로 시간 이동
 function runReplay(script,btn,opps,title){
   if(replay)return;replay=true;btn.classList.add('on');rdate.classList.add('on');
+  hlEl.style.display='none';
   const prevRadar=radarOn;
   if(!radarOn){radarOn=true;document.getElementById('radarBtn').classList.add('on');
     radarEl.classList.add('on');legendEl.style.display='none';}
   replayCards(opps,title);
-  wT=0.85;let idx=0;let vel=0,lastT=performance.now();
+  const rbar=document.querySelector('.rbar'); // 챕터 마커 심기
+  rbar.innerHTML='<i id="rbarF"></i>'+script.map(ev=>`<s style="left:${(ev.t/18*100).toFixed(1)}%"></s>`).join('');
+  wT=0.85;const rp={el:0,idx:0,script};rpCur=rp;let lastT=performance.now();
   const iv=setInterval(()=>{
-    const nowT=performance.now();vel+=(nowT-lastT)/1000*rpSpeed;lastT=nowT;
-    const el=vel;
+    const nowT=performance.now();
+    if(!scrubbing)rp.el+=(nowT-lastT)/1000*rpSpeed;
+    lastT=nowT;const el=rp.el;
     rdateV.textContent=dLerp(script,el);
     const rb=document.getElementById('rbarF');if(rb)rb.style.width=Math.min(100,el/18*100)+'%';
-    if(idx<script.length&&el>=script[idx].t){boom(script[idx]);idx++;}
+    if(rp.idx<script.length&&el>=script[rp.idx].t){boom(script[rp.idx]);rp.idx++;}
     opps.forEach((o,i)=>{
       const V=document.getElementById('rv'+i);if(!V)return;
       const v=kfv(o.kf,el);
@@ -606,13 +648,25 @@ function runReplay(script,btn,opps,title){
       g.style.background=ratio>0.7?'var(--up)':'var(--gold)';
       V.style.color=ratio>0.7?'var(--up)':'var(--gold)';
       document.getElementById('rt'+i).textContent='T+'+el.toFixed(0)+'s';
-      if(el>=o.verdT)document.getElementById('rd'+i).classList.add('on');});
-    if(el>18){clearInterval(iv);replay=false;wT=0.3;
+      document.getElementById('rd'+i).classList.toggle('on',el>=o.verdT);});
+    if(el>18){clearInterval(iv);replay=false;rpCur=null;wT=0.3;
       btn.classList.remove('on');rdate.classList.remove('on');
+      hlEl.style.display='';
       restoreRadar(prevRadar);
       const d=document.createElement('div');d.className='fitem';
       d.innerHTML='<div class="t">REPLAY 종료</div><b>라이브 복귀</b><div class="c">당시의 기회 계기값은 SCOREBOARD와 같은 채점 파이프라인의 산물이다(설계)</div>';
       feed.prepend(d);}},120);}
+/* 스크러버 조작 — 진행바를 끌면 그 시점으로 점프 */
+const rbarBox=document.querySelector('.rbar');
+function scrubTo(e){if(!rpCur)return;
+  const r=rbarBox.getBoundingClientRect();
+  const f=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
+  rpCur.el=f*18;
+  rpCur.idx=rpCur.script.filter(ev=>ev.t<=rpCur.el).length;}
+rbarBox.addEventListener('pointerdown',e=>{e.stopPropagation();scrubbing=true;
+  rbarBox.setPointerCapture(e.pointerId);scrubTo(e);});
+rbarBox.addEventListener('pointermove',e=>{if(scrubbing)scrubTo(e);});
+addEventListener('pointerup',()=>scrubbing=false);
 document.getElementById('rp08').onclick=function(){runReplay(R08,this,R08OPPS,'2008 시뮬레이션');};
 document.getElementById('rp20').onclick=function(){runReplay(R20,this,R20OPPS,'2020 시뮬레이션');};
 
