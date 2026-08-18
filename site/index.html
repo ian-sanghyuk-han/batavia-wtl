@@ -887,7 +887,12 @@ function shipLensOn(s){ // 선박 렌즈 — AIS 실측 상세
   document.getElementById('lp2').textContent=s.dest||'—';
   document.getElementById('lk3').textContent='흘수 (적재 추정)';
   document.getElementById('lp3').textContent=s.dr?s.dr+' m':'—';
-  document.getElementById('lensRows').innerHTML='';
+  const moving=s.sog>=0.5;
+  const wind=['북','북동','동','남동','남','남서','서','북서'];
+  const cogTxt=s.cog!=null?`${s.cog}° ${wind[Math.round(((s.cog%360)+360)%360/45)%8]}쪽`:'—';
+  document.getElementById('lensRows').innerHTML=
+    `<div class="row"><span style="width:56px;color:var(--dim);font-family:var(--mono)">상태</span><span>${moving?'⟶ 항해 중':'⚓ 정박·표류'}</span></div>
+     <div class="row"><span style="width:56px;color:var(--dim);font-family:var(--mono)">침로</span><span>${moving?cogTxt:'—'}</span></div>`;
   document.getElementById('lensNews').innerHTML=
     `<div class="news">AIS 스냅샷 ${shipsReal.updated_utc?relKo(shipsReal.updated_utc):''} 기준 · 무료 지상 수신망(연안 중심) — 대양 한복판은 위성 AIS(유료) 영역</div>`;
   lensEl.classList.add('on');document.body.classList.add('lensopen');}
@@ -1129,14 +1134,21 @@ function draw(now){
         ctx.fillStyle=hold?'#FF7A62':'#E8B453';
         ctx.beginPath();ctx.moveTo(5.5*DPR,0);ctx.lineTo(-3.5*DPR,2.8*DPR);ctx.lineTo(-3.5*DPR,-2.8*DPR);
         ctx.closePath();ctx.fill();ctx.restore();});});
-    if(shipsReal&&shipsReal.fleet){ // AIS 실측 세계 함대 — 유조선 주황·화물선 청록·기타 회청
+    if(shipsReal&&shipsReal.fleet){ // AIS 실측 함대 — 항해 중=침로 화살표 · 정지=속 빈 원
       shipsReal.fleet.forEach(s=>{
         if(!s.v)s.v=vec(s.la,s.lo);
         const p=proj(s.v);if(!p.vis)return;
-        const big=s.t==='tanker'||s.t==='cargo';
-        ctx.beginPath();ctx.arc(p.x,p.y,(big?2.6:1.6)*DPR,0,7);
-        ctx.fillStyle=s.t==='tanker'?'#FF9A5A':s.t==='cargo'?'#5FD8E8':'rgba(154,171,201,0.55)';
-        ctx.fill();});}}
+        const col=s.t==='tanker'?'#FF9A5A':s.t==='cargo'?'#5FD8E8':'rgba(154,171,201,0.65)';
+        if(s.sog>=0.5&&s.cog!=null){ // 이동 중 — 실제 침로 방향 화살표
+          const pN=proj(vec(Math.min(89,s.la+0.6),s.lo));
+          const aN=pN.vis?Math.atan2(pN.y-p.y,pN.x-p.x):-Math.PI/2;
+          ctx.save();ctx.translate(p.x,p.y);ctx.rotate(aN+s.cog*Math.PI/180);
+          ctx.fillStyle=col;ctx.beginPath();
+          ctx.moveTo(4.6*DPR,0);ctx.lineTo(-2.6*DPR,2.1*DPR);ctx.lineTo(-2.6*DPR,-2.1*DPR);
+          ctx.closePath();ctx.fill();ctx.restore();
+        }else{ // 정박·표류
+          ctx.beginPath();ctx.arc(p.x,p.y,2*DPR,0,7);
+          ctx.strokeStyle=col;ctx.lineWidth=1.2*DPR;ctx.stroke();}});}}
 
   // 간선
   EDGES.forEach(e=>{

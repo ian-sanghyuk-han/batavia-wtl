@@ -52,7 +52,7 @@ async def run():
             if m.get("MessageType") == "PositionReport":
                 r = m["Message"]["PositionReport"]
                 positions[mmsi] = {"la": r.get("Latitude"), "lo": r.get("Longitude"),
-                                   "sog": r.get("Sog"),
+                                   "sog": r.get("Sog"), "cog": r.get("Cog"),
                                    "nm": (meta.get("ShipName") or "").strip()}
             elif m.get("MessageType") == "ShipStaticData":
                 s = m["Message"]["ShipStaticData"]
@@ -64,6 +64,28 @@ async def run():
 asyncio.run(run())
 print(f"heard: {len(positions)} ships with position, {len(static)} with static data")
 
+# --- 선박 명부(registry): 실행마다 선종·목적지 사전을 누적 — '미상'이 점점 줄어든다 ---
+REG = os.path.join(HERE, "ais_registry.json")
+try:
+    registry = json.load(open(REG, encoding="utf-8"))
+except Exception:
+    registry = {}
+now_i = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
+for mmsi, s in static.items():
+    registry[str(mmsi)] = {"t": s.get("type"), "nm": s.get("nm", ""),
+                            "dest": s.get("dest", ""), "dr": s.get("dr"), "seen": now_i}
+if len(registry) > 15000:  # 오래 안 보인 배부터 정리
+    keep = sorted(registry.items(), key=lambda kv: kv[1].get("seen", 0), reverse=True)[:15000]
+    registry = dict(keep)
+json.dump(registry, open(REG, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+# 이번 수신에 static이 없던 배는 명부에서 보충
+for mmsi in positions:
+    if mmsi not in static and str(mmsi) in registry:
+        r = registry[str(mmsi)]
+        static[mmsi] = {"type": r.get("t"), "dest": r.get("dest", ""),
+                        "dr": r.get("dr"), "nm": r.get("nm", "")}
+print(f"registry: {len(registry)} ships known")
+
 def klass(tp):
     if tp is None:
         return "unknown"
@@ -73,25 +95,28 @@ def klass(tp):
         return "cargo"
     return "other"
 
-# --- build fleet sample: tanker/cargo with details first, then the rest ---
+# --- 경제성 필터: 유조선·화물선 전량 + 미상 중 고속 통항선만 (어선·잡선 잡음 컷) ---
 fleet = []
 for mmsi, p in positions.items():
     if p["la"] is None or p["lo"] is None:
         continue
     st = static.get(mmsi, {})
     k = klass(st.get("type"))
+    sog = round(p["sog"], 1) if p.get("sog") is not None else None
+    if k in ("other",):
+        continue  # 어선·예인·여객 등 — 경제 신호 아님
+    if k == "unknown" and (sog is None or sog < 7):
+        continue  # 선종 미확인 + 저속 = 잡음 가능성 — 명부가 크면 자동 재분류됨
+    cog = p.get("cog")
     fleet.append({"la": round(p["la"], 3), "lo": round(p["lo"], 3), "t": k,
-                  "sog": round(p["sog"], 1) if p.get("sog") is not None else None,
+                  "sog": sog,
+                  "cog": round(cog) if cog is not None and cog < 360 else None,
                   "nm": (st.get("nm") or p.get("nm") or "")[:28],
                   "dest": st.get("dest", "")[:24] or None,
                   "dr": st.get("dr")})
-prio = {"tanker": 0, "cargo": 1, "other": 2, "unknown": 3}
-fleet.sort(key=lambda s: (prio[s["t"]], s["nm"] == ""))
-if len(fleet) > FLEET_CAP:
-    keep = fleet[:FLEET_CAP * 2 // 3]           # 유조·화물·정보 있는 배 우선
-    rest = fleet[FLEET_CAP * 2 // 3:]
-    step = max(1, len(rest) // (FLEET_CAP - len(keep)))
-    fleet = keep + rest[::step][:FLEET_CAP - len(keep)]
+prio = {"tanker": 0, "cargo": 1, "unknown": 2}
+fleet.sort(key=lambda s: (prio.get(s["t"], 3), s["nm"] == ""))
+fleet = fleet[:FLEET_CAP]
 
 counts = {"tanker": 0, "cargo": 0, "other": 0, "unknown": 0}
 for mmsi, p in positions.items():
