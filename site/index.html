@@ -273,7 +273,7 @@ body.light .lens .spark{background:rgba(91,141,239,.06)}
     </div>
     <div>
       <h4 style="margin-top:0">REGION NEWS</h4><div id="lensNews"></div>
-      <div class="note">지역 렌즈 — 실데이터 연결(클로드 코드) 후 개별 종목·산업 지표로 확장. 상태 배지는 뉴스 조건 충족 시 자동 부여.</div>
+      <div class="note">대표지수·30일 차트 = 실측(야후) · 정책금리·GDP = 추정 — 실데이터 연결 예정. 상태 배지는 뉴스 조건 충족 시 자동 부여.</div>
     </div>
   </div>
 </div>
@@ -786,9 +786,16 @@ function flyToLatLon(la,lo,v,zt,off){
   tiltT=tt;rotT=faceRot(v,tt);cLonT=lo*D2R;latOffT=la*D2R-off*0.8;zoomT=zt;}
 function localTime(tz){const d=new Date(Date.now()+(tz*60+new Date().getTimezoneOffset())*60000);
   return d.toTimeString().slice(0,5);}
-function sparkline(){const s=document.getElementById('spark'),c2=s.getContext('2d');
+let lensReal=null; // 지역 렌즈 실데이터 (lens.json)
+fetch('data/lens.json').then(r=>r.json()).then(d=>{lensReal=d.nodes||null;}).catch(()=>{});
+function sparkline(dataArr){const s=document.getElementById('spark'),c2=s.getContext('2d');
   c2.clearRect(0,0,512,88);
   c2.strokeStyle=theme==='dark'?'#5B8DEF':'#2A4C8F';c2.lineWidth=2.5;c2.beginPath();
+  if(dataArr&&dataArr.length>1){ // 실측 30일 종가
+    const mn=Math.min(...dataArr),mx=Math.max(...dataArr),rg=(mx-mn)||1;
+    dataArr.forEach((v,i)=>{const x=i/(dataArr.length-1)*512,y=80-(v-mn)/rg*72;
+      i?c2.lineTo(x,y):c2.moveTo(x,y);});
+    c2.stroke();return 44;}
   let y=44;c2.moveTo(0,y);
   for(let x=8;x<=512;x+=8){y+=(Math.random()-0.48)*9;y=Math.max(8,Math.min(80,y));c2.lineTo(x,y);}
   c2.stroke();return y;}
@@ -796,15 +803,18 @@ function lensOn(n){
   flyToLatLon(n.la,n.lo,n.v,1.75,0); // 렌즈 상단 팝업 · 대상은 정중앙
   document.getElementById('spark').style.display='';
   document.getElementById('lk1').textContent='대표지수';
-  document.getElementById('lk2').textContent='정책금리';
-  document.getElementById('lk3').textContent='GDP 성장';
+  document.getElementById('lk2').textContent='정책금리 (추정)';
+  document.getElementById('lk3').textContent='GDP 성장 (추정)';
   document.getElementById('lh1').style.display='';
   document.getElementById('lensTags').style.display='';
   document.getElementById('lensName').innerHTML=`${n.n} <span>REGION LENS · SIM</span>`;
   const st=n.status?`<span class="st" style="background:#B3202F">⚠ ${n.status}</span>`:'';
   document.getElementById('lensMeta').innerHTML=
     `${st}<span>🕐 현지 ${localTime(n.tz)}</span><span>☁ ${n.clim}</span><span>💱 ${CURIDX[n.id][0]}</span><span>📈 ${CURIDX[n.id][1]}</span>`;
-  const endY=sparkline();const chg=(44-endY)/44*4;
+  const LK=lensReal&&lensReal[n.id]; // 실측 지수 — 있으면 이 도시 렌즈는 실데이터
+  const endY=sparkline(LK&&LK.spark);
+  const chg=LK?LK.chg_pct:(44-endY)/44*4;
+  if(LK)document.getElementById('lk1').textContent=`${LK.label} ${LK.value>=1000?LK.value.toFixed(0):LK.value} · 실측 ${LK.asof}`;
   const p1=document.getElementById('lp1');
   p1.textContent=(chg>=0?'+':'')+chg.toFixed(1)+'%';p1.style.color=chg>=0?'#FF5D6E':'#5B8DEF';
   document.getElementById('lp2').textContent=(1+Math.random()*4).toFixed(2)+'%';
