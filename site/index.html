@@ -791,6 +791,9 @@ function localTime(tz){const d=new Date(Date.now()+(tz*60+new Date().getTimezone
   return d.toTimeString().slice(0,5);}
 let lensReal=null; // 지역 렌즈 실데이터 (lens.json)
 fetch('data/lens.json').then(r=>r.json()).then(d=>{lensReal=d.nodes||null;}).catch(()=>{});
+let shipsReal=null; // AIS 실측 선박 (ships.json) — 도착 시 시뮬 선박 자동 대체
+fetch('data/ships.json?t='+Date.now()).then(r=>r.json()).then(d=>{
+  if(d&&d.chokepoints)shipsReal=d;}).catch(()=>{});
 function sparkline(dataArr){const s=document.getElementById('spark'),c2=s.getContext('2d');
   c2.clearRect(0,0,512,88);
   c2.strokeStyle=theme==='dark'?'#5B8DEF':'#2A4C8F';c2.lineWidth=2.5;c2.beginPath();
@@ -1088,6 +1091,7 @@ function draw(now){
           ctx.fillStyle=P.pinbg;ctx.fillRect(mp.x-tw3/2-3*DPR,mp.y-6*DPR,tw3+6*DPR,11*DPR);
           ctx.fillStyle='#D9A441';ctx.fillText(lb,mp.x-tw3/2,mp.y+2.5*DPR);}}
       const stopT=blocked?CHOKE_T[ri][blockade.ci]:null;
+      if(shipsReal)return; // 실측 선박 도착 — 시뮬 선박은 그리지 않는다
       r.ships.forEach(s=>{
         let hold=false;
         if(stopT!=null&&s.t<stopT&&stopT-s.t<0.16)hold=true; // 관문 앞 대기 → 병목
@@ -1098,7 +1102,14 @@ function draw(now){
         ctx.save();ctx.translate(p.x,p.y);ctx.rotate(a);
         ctx.fillStyle=hold?'#FF7A62':'#E8B453';
         ctx.beginPath();ctx.moveTo(5.5*DPR,0);ctx.lineTo(-3.5*DPR,2.8*DPR);ctx.lineTo(-3.5*DPR,-2.8*DPR);
-        ctx.closePath();ctx.fill();ctx.restore();});});}
+        ctx.closePath();ctx.fill();ctx.restore();});});
+    if(shipsReal){ // AIS 실측 — 관문 주변 실제 선박 (유조선 주황 · 화물선 청록)
+      for(const nm in shipsReal.chokepoints){
+        shipsReal.chokepoints[nm].ships.forEach(s=>{
+          const p=proj(vec(s.la,s.lo));if(!p.vis)return;
+          ctx.beginPath();ctx.arc(p.x,p.y,2.4*DPR,0,7);
+          ctx.fillStyle=s.t==='tanker'?'#FF9A5A':s.t==='cargo'?'#5FD8E8':'#9AABC9';
+          ctx.fill();});}}}
 
   // 간선
   EDGES.forEach(e=>{
@@ -1168,7 +1179,10 @@ function draw(now){
     ctx.fillStyle=c.alert?'#FF5D6E':'#D9A441';
     ctx.fillRect(-3*DPR,-3*DPR,6*DPR,6*DPR);ctx.restore();
     if(zoom>0.85){ctx.fillStyle=c.alert?'rgba(255,93,110,0.9)':'rgba(217,164,65,0.8)';
-      ctx.fillText(c.n+(c.alert?' — 봉쇄':''),p.x+6*DPR,p.y-5*DPR);}});
+      let lbl=c.n+(c.alert?' — 봉쇄':'');
+      if(shipsReal&&shipsReal.chokepoints[c.n]){const b=shipsReal.chokepoints[c.n];
+        lbl+=` 유조${b.tanker}·화물${b.cargo}`;} // AIS 실측 관문 통행량
+      ctx.fillText(lbl,p.x+6*DPR,p.y-5*DPR);}});
 
   // 레이더 핑 (기회 위치)
   if(radarOn){OPPS.forEach(o=>{const n=byId[o.node];const p=proj(n.v);if(!p.vis)return;
