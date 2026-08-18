@@ -3,7 +3,7 @@
 <head>
 <!-- STATUS: Design mockup, simulated data (globe console = the STAGE / PRO tier). Product front door is the Event Card, which is NOT in this file. Single source of truth: BATAVIA-MASTER-HANDOFF-v2.md -->
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Batavia Project — 연결된 세계 (시뮬레이션)</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -14,7 +14,7 @@
 }
 body.light{--bg:#EFF4FB; --panel:rgba(255,255,255,.93); --line:#D4DEEE; --ink:#16233D; --sub:#4A5C7E; --dim:#8494B2;}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--ink);font-family:var(--sans);height:100vh;overflow:hidden;transition:background .4s}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);height:100vh;height:100dvh;overflow:hidden;transition:background .4s;touch-action:manipulation}
 canvas#cv{display:block;width:100%;height:100%;cursor:grab;touch-action:none}
 canvas#cv.drag{cursor:grabbing}
 .hud{position:fixed;font-size:12px;z-index:5}
@@ -143,7 +143,32 @@ body.light .lens .spark{background:rgba(91,141,239,.06)}
 .replaydate .rspd span.on{color:#fff;background:var(--up);border-color:var(--up)}
 .replaydate .rbar{height:3px;background:rgba(94,112,149,.3);border-radius:2px;margin-top:7px;overflow:hidden}
 .replaydate .rbar i{display:block;height:100%;width:0;background:var(--up)}
-@media(max-width:1080px){.legend,.radar{display:none!important}.feed{width:min(300px,calc(100vw - 40px))}}
+/* ===== 모바일 HUD (P1) ===== */
+#layersBtn{display:none}
+@media(max-width:1080px){
+  .legend{display:none}
+  .legend.mopen{display:block;position:fixed;top:auto;bottom:64px;right:12px;left:auto;
+    width:min(280px,calc(100vw - 24px));max-height:52vh;overflow-y:auto;z-index:9}
+  #layersBtn{display:block}
+  .radar{top:auto;bottom:64px;right:12px;left:12px;width:auto;max-height:56vh;z-index:9}
+  .feed{width:min(300px,calc(100vw - 24px));left:12px}
+}
+@media(max-width:820px){
+  .title{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:6px;left:12px;max-width:calc(100vw - 24px)}
+  .title::-webkit-scrollbar{display:none}
+  .title h1{font-size:14px;white-space:nowrap}
+  .btn{padding:7px 9px;white-space:nowrap;flex:none}
+  .stat{top:54px;left:12px;padding:8px 10px;cursor:pointer}
+  .stat .v{font-size:13px;margin:0 0 4px}
+  .stat .cap,.stat .sz{display:none}
+  .stat::after{content:'▾ 상세';font-size:8px;color:var(--dim);font-family:var(--mono)}
+  .stat.open .cap,.stat.open .sz{display:block}
+  .stat.open::after{content:'▴ 접기'}
+  .feed{bottom:56px}
+  .fitem:nth-child(n+3){display:none}
+  .lens{top:50%;left:50%;transform:translate(-50%,-50%);width:94vw;max-height:78vh}
+  .replaydate{font-size:17px;padding:6px 14px;max-width:92vw}
+}
 </style>
 </head>
 <body>
@@ -222,7 +247,7 @@ body.light .lens .spark{background:rgba(91,141,239,.06)}
   </div>
 </div>
 
-<div class="hud replaydate"<div class="hud replaydate" id="rdate"><small>HISTORY REPLAY</small><span id="rdateV">—</span>
+<div class="hud replaydate" id="rdate"><small>HISTORY REPLAY</small><span id="rdateV">—</span>
   <div class="rspd"><span data-s="0.5">0.5×</span><span data-s="1" class="on">1×</span><span data-s="2">2×</span><span data-s="4">4×</span></div>
   <div class="rbar"><i id="rbarF"></i></div></div>
 
@@ -239,6 +264,8 @@ function resize(){W=cv.width=innerWidth*DPR;H=cv.height=innerHeight*DPR;
   cv.style.width=innerWidth+'px';cv.style.height=innerHeight+'px';
   CX=W/2;CY=H*0.52;baseR=Math.min(W,H)*0.355;}
 addEventListener('resize',resize);resize();
+if(window.visualViewport)visualViewport.addEventListener('resize',resize); // iOS 주소창 수축 대응
+addEventListener('orientationchange',()=>setTimeout(resize,300));
 
 /* ============ 팔레트 ============ */
 const THEMES={
@@ -262,6 +289,16 @@ document.querySelectorAll('.lt,.lt2').forEach(el=>{el.onclick=()=>{const k=el.da
   const st=el.querySelector('.st');if(st)st.textContent=layer[k]?'ON':'OFF';};});
 let locked=false;
 document.getElementById('resetBtn').onclick=function(){lensOff();goHome(true);zoomT=1;};
+/* 모바일 HUD 접기 (P1) */
+const legendPanel=document.getElementById('legend');
+const layersBtn=document.createElement('button');
+layersBtn.className='btn';layersBtn.id='layersBtn';layersBtn.textContent='☰ 레이어';
+document.querySelector('.title').appendChild(layersBtn);
+layersBtn.onclick=()=>{legendPanel.classList.toggle('mopen');
+  layersBtn.classList.toggle('on',legendPanel.classList.contains('mopen'));};
+const statPanel=document.querySelector('.stat');
+statPanel.addEventListener('click',()=>{
+  if(matchMedia('(max-width:820px)').matches)statPanel.classList.toggle('open');});
 document.getElementById('lockBtn').onclick=function(){locked=!locked;this.classList.toggle('on',locked);
   this.textContent=locked?'⌖ 고정됨':'⌖ 고정';};
 
@@ -301,17 +338,37 @@ function lineSeg(p,st){ // 공용 폴리라인 그리기 (2D 랩 절단 포함)
 
 /* ============ 조작 ============ */
 let dragging=false,lx=0,ly=0,vR=0,vT=0,moved=0;
-cv.addEventListener('pointerdown',e=>{dragging=true;moved=0;lx=e.clientX;ly=e.clientY;
-  cv.setPointerCapture(e.pointerId);cv.classList.add('drag');});
-cv.addEventListener('pointermove',e=>{if(!dragging)return;
+const touches=new Map();let pinchD=0,pinchZ=1,pinching=false;
+cv.addEventListener('pointerdown',e=>{
+  touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  cv.setPointerCapture(e.pointerId);
+  if(touches.size===2){ // 두 손가락 = 핀치 줌 시작
+    const[a,b]=[...touches.values()];
+    pinchD=Math.hypot(a.x-b.x,a.y-b.y)||1;pinchZ=zoomT;pinching=true;dragging=false;
+    rotT=null;tiltT=null;cLonT=null;latOffT=null;}
+  else if(touches.size===1){dragging=true;moved=0;lx=e.clientX;ly=e.clientY;cv.classList.add('drag');}});
+cv.addEventListener('pointermove',e=>{
+  const t=touches.get(e.pointerId);if(t){t.x=e.clientX;t.y=e.clientY;}
+  if(pinching&&touches.size===2){
+    const[a,b]=[...touches.values()];
+    const d=Math.hypot(a.x-b.x,a.y-b.y)||1;
+    zoomT=Math.max(0.55,Math.min(3.6,pinchZ*d/pinchD));return;}
+  if(!dragging)return;
   const dx=e.clientX-lx,dy=e.clientY-ly;moved+=Math.abs(dx)+Math.abs(dy);
   if(moved>4){rotT=null;tiltT=null;cLonT=null;latOffT=null;}
   if(mode==='2d'){cLon-=dx*DPR/K2();latOff=Math.max(-1.1,Math.min(1.1,latOff+dy*DPR/K2()));}
   else{vR=-dx*0.0042/zoom;vT=dy*0.0032/zoom;
     rot+=vR;tilt=Math.max(-1.35,Math.min(1.35,tilt+vT));}
   lx=e.clientX;ly=e.clientY;});
-cv.addEventListener('pointerup',e=>{dragging=false;cv.classList.remove('drag');
-  if(moved<4)clickAt(e.clientX,e.clientY);});
+function endPointer(e){
+  touches.delete(e.pointerId);
+  if(touches.size<2)pinching=false;
+  if(touches.size===1){ // 핀치에서 손가락 하나 남음 → 드래그로 승계 (클릭 오발 방지)
+    const[p]=[...touches.values()];dragging=true;moved=99;lx=p.x;ly=p.y;}
+  else if(touches.size===0){const wasDrag=dragging;dragging=false;cv.classList.remove('drag');
+    if(wasDrag&&moved<4&&e.type==='pointerup')clickAt(e.clientX,e.clientY);}}
+cv.addEventListener('pointerup',endPointer);
+cv.addEventListener('pointercancel',endPointer);
 cv.addEventListener('wheel',e=>{e.preventDefault();
   zoomT=Math.max(0.55,Math.min(3.6,zoomT*(e.deltaY<0?1.12:0.89)));},{passive:false});
 addEventListener('keydown',e=>{if(e.key==='Escape')lensOff();});
