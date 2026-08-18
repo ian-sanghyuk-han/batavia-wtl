@@ -1,0 +1,36 @@
+name: Morning briefing (07:30 KST)
+
+on:
+  schedule:
+    - cron: '30 22 * * *'   # 22:30 UTC = 07:30 KST next day
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install yfinance
+      - name: Refresh card data, then generate & send briefing
+        run: |
+          python pipeline/event_card.py
+          python pipeline/briefing.py
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      - name: Commit updated data
+        run: |
+          git config user.name "batavia-pipeline"
+          git config user.email "actions@users.noreply.github.com"
+          git add site/data/event_card.json site/data/briefing.json
+          if git diff --cached --quiet; then echo "no change"; exit 0; fi
+          git commit -m "data: 모닝 브리핑 생성 (07:30 KST)"
+          git pull --rebase
+          git push

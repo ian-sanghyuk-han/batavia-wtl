@@ -156,6 +156,16 @@ try{
     </div>`);
   }
 }catch(_){}
+// ⑥ 모닝 브리핑 미리보기 (M3) — 6줄 + 아카이브 링크
+try{
+  const b=await fetch('data/briefing.json?t='+Date.now()).then(r=>r.json());
+  if(b&&b.lines){
+    cards.push(`<div class="card">
+      <div class="k">⑥ 모닝 브리핑 — 매일 07:30 KST 생성 ${b.sent?'<span class="tag-real">텔레그램 발송됨</span>':'<span class="tag-est">발송 대기 — 봇 연결 전</span>'}</div>
+      <div style="font-family:var(--mono);font-size:10.5px;line-height:1.9;color:var(--sub);background:rgba(94,112,149,.1);border-radius:8px;padding:10px 12px;margin-top:6px;white-space:pre-wrap">${b.lines.map((l,i)=>(i+1)+'  '+l).join('\n')}\n→ ${b.archive}</div>
+      <div class="note">웹 카드는 무료 — 유료는 '배달'이다 (§6.2). 영어 기본, 한국어판은 현지화로 후속.</div>
+    </div>`);}
+}catch(_){}
 M.innerHTML=cards.join('');
 document.getElementById('upd').textContent='데이터 갱신 '+new Date(d.updated_utc).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',hour12:false})+' KST · Batavia Project';
 })();
