@@ -36,3 +36,15 @@ On each OAS business day t with ≥ 257 prior observations:
 
 ## Reproduce
 `python lab/exp003_credit.py` (seed 42)
+
+---
+
+## Amendment 1 — data availability (BEFORE any valid run; v1 run void)
+Discovered on first execution: FRED now serves BAMLH0A0HYM2 only from 2023-08-21
+(ICE licensing truncation) — the preregistered population (1996→) is unavailable, and
+the resulting 6-signal run is VOID for lack of the specified population (recorded here
+for transparency; its numbers are not a verdict).
+Substitution, same rule otherwise: **BAA10Y** (Moody's Baa corporate yield minus 10-year
+Treasury, FRED, daily, full history from 1986-01-02 … 2026-07-31). All thresholds,
+cooldown, outcome, test and decision rule are unchanged. This amendment is committed
+before the substituted run; both commit hashes appear on the verdict page.
