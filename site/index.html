@@ -871,9 +871,20 @@ function fillPoly3D(dense,P){
       ring.push({x:mx/L,y:my/L,edge:true});} // 교차점은 림 위로 정규화
   }
   if(ring.length<3)return;
+  // 감김 방향 판정(캔버스 좌표 신발끈 공식) — 수평선 브리지를 어느 쪽 림 원호로 돌지 결정
+  let S=0;
+  for(let i=0;i<ring.length;i++){const p=ring[i],q=ring[(i+1)%ring.length];
+    S+=(CX-R*p.x)*(CY-R*q.y)-(CX-R*q.x)*(CY-R*p.y);}
+  const acw=S<0;
   ctx.beginPath();
-  ring.forEach((q,i)=>{const px=CX-R*q.x,py=CY-R*q.y;
-    i?ctx.lineTo(px,py):ctx.moveTo(px,py);});
+  for(let i=0;i<ring.length;i++){
+    const p=ring[i],q=ring[(i+1)%ring.length];
+    const px=CX-R*p.x,py=CY-R*p.y,qx=CX-R*q.x,qy=CY-R*q.y;
+    if(i===0)ctx.moveTo(px,py);
+    if(p.edge&&q.edge){ // 지평선 뒤 구간 — 직선(유령 띠의 원인) 대신 림 원호로 연결
+      ctx.arc(CX,CY,R,Math.atan2(py-CY,px-CX),Math.atan2(qy-CY,qx-CX),acw);
+    } else ctx.lineTo(qx,qy);
+  }
   ctx.closePath();ctx.fillStyle=P.land;ctx.fill();
   ctx.lineWidth=1*DPR;ctx.strokeStyle=P.coast; // 해안선 — 수평선 절단면은 긋지 않는다
   ctx.beginPath();let pen=false;
