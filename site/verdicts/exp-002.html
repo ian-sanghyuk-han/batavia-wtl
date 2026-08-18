@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- STATUS: MEASURED verdict page — real data, preregistered, machine-graded. -->
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>EXP-002 Verdict — Batavia WTL</title><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet"><style>
+:root{--bg:#060B15;--panel:rgba(12,18,32,.92);--line:#243352;--ink:#E8EEFA;--sub:#9AABC9;--dim:#5E7095;
+--acc:#5B8DEF;--up:#FF5D6E;--gold:#D9A441;--ok:#3FE0A0;--mono:'IBM Plex Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans KR',sans-serif;padding:0 0 60px}
+.top{position:sticky;top:0;display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--panel);
+border-bottom:1px solid var(--line);backdrop-filter:blur(8px);z-index:5}
+.top h1{font-size:15px;font-weight:700}.top h1 b{color:var(--acc)}
+.top a{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--sub);text-decoration:none;
+border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+main{max-width:640px;margin:0 auto;padding:16px 14px;display:flex;flex-direction:column;gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;position:relative}
+.k{font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;color:var(--dim);margin-bottom:5px}
+h2{font-size:18px} p{font-size:13px;color:var(--sub);line-height:1.8;margin-top:8px}
+.stamp{position:absolute;top:18px;right:16px;font-family:var(--mono);font-weight:700;font-size:13px;
+border-radius:8px;padding:5px 12px;transform:rotate(-6deg);letter-spacing:.06em;border:2.5px solid}
+table{width:100%;border-collapse:collapse;margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--sub)}
+td{padding:5px 4px;border-top:1px solid var(--line)}td:first-child{color:var(--dim)}
+.repro{background:rgba(94,112,149,.12);border-radius:8px;padding:9px 12px;font-family:var(--mono);font-size:11px;margin-top:8px}
+.ko{border-left:3px solid var(--acc);padding:8px 12px;background:rgba(91,141,239,.06);border-radius:0 8px 8px 0;
+font-size:12px;color:var(--sub);line-height:1.8;margin-top:8px}
+a.vlink{display:block;text-decoration:none;color:inherit}
+a.vlink:hover .card{border-color:var(--acc)}
+</style>
+</head>
+<body>
+<div class="top"><h1>BATAVIA <b>WTL</b> — Verdict Archive</h1><a href="index.html">⚖ Archive</a></div>
+<main>
+<div class="card">
+  <div class="stamp" style="color:#D9A441;border-color:#D9A441">NOT CONFIRMED</div>
+  <div class="k">EXP-002 · MEASURED · 2026-08-18</div>
+  <h2>Hurst switch — does H(120) really separate trend and mean-reversion regimes?</h2>
+  <p><b>Hypothesis:</b> 20-day trend continuation is more likely when the 120-day Hurst exponent exceeds 0.55 than when it is below 0.45 (Gate G3).</p>
+  <p><b>Verdict:</b> continuation ran 0.5395 in high-H regimes vs 0.5142 in low-H — Δ=+0.0253, in the hypothesized direction but p=0.27: not significant under the preregistered block-permutation test. Gate G3 remains an estimate; its adjustment weight β_g stays conservative until stronger evidence arrives.</p>
+  <div class="ko">한국어 요약 — 추세장(H>0.55)의 20일 추세 지속률 0.5395 vs 평균회귀장(H<0.45) 0.5142: 방향은 이론대로였지만 p=0.27로 유의하지 않았다. <b>미확증</b> — 게이트 G3는 추정 지위를 유지하고 보정 강도는 보수적으로 묶는다. 확증이 아니어도 그대로 공개한다.</div>
+</div>
+<div class="card">
+  <div class="k">NULL DISTRIBUTION — B=2000 vs observed</div>
+  <svg viewBox="0 0 560 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto"><rect x="28.0" y="149.7" width="19.5" height="2.3" fill="#5B8DEF" opacity="0.65"/><rect x="49.0" y="148.6" width="19.5" height="3.4" fill="#5B8DEF" opacity="0.65"/><rect x="70.0" y="149.7" width="19.5" height="2.3" fill="#5B8DEF" opacity="0.65"/><rect x="91.0" y="139.9" width="19.5" height="12.1" fill="#5B8DEF" opacity="0.65"/><rect x="112.0" y="135.9" width="19.5" height="16.1" fill="#5B8DEF" opacity="0.65"/><rect x="133.0" y="130.2" width="19.5" height="21.8" fill="#5B8DEF" opacity="0.65"/><rect x="154.0" y="104.9" width="19.5" height="47.1" fill="#5B8DEF" opacity="0.65"/><rect x="175.0" y="86.6" width="19.5" height="65.4" fill="#5B8DEF" opacity="0.65"/><rect x="196.0" y="73.9" width="19.5" height="78.1" fill="#5B8DEF" opacity="0.65"/><rect x="217.0" y="51.0" width="19.5" height="101.0" fill="#5B8DEF" opacity="0.65"/><rect x="238.0" y="30.9" width="19.5" height="121.1" fill="#5B8DEF" opacity="0.65"/><rect x="259.0" y="29.7" width="19.5" height="122.3" fill="#5B8DEF" opacity="0.65"/><rect x="280.0" y="40.1" width="19.5" height="111.9" fill="#5B8DEF" opacity="0.65"/><rect x="301.0" y="28.0" width="19.5" height="124.0" fill="#5B8DEF" opacity="0.65"/><rect x="322.0" y="60.7" width="19.5" height="91.3" fill="#5B8DEF" opacity="0.65"/><rect x="343.0" y="66.5" width="19.5" height="85.5" fill="#5B8DEF" opacity="0.65"/><rect x="364.0" y="96.3" width="19.5" height="55.7" fill="#5B8DEF" opacity="0.65"/><rect x="385.0" y="110.1" width="19.5" height="41.9" fill="#5B8DEF" opacity="0.65"/><rect x="406.0" y="130.8" width="19.5" height="21.2" fill="#5B8DEF" opacity="0.65"/><rect x="427.0" y="139.4" width="19.5" height="12.6" fill="#5B8DEF" opacity="0.65"/><rect x="448.0" y="145.7" width="19.5" height="6.3" fill="#5B8DEF" opacity="0.65"/><rect x="469.0" y="150.3" width="19.5" height="1.7" fill="#5B8DEF" opacity="0.65"/><rect x="490.0" y="149.7" width="19.5" height="2.3" fill="#5B8DEF" opacity="0.65"/><rect x="511.0" y="151.4" width="19.5" height="0.6" fill="#5B8DEF" opacity="0.65"/><line x1="323.9" y1="18" x2="323.9" y2="152" stroke="#D9A441" stroke-width="2.5"/><text x="329.9" y="30" fill="#D9A441" font-size="11" font-family="monospace">observed 0.0253</text><text x="28" y="172" fill="#5E7095" font-size="10" font-family="monospace">-0.1277</text><text x="492" y="172" fill="#5E7095" font-size="10" font-family="monospace">0.1329</text></svg>
+  <table><tr><td>population</td><td>^GSPC daily 1985-01-02 … 2026-07-31 (10475 sessions)</td></tr><tr><td>sampled days</td><td>2067 (HIGH 873 · LOW 422, stride 5)</td></tr><tr><td>P(continue|HIGH) vs P(continue|LOW)</td><td>0.5395 vs 0.5142 → Δ=0.0253</td></tr><tr><td>block permutation</td><td>p=0.27 (one-sided)</td></tr>
+    <tr><td>preregistration</td><td>git commit <b>e77b0315e9e5</b></td></tr>
+    <tr><td>decision rule</td><td>p &lt; 0.05 · zero human override</td></tr>
+    <tr><td>provenance</td><td>Gate G3 · Theory Core §5.9·8.2 · Ledger 3층</td></tr>
+  </table>
+  <div class="k" style="margin-top:10px">REPRODUCE</div>
+  <div class="repro">git checkout e77b0315e9e5 &amp;&amp; python lab/exp002_hurst.py  <span style="color:#5E7095"># seed 42</span></div>
+</div>
+</main>
+</body>
+</html>

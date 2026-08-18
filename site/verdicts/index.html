@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<!-- STATUS: Verdict Archive index — measured verdicts only; free forever on every tier. -->
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>판정 아카이브 — Batavia WTL</title><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet"><style>
+:root{--bg:#060B15;--panel:rgba(12,18,32,.92);--line:#243352;--ink:#E8EEFA;--sub:#9AABC9;--dim:#5E7095;
+--acc:#5B8DEF;--up:#FF5D6E;--gold:#D9A441;--ok:#3FE0A0;--mono:'IBM Plex Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans KR',sans-serif;padding:0 0 60px}
+.top{position:sticky;top:0;display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--panel);
+border-bottom:1px solid var(--line);backdrop-filter:blur(8px);z-index:5}
+.top h1{font-size:15px;font-weight:700}.top h1 b{color:var(--acc)}
+.top a{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--sub);text-decoration:none;
+border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+main{max-width:640px;margin:0 auto;padding:16px 14px;display:flex;flex-direction:column;gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;position:relative}
+.k{font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;color:var(--dim);margin-bottom:5px}
+h2{font-size:18px} p{font-size:13px;color:var(--sub);line-height:1.8;margin-top:8px}
+.stamp{position:absolute;top:18px;right:16px;font-family:var(--mono);font-weight:700;font-size:13px;
+border-radius:8px;padding:5px 12px;transform:rotate(-6deg);letter-spacing:.06em;border:2.5px solid}
+table{width:100%;border-collapse:collapse;margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--sub)}
+td{padding:5px 4px;border-top:1px solid var(--line)}td:first-child{color:var(--dim)}
+.repro{background:rgba(94,112,149,.12);border-radius:8px;padding:9px 12px;font-family:var(--mono);font-size:11px;margin-top:8px}
+.ko{border-left:3px solid var(--acc);padding:8px 12px;background:rgba(91,141,239,.06);border-radius:0 8px 8px 0;
+font-size:12px;color:var(--sub);line-height:1.8;margin-top:8px}
+a.vlink{display:block;text-decoration:none;color:inherit}
+a.vlink:hover .card{border-color:var(--acc)}
+</style>
+</head>
+<body>
+<div class="top"><h1>BATAVIA <b>WTL</b> — 판정 아카이브</h1><a href="../card.html">▦ 카드</a></div>
+<main>
+<div class="card"><div class="k">ABOUT</div>
+<p style="margin-top:2px">가설을 먼저 박제(선등록 커밋)하고, 기계가 채점하고, <b>기각도 그대로 공개</b>한다.
+판정문은 전 티어 영원히 무료다. 현재 2건 — 실험은 계속 쌓인다.</p></div>
+<a class="vlink" href="exp-001.html"><div class="card">
+    <div class="stamp" style="color:#FF5D6E;border-color:#FF5D6E;font-size:11px">REJECTED</div>
+    <div class="k">EXP-001 · MEASURED · 2026-08-18</div>
+    <h2 style="font-size:15px">Fibonacci retracement levels — special or folklore?</h2>
+    <p style="margin-top:6px">피보나치 되돌림은 통계적으로 특별하지 않았다 — 기회 후보 기각.</p>
+    <p style="font-family:var(--mono);font-size:10px;margin-top:6px;color:var(--dim)">p=0.786 · prereg 0cd4b2db34ed</p>
+    </div></a><a class="vlink" href="exp-002.html"><div class="card">
+    <div class="stamp" style="color:#D9A441;border-color:#D9A441;font-size:11px">NOT CONFIRMED</div>
+    <div class="k">EXP-002 · MEASURED · 2026-08-18</div>
+    <h2 style="font-size:15px">Hurst switch — does H(120) really separate trend and mean-reversion regimes?</h2>
+    <p style="margin-top:6px">허스트 게이트: 방향은 이론대로였으나 유의하지 않음 — 미확증, 추정 유지.</p>
+    <p style="font-family:var(--mono);font-size:10px;margin-top:6px;color:var(--dim)">p=0.27 · prereg e77b0315e9e5</p>
+    </div></a>
+</main>
+</body>
+</html>
