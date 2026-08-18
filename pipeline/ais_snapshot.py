@@ -95,6 +95,40 @@ def klass(tp):
         return "cargo"
     return "other"
 
+# --- 내륙 판정: 오대호·강의 배는 대양 무역 신호가 아니고, 지도에 호수가 없어
+#     '땅 위의 배'처럼 보인다 → 깊은 내륙(주변까지 전부 육지)이면 제외 ---
+_land = []
+try:
+    for ring in json.load(open(os.path.join(HERE, "..", "site", "data", "geo",
+                                            "land-110m.json"), encoding="utf-8")):
+        if len(ring) >= 40:  # 대륙·큰 섬만 검사 (성능)
+            las = [p[0] for p in ring]; los = [p[1] for p in ring]
+            _land.append((min(las), max(las), min(los), max(los), ring))
+except Exception as e:
+    print("land rings unavailable:", e)
+
+def _in_ring(la, lo, ring):
+    inside = False
+    for i in range(len(ring) - 1):
+        y1, x1 = ring[i]; y2, x2 = ring[i + 1]
+        if (y1 > la) != (y2 > la):
+            if x1 + (la - y1) / (y2 - y1) * (x2 - x1) > lo:
+                inside = not inside
+    return inside
+
+def _on_land(la, lo):
+    for (la0, la1, lo0, lo1, ring) in _land:
+        if la0 <= la <= la1 and lo0 <= lo <= lo1 and _in_ring(la, lo, ring):
+            return True
+    return False
+
+def deep_inland(la, lo):
+    if not _land:
+        return False
+    # 본인 + 동서남북 4점이 전부 육지면 내륙 수로 (항만 언저리의 해안선 오차는 살린다)
+    return all(_on_land(a, b) for a, b in
+               ((la, lo), (la + 0.12, lo), (la - 0.12, lo), (la, lo + 0.15), (la, lo - 0.15)))
+
 # --- 경제성 필터: 유조선·화물선 전량 + 미상 중 고속 통항선만 (어선·잡선 잡음 컷) ---
 fleet = []
 for mmsi, p in positions.items():
@@ -107,6 +141,10 @@ for mmsi, p in positions.items():
         continue  # 어선·예인·여객 등 — 경제 신호 아님
     if k == "unknown" and (sog is None or sog < 7):
         continue  # 선종 미확인 + 저속 = 잡음 가능성 — 명부가 크면 자동 재분류됨
+    near_choke = any(abs(p["la"] - cla) <= BOX and abs(p["lo"] - clo) <= BOX
+                     for cla, clo in CHOKES.values())
+    if not near_choke and deep_inland(p["la"], p["lo"]):
+        continue  # 오대호·내륙 강 선박 — 대양 무역 신호 아님 (운하·관문 주변은 예외)
     cog = p.get("cog")
     fleet.append({"la": round(p["la"], 3), "lo": round(p["lo"], 3), "t": k,
                   "sog": sog,
