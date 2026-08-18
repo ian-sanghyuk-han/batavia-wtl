@@ -864,7 +864,33 @@ function clickAt(cx,cy){
   let hit=null,hd=20*DPR;
   NODES.forEach(n=>{const p=proj(n.v);if(!p.vis)return;
     const d=Math.hypot(p.x-px,p.y-py);if(d<hd){hd=d;hit=n;}});
-  if(hit)lensOn(hit);}
+  if(hit){lensOn(hit);return;}
+  if(shipsReal&&shipsReal.fleet){ // 노드가 아니면 근처 선박 탐색
+    let hs=null,hd2=13*DPR;
+    shipsReal.fleet.forEach(s=>{if(!s.v)s.v=vec(s.la,s.lo);
+      const p=proj(s.v);if(!p.vis)return;
+      const d=Math.hypot(p.x-px,p.y-py);if(d<hd2){hd2=d;hs=s;}});
+    if(hs)shipLensOn(hs);}}
+function shipLensOn(s){ // 선박 렌즈 — AIS 실측 상세
+  flyToLatLon(s.la,s.lo,vec(s.la,s.lo),2.2,0);
+  document.getElementById('spark').style.display='none';
+  document.getElementById('lh1').style.display='none';
+  document.getElementById('lensTags').style.display='none';
+  const tko={tanker:'유조선',cargo:'화물선',other:'기타 선박',unknown:'선종 미상'}[s.t]||'선종 미상';
+  const tc={tanker:'#8a5a18',cargo:'#1a6b78',other:'#3d4d6b',unknown:'#3d4d6b'}[s.t];
+  document.getElementById('lensName').innerHTML=`⛴ ${s.nm||'무명 선박'} <span>SHIP · aisstream 실측</span>`;
+  document.getElementById('lensMeta').innerHTML=
+    `<span class="st" style="background:${tc}">${tko}</span><span>위치 ${s.la.toFixed(2)}, ${s.lo.toFixed(2)}</span>`;
+  document.getElementById('lk1').textContent='속력';
+  const p1=document.getElementById('lp1');p1.textContent=s.sog!=null?s.sog+' kn':'—';p1.style.color='';
+  document.getElementById('lk2').textContent='목적지 (선장 입력)';
+  document.getElementById('lp2').textContent=s.dest||'—';
+  document.getElementById('lk3').textContent='흘수 (적재 추정)';
+  document.getElementById('lp3').textContent=s.dr?s.dr+' m':'—';
+  document.getElementById('lensRows').innerHTML='';
+  document.getElementById('lensNews').innerHTML=
+    `<div class="news">AIS 스냅샷 ${shipsReal.updated_utc?relKo(shipsReal.updated_utc):''} 기준 · 무료 지상 수신망(연안 중심) — 대양 한복판은 위성 AIS(유료) 영역</div>`;
+  lensEl.classList.add('on');document.body.classList.add('lensopen');}
 
 /* ============ 기회 레이더 ============ */
 /* ============ 기회 레이더 — 라이브 엔진 ============ */
@@ -1103,13 +1129,14 @@ function draw(now){
         ctx.fillStyle=hold?'#FF7A62':'#E8B453';
         ctx.beginPath();ctx.moveTo(5.5*DPR,0);ctx.lineTo(-3.5*DPR,2.8*DPR);ctx.lineTo(-3.5*DPR,-2.8*DPR);
         ctx.closePath();ctx.fill();ctx.restore();});});
-    if(shipsReal){ // AIS 실측 — 관문 주변 실제 선박 (유조선 주황 · 화물선 청록)
-      for(const nm in shipsReal.chokepoints){
-        shipsReal.chokepoints[nm].ships.forEach(s=>{
-          const p=proj(vec(s.la,s.lo));if(!p.vis)return;
-          ctx.beginPath();ctx.arc(p.x,p.y,2.4*DPR,0,7);
-          ctx.fillStyle=s.t==='tanker'?'#FF9A5A':s.t==='cargo'?'#5FD8E8':'#9AABC9';
-          ctx.fill();});}}}
+    if(shipsReal&&shipsReal.fleet){ // AIS 실측 세계 함대 — 유조선 주황·화물선 청록·기타 회청
+      shipsReal.fleet.forEach(s=>{
+        if(!s.v)s.v=vec(s.la,s.lo);
+        const p=proj(s.v);if(!p.vis)return;
+        const big=s.t==='tanker'||s.t==='cargo';
+        ctx.beginPath();ctx.arc(p.x,p.y,(big?2.6:1.6)*DPR,0,7);
+        ctx.fillStyle=s.t==='tanker'?'#FF9A5A':s.t==='cargo'?'#5FD8E8':'rgba(154,171,201,0.55)';
+        ctx.fill();});}}
 
   // 간선
   EDGES.forEach(e=>{

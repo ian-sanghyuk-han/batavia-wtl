@@ -2,7 +2,7 @@ name: AIS chokepoint snapshot
 
 on:
   schedule:
-    - cron: '5 */3 * * *'   # every 3 hours
+    - cron: '7 * * * *'   # hourly — FREE tier is delayed by design; realtime = PRO later
   workflow_dispatch:
 
 permissions:
