@@ -124,6 +124,38 @@ cards.push(`<div class="card main">
   <div class="foot">원장 ${ev.ledger.id} · ${ev.ledger.name} · ${ev.ledger.core} · 등급 ${ev.ledger.grade} · P·n ${ev.ledger.p_n}<br>
   이 카드는 관찰의 기록이다 — 매매 지시가 아니며, 발표 후 세 체크포인트가 자동 채점되어 같은 카드에 도장으로 남는다(예정).</div>
 </div>`);
+// ⑤ 자동 채점 (M2) — grading.json + 게이트 판독(regime.json)
+try{
+  const[g,rg]=await Promise.all([
+    fetch('data/grading.json?t='+Date.now()).then(r=>r.json()).catch(()=>null),
+    fetch('data/regime.json?t='+Date.now()).then(r=>r.json()).catch(()=>null)]);
+  if(g){
+    const G=g.live||g.rehearsal;
+    const chk=(G&&G.checkpoints||[]).map(c=>c.error?`<tr><td colspan="3">${c.name}: ${c.error}</td></tr>`:
+      `<tr><td>${c.name}</td><td>${c.move_pct>=0?'+':''}${c.move_pct}%</td><td>${c.dir}</td></tr>`).join('');
+    const vd=(G&&G.verdicts||[]).map(v=>v.error?'':
+      `<tr><td>${v.name}</td><td>${v.expected}</td><td>${v.realized}</td>
+       <td style="color:${v.verdict.includes('✓')?'var(--ok)':v.verdict.includes('✗')?'var(--up)':'var(--dim)'};font-weight:700">${v.verdict}</td></tr>`).join('');
+    const act=G&&G.actual&&!G.actual.error?
+      `<div class="note">실제 결과: ${G.actual.reported_month} MoM ${G.actual.mom>=0?'+':''}${G.actual.mom}% vs 나이브 기대 ${G.actual.naive_expectation}% → 서프라이즈 ${G.actual.surprise>=0?'+':''}${G.actual.surprise}%p = <b>${G.actual.class}</b></div>`:'';
+    let gate='';
+    if(rg&&rg.w&&rg.conv){
+      const wv=rg.w.value,cv=rg.conv.value;
+      const fired=[];
+      if(wv>0.5)fired.push('G1 국면 w');
+      if(cv>0.55)fired.push('G2 수렴도');
+      gate=`<div class="note">게이트 판독(실측): w ${wv} · 수렴도 ${cv} — ${fired.length?'가동: '+fired.join(', '):'가동 게이트 없음 · P 보정 0 (P′=P)'} · 수식 P′=clip(P+Σβ_g(g−ḡ), 0.45, 0.85)</div>`;}
+    cards.push(`<div class="card">
+      <div class="k">⑤ 자동 채점 — 기계가 찍는 도장 (사람 개입 0)</div>
+      <div class="note">${g.rules}</div>
+      ${g.status==='pending'?`<div style="font-size:12.5px;margin-top:6px">본 카드는 <b>발표 2시간 후 자동 채점</b>되어 이 자리에 도장이 찍힌다 — 대기 중.</div>`:''}
+      ${G?`<div class="k" style="margin-top:10px">${G.label}</div>${act}
+      <table class="scn"><tr><th>체크포인트</th><th>변동</th><th>판정</th></tr>${chk}</table>
+      ${vd?`<table class="scn" style="margin-top:8px"><tr><th>판정</th><th>과거 동급 평균</th><th>실현</th><th>도장</th></tr>${vd}</table>`:''}`:''}
+      ${gate}
+    </div>`);
+  }
+}catch(_){}
 M.innerHTML=cards.join('');
 document.getElementById('upd').textContent='데이터 갱신 '+new Date(d.updated_utc).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',hour12:false})+' KST · Batavia Project';
 })();
