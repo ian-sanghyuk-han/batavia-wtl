@@ -1180,8 +1180,9 @@ function draw(now){
     ctx.fillRect(-3*DPR,-3*DPR,6*DPR,6*DPR);ctx.restore();
     if(zoom>0.85){ctx.fillStyle=c.alert?'rgba(255,93,110,0.9)':'rgba(217,164,65,0.8)';
       let lbl=c.n+(c.alert?' — 봉쇄':'');
-      if(shipsReal&&shipsReal.chokepoints[c.n]){const b=shipsReal.chokepoints[c.n];
-        lbl+=` 유조${b.tanker}·화물${b.cargo}`;} // AIS 실측 관문 통행량
+      if(shipsReal&&shipsReal.chokepoints[c.n]&&shipsReal.chokepoints[c.n].total>0){
+        const b=shipsReal.chokepoints[c.n];
+        lbl+=` ⛴${b.total}`+(b.tanker?` 유조${b.tanker}`:'');} // AIS 실측 (수신 있는 관문만)
       ctx.fillText(lbl,p.x+6*DPR,p.y-5*DPR);}});
 
   // 레이더 핑 (기회 위치)

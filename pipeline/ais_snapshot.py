@@ -18,10 +18,12 @@ if not KEY:
 
 import websockets  # pip install websockets
 
-CHOKES = {"호르무즈": (26.6, 56.5), "수에즈": (30.5, 32.4), "말라카": (2.5, 101.5),
+# (표시 앵커와 별개로) 수신 상자는 넓게 — 무료 지상 수신망의 커버리지 편차 보완
+# 말라카는 수신기가 몰린 싱가포르 해협 쪽으로 중심 이동
+CHOKES = {"호르무즈": (26.5, 56.5), "수에즈": (30.5, 32.4), "말라카": (2.0, 102.8),
           "파나마": (9.1, -79.7), "희망봉": (-34.4, 18.5)}
-BOX = 1.5  # degrees half-width around each chokepoint
-LISTEN_SEC = 75
+BOX = 2.5  # degrees half-width around each chokepoint
+LISTEN_SEC = 120
 
 positions, types, names = {}, {}, {}
 
