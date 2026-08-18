@@ -663,8 +663,8 @@ function scrubTo(e){if(!rpCur)return;
   const f=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
   rpCur.el=f*18;
   rpCur.idx=rpCur.script.filter(ev=>ev.t<=rpCur.el).length;}
-rbarBox.addEventListener('pointerdown',e=>{e.stopPropagation();scrubbing=true;
-  rbarBox.setPointerCapture(e.pointerId);scrubTo(e);});
+rbarBox.addEventListener('pointerdown',e=>{e.stopPropagation();scrubbing=true;scrubTo(e);
+  try{rbarBox.setPointerCapture(e.pointerId);}catch(_){}});
 rbarBox.addEventListener('pointermove',e=>{if(scrubbing)scrubTo(e);});
 addEventListener('pointerup',()=>scrubbing=false);
 document.getElementById('rp08').onclick=function(){runReplay(R08,this,R08OPPS,'2008 시뮬레이션');};
