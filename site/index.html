@@ -393,7 +393,10 @@ function densify(poly){const out=[];
     const n=Math.max(1,Math.ceil(d/0.05));
     for(let k=0;k<n;k++)out.push(slerp(a,b,k/n));}
   out.push(vec(poly[poly.length-1][0],poly[poly.length-1][1]));return out;}
-const LAND=RAW.map(densify);
+let LAND=RAW.map(densify); // 손그림 스케치 — 아래에서 실측 데이터로 교체
+fetch('data/geo/land-110m.json').then(r=>r.json())
+  .then(d=>{LAND=d.map(densify);}) // Natural Earth 110m 실측 해안선
+  .catch(()=>{}); // 로드 실패 시 스케치 유지
 // 상징적 국경(점선) — 정밀 국경은 실데이터 몫
 const BORDERS=[
  [[49,-123],[49,-95],[46,-84],[45,-75],[47,-69]],           // 미–캐나다
@@ -704,7 +707,9 @@ function lensOff(){lensEl.classList.remove('on');document.body.classList.remove(
   rotT=null;tiltT=null;cLonT=null;latOffT=null;
   document.getElementById('spark').style.display='';}
 function clickAt(cx,cy){
-  const px=cx*DPR,py=cy*DPR;let hit=null,hd=16*DPR;
+  const rc=cv.getBoundingClientRect(); // 표시 크기 기준 변환 — 모바일 터치 어긋남 보정
+  const px=(cx-rc.left)*(cv.width/rc.width),py=(cy-rc.top)*(cv.height/rc.height);
+  let hit=null,hd=20*DPR;
   NODES.forEach(n=>{const p=proj(n.v);if(!p.vis)return;
     const d=Math.hypot(p.x-px,p.y-py);if(d<hd){hd=d;hit=n;}});
   if(hit)lensOn(hit);}
