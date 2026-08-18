@@ -35,6 +35,16 @@ if FRED_KEY:
     try:
         hy = fred_series("BAMLH0A0HYM2")
         extras["hy_oas_pct"] = {"value": hy[0][1], "prev": hy[1][1], "asof": hy[0][0]}
+        # EXP-003 재검용 HY OAS 이력 축적 — 원천이 2023+로 잘려 있어 우리가 직접 쌓는다
+        hist_path = os.path.join(HERE, "..", "site", "data", "history", "hy_oas.csv")
+        os.makedirs(os.path.dirname(hist_path), exist_ok=True)
+        existing = set()
+        if os.path.exists(hist_path):
+            existing = {ln.split(",")[0] for ln in open(hist_path, encoding="utf-8")}
+        with open(hist_path, "a", encoding="utf-8") as fp:
+            for d_, v_ in sorted(hy, key=lambda x: x[0]):
+                if d_ not in existing:
+                    fp.write(f"{d_},{v_}\n")
     except Exception as e:
         print("HY OAS fail:", e)
     try:
