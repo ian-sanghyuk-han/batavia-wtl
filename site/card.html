@@ -107,13 +107,15 @@ cards.push(`<div class="card main">
     <div class="note">${pp.method||''}</div>
     <table><tr><th>자산</th><th>최근 5일</th><th>과거 중앙값</th><th>백분위</th><th>n</th></tr>${arows}</table>
   </details>
-  <div class="k" style="margin-top:14px">② 조건부 시나리오 — 기준자산 S&P 500</div>
-  <table class="scn">
-    <tr><th></th><th>D+0 반응</th><th>비고</th></tr>
-    <tr><td>발표일 변동폭</td><td>평균 ±${d0?d0.avg_abs:'—'}% <span class="tag-real">실측 n=${d0?d0.n:'—'}</span></td>
-      <td>상승 ${d0?d0.up:'—'} · 하락 ${d0?d0.down:'—'} · 극단 +${d0?d0.max_up:'—'}/${d0?d0.max_down:'—'}%</td></tr>
-    <tr><td>beat / inline / miss</td><td colspan="2"><span class="tag-est">추정</span> 합의 이력 수집 후 실측 분해 예정</td></tr>
-  </table>
+  <div class="k" style="margin-top:14px">② 조건부 시나리오 — 기준자산 S&P 500 <span class="tag-real">실측</span></div>
+  ${(()=>{const sc=d.scenarios,cl=sc&&sc.classes;if(!cl)return '<div class="note">시나리오 계산 전</div>';
+    const adj=v=>v==null?'—':((v*(1-(pp.index||0)/100)).toFixed(2));
+    const row=(nm,c)=>c?`<tr><td>${nm}</td><td>${c.d0>=0?'+':''}${c.d0}% <span class="tag-real">n=${c.n}</span></td><td>${c.d1==null?'—':(c.d1>=0?'+':'')+c.d1+'%'}</td><td>${c.r2_bp==null?'—':(c.r2_bp>=0?'+':'')+c.r2_bp+'bp'}</td><td><span class="tag-est">≈${adj(c.d0)}%</span></td></tr>`:'';
+    return `<table class="scn">
+      <tr><th>서프라이즈</th><th>D+0 평균</th><th>D+1 평균</th><th>2년금리 D+0</th><th>선반영 조정 <span class="tag-est">추정</span></th></tr>
+      ${row('상방 (물가 높게)',cl.hot)}${row('부합',cl.inline)}${row('하방 (물가 낮게)',cl.cool)}
+    </table>
+    <div class="note">발표일 전체 변동폭: 평균 ±${d0?d0.avg_abs:'—'}% (실측 n=${d0?d0.n:'—'}) · 극단 +${d0?d0.max_up:'—'}% / ${d0?d0.max_down:'—'}%<br>${sc.basis}<br>${sc.adj_note}</div>`;})()}
   <div class="k" style="margin-top:14px">③ 비대칭 문장 — 이 카드의 심장</div>
   <div class="asym">${d.asymmetry}</div>
   <div class="k" style="margin-top:14px">④ 세 개의 체크포인트 (행동 지시 아님 — 스스로의 판단을 확인할 객관적 시각)</div>

@@ -1,0 +1,9 @@
+{
+  "_readme": "Owner-editable consensus entries. Edit on GitHub web UI; the daily pipeline picks it up. consensus_mom/yoy in %. Leave null if not yet known.",
+  "CPI-2026-08": {
+    "consensus_mom": null,
+    "consensus_yoy": null,
+    "source": "",
+    "note": "9월 11일 발표 며칠 전 주요 언론 보도의 합의 전망을 입력"
+  }
+}

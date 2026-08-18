@@ -39,18 +39,37 @@ CPI_DATES = [
     "2026-07-14", "2026-08-12",
 ]
 
-# --- prior CPI from FRED (real) ---
+# --- owner-entered consensus (manual until a free aggregate is wired) ---
+try:
+    manual = json.load(open(os.path.join(HERE, "events_manual.json"), encoding="utf-8"))
+    mc = manual.get(EVENT["id"], {})
+    if mc.get("consensus_mom") is not None or mc.get("consensus_yoy") is not None:
+        parts = []
+        if mc.get("consensus_yoy") is not None:
+            parts.append(f"YoY +{mc['consensus_yoy']}%")
+        if mc.get("consensus_mom") is not None:
+            parts.append(f"MoM {'+' if mc['consensus_mom'] >= 0 else ''}{mc['consensus_mom']}%")
+        EVENT["consensus"] = " · ".join(parts)
+        EVENT["consensus_src"] = mc.get("source") or "수기 입력"
+except Exception as e:
+    print("manual consensus read fail:", e)
+
+# --- CPI history from FRED (real): prior print + full MoM series for surprise classes ---
 prior = {}
+cpi_mom = {}  # "YYYY-MM" -> MoM %
 if FRED_KEY:
     try:
         url = ("https://api.stlouisfed.org/fred/series/observations?series_id=CPIAUCSL"
-               f"&api_key={FRED_KEY}&file_type=json&sort_order=desc&limit=14")
+               f"&api_key={FRED_KEY}&file_type=json&sort_order=asc"
+               "&observation_start=2021-06-01")
         with urllib.request.urlopen(url, timeout=30) as r:
             obs = [o for o in json.load(r)["observations"] if o["value"] not in (".", "")]
-        vals = [(o["date"], float(o["value"])) for o in obs]  # newest first, monthly index
-        mom = (vals[0][1] / vals[1][1] - 1) * 100
-        yoy = (vals[0][1] / vals[12][1] - 1) * 100
-        prior = {"month": vals[0][0][:7], "mom": round(mom, 2), "yoy": round(yoy, 2),
+        vals = [(o["date"][:7], float(o["value"])) for o in obs]  # oldest first
+        for i in range(1, len(vals)):
+            cpi_mom[vals[i][0]] = (vals[i][1] / vals[i - 1][1] - 1) * 100
+        mom = (vals[-1][1] / vals[-2][1] - 1) * 100
+        yoy = (vals[-1][1] / vals[-13][1] - 1) * 100
+        prior = {"month": vals[-1][0], "mom": round(mom, 2), "yoy": round(yoy, 2),
                  "source": "FRED CPIAUCSL(실측)"}
     except Exception as e:
         print("prior CPI fail:", e)
@@ -151,6 +170,58 @@ try:
 except Exception as e:
     print("d0 fail:", e)
 
+# --- Conditional scenarios (REAL, naive-benchmark basis): each past release classified
+# 상방/부합/하방 by (actual MoM − median of prior 12 MoM), threshold ±0.05%p (F1 스타일).
+# When true consensus history arrives, the basis upgrades — method is disclosed on the card.
+scenarios = None
+try:
+    spx_map = series["spx"][1]
+    us2_map = series.get("us2y", (None, {}, None))[1]
+    def month_before(ym):
+        y, m = int(ym[:4]), int(ym[5:7])
+        return f"{y-1}-12" if m == 1 else f"{y}-{m-1:02d}"
+    classes = {"hot": [], "inline": [], "cool": []}
+    for rd in CPI_DATES:
+        reported = month_before(rd[:7])  # release reports the previous month
+        if reported not in cpi_mom:
+            continue
+        hist12 = []
+        mth = month_before(reported)
+        while len(hist12) < 12 and mth in cpi_mom:
+            hist12.append(cpi_mom[mth])
+            mth = month_before(mth)
+        if len(hist12) < 8:
+            continue
+        naive = sorted(hist12)[len(hist12) // 2]
+        sup = cpi_mom[reported] - naive
+        cls = "hot" if sup > 0.05 else "cool" if sup < -0.05 else "inline"
+        ds = sorted(d for d in spx_map if d <= rd)
+        if len(ds) < 2 or ds[-1] != rd:
+            continue
+        d0m = (spx_map[ds[-1]] / spx_map[ds[-2]] - 1) * 100
+        after = sorted(d for d in spx_map if d > rd)
+        d1m = (spx_map[after[0]] / spx_map[ds[-1]] - 1) * 100 if after else None
+        r2 = None
+        ds2 = sorted(d for d in us2_map if d <= rd)
+        if len(ds2) >= 2 and ds2[-1] == rd:
+            r2 = us2_map[ds2[-1]] - us2_map[ds2[-2]]
+        classes[cls].append((d0m, d1m, r2))
+    def agg(rows):
+        if not rows:
+            return None
+        d0s = [r[0] for r in rows]
+        d1s = [r[1] for r in rows if r[1] is not None]
+        r2s = [r[2] for r in rows if r[2] is not None]
+        return {"n": len(rows),
+                "d0": round(sum(d0s) / len(d0s), 2),
+                "d1": round(sum(d1s) / len(d1s), 2) if d1s else None,
+                "r2_bp": round(sum(r2s) / len(r2s) * 100, 1) if r2s else None}
+    scenarios = {"basis": "기대 기준: 직전 12개월 MoM 중앙값(나이브 벤치마크) · 문턱 ±0.05%p — 합의 이력 연결 시 업그레이드",
+                 "adj_note": "조정 반응(추정) = 과거 평균 × (1 − 선반영지수/100) · 조정식 v1",
+                 "classes": {k: agg(v) for k, v in classes.items()}}
+except Exception as e:
+    print("scenarios fail:", e)
+
 out = {
     "updated_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
     "today": today,
@@ -162,7 +233,7 @@ out = {
                    "lean": lean},
     "asymmetry": asym,
     "d0_anchor": d0,
-    "scenarios_note": "beat/inline/miss 분해 반응은 합의(컨센서스) 이력 수집 전 — 추정 라벨 유지. D+0 변동폭 통계는 실측.",
+    "scenarios": scenarios,
     "checkpoints": ["21:30 KST — 발표", "22:30 KST — 초기 반응 정착 확인", "익일 09:05 KST — KRX 개장 반응"],
 }
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
