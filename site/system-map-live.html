@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<!-- STATUS: Theory chapter-1 map (animated spec). Source of truth: BATAVIA-MASTER-HANDOFF-v2.md -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Batavia Live System Map — 살아있는 지도 (시뮬레이션)</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0F1C; --panel:#101726; --panel2:#0D1424; --line:#243352; --line2:#33456E;
+  --ink:#E8EEFA; --sub:#9AABC9; --dim:#5E7095;
+  --acc:#5B8DEF; --up:#FF5D6E; --gold:#D9A441; --ok:#3FE0A0; --vio:#A79BFF;
+  --mono:'IBM Plex Mono',monospace; --sans:'IBM Plex Sans KR',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:18px 20px 30px;overflow-x:auto}
+.wrap{max-width:1560px;margin:0 auto}
+/* top bar */
+.bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+h1{font-size:18px;font-weight:700}
+h1 b{color:var(--acc)}
+.livechip{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10.5px;
+  color:var(--up);border:1px solid #5A2430;background:#1A0F16;border-radius:999px;padding:5px 12px;letter-spacing:.12em}
+.dotp{width:8px;height:8px;border-radius:50%;background:var(--up)}
+@media (prefers-reduced-motion:no-preference){.dotp{animation:bl 1.4s infinite}@keyframes bl{50%{opacity:.2}}}
+.clock{font-family:var(--mono);font-size:11px;color:var(--sub)}
+.regimes{margin-left:auto;display:flex;gap:6px;align-items:center}
+.regimes span{font-family:var(--mono);font-size:9.5px;color:var(--dim);margin-right:2px}
+.rbtn{font-family:var(--mono);font-size:10.5px;font-weight:600;color:var(--sub);background:var(--panel);
+  border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer;transition:all .2s}
+.rbtn:hover{border-color:var(--line2)}
+.rbtn.on{color:#0A0F1C;background:var(--acc);border-color:var(--acc)}
+.rbtn.on.storm{background:var(--up);border-color:var(--up)}
+.rbtn.on.tense{background:var(--gold);border-color:var(--gold)}
+.mockrib{font-family:var(--mono);font-size:9.5px;color:#F5D98B;background:#1B2033;border:1px solid #3A4260;
+  border-radius:7px;padding:4px 10px;letter-spacing:.08em}
+/* layout */
+.grid{display:grid;grid-template-columns:1fr 300px;gap:14px}
+.mappanel{background:radial-gradient(1100px 560px at 42% 38%, #0D1526 0%, var(--bg) 72%);
+  border:1px solid var(--line);border-radius:14px;overflow:hidden;position:relative}
+svg{display:block;width:100%;height:auto}
+text{font-family:var(--mono)}
+/* gauges under map */
+.gauges{display:flex;gap:10px;padding:10px 14px;border-top:1px solid var(--line);background:rgba(13,20,36,.7)}
+.g{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:8px 12px}
+.g .k{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.12em}
+.g .v{font-family:var(--mono);font-size:17px;font-weight:600;margin-top:2px}
+.g .bar2{height:4px;border-radius:2px;background:#1B2438;margin-top:6px;overflow:hidden}
+.g .fill{height:100%;border-radius:2px;background:var(--acc);width:20%;transition:width .8s,background .8s}
+/* feed */
+.feed{background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:640px}
+.feed h2{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--dim);
+  padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.flist{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;max-height:640px}
+.fitem{border:1px solid var(--line);border-left:3px solid var(--acc);border-radius:9px;background:var(--panel2);
+  padding:9px 11px;font-size:11.5px;line-height:1.55;animation:fin .4s ease}
+@keyframes fin{from{opacity:0;transform:translateY(-6px)}to{opacity:1}}
+.fitem .t{font-family:var(--mono);font-size:9px;color:var(--dim)}
+.fitem b{color:var(--ink)}
+.fitem .chain{color:var(--sub);font-size:10.5px;margin-top:3px}
+.fitem .fx{font-family:var(--mono);font-size:10px;margin-top:4px}
+.pos{color:var(--up)} .neg{color:var(--acc)} .gld{color:var(--gold)}
+.fnote{font-size:9.5px;color:var(--dim);padding:10px 14px;border-top:1px solid var(--line);font-family:var(--mono);line-height:1.7}
+/* svg helpers */
+.lane{stroke-width:1.4;opacity:.55}
+.laneglow{stroke-width:5;opacity:0;transition:opacity .3s}
+.nbox{fill:#101726;stroke:#243352}
+.flash{transition:all .25s}
+footer{margin-top:10px;font-family:var(--mono);font-size:9.5px;color:var(--dim);line-height:1.7}
+@media (max-width:1180px){.grid{grid-template-columns:1fr}.feed{min-height:300px}.flist{max-height:300px}}
+:focus-visible{outline:2px solid var(--acc)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="bar">
+  <h1>살아있는 시스템 지도 <b>LIVE</b></h1>
+  <span class="livechip"><span class="dotp"></span>SIMULATION</span>
+  <span class="clock" id="clock">--:--:--</span>
+  <div class="regimes">
+    <span>국면</span>
+    <button class="rbtn" data-r="calm">평시</button>
+    <button class="rbtn" data-r="tense">긴장</button>
+    <button class="rbtn" data-r="storm">폭풍</button>
+    <button class="rbtn on" data-r="auto">AUTO</button>
+  </div>
+  <span class="mockrib">모든 수치는 시뮬레이션 — 실데이터 배관은 클로드 코드 단계</span>
+</div>
+
+<div class="grid">
+<div>
+  <div class="mappanel">
+  <svg viewBox="0 0 1160 640" xmlns="http://www.w3.org/2000/svg" id="map">
+    <defs>
+      <marker id="ma" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+        <path d="M0 0 L10 5 L0 10 z" fill="#33456E"/></marker>
+    </defs>
+
+    <!-- ① 계기판 -->
+    <g id="inds" font-size="9">
+      <g id="ind-econ"><rect class="nbox flash" x="24" y="46" width="150" height="44" rx="8"/>
+        <text x="36" y="64" font-size="10.5" fill="#E8EEFA" font-weight="600">경기 · 고용</text>
+        <text x="36" y="80" fill="#9AABC9">PMI 50 · NFP · 삼 0.5%p</text></g>
+      <g id="ind-cpi"><rect class="nbox flash" x="24" y="100" width="150" height="44" rx="8"/>
+        <text x="36" y="118" font-size="10.5" fill="#E8EEFA" font-weight="600">물가</text>
+        <text x="36" y="134" fill="#9AABC9">CPI · 코어 PCE 2%</text></g>
+      <g id="ind-money"><rect class="nbox flash" x="24" y="154" width="150" height="44" rx="8"/>
+        <text x="36" y="172" font-size="10.5" fill="#E8EEFA" font-weight="600">돈</text>
+        <text x="36" y="188" fill="#9AABC9">B/S−RRP−TGA · QRA</text></g>
+      <g id="ind-pos"><rect class="nbox flash" x="24" y="208" width="150" height="44" rx="8"/>
+        <text x="36" y="226" font-size="10.5" fill="#E8EEFA" font-weight="600">쏠림</text>
+        <text x="36" y="242" fill="#9AABC9">COT ±2σ · 펀딩비</text></g>
+      <g id="ind-real"><rect class="nbox flash" x="24" y="262" width="150" height="44" rx="8"/>
+        <text x="36" y="280" font-size="10.5" fill="#E8EEFA" font-weight="600">실물 · 기후</text>
+        <text x="36" y="296" fill="#9AABC9">BDI · 항공화물 · 한파</text></g>
+      <g id="ind-geo"><rect class="nbox flash" x="24" y="316" width="150" height="44" rx="8"/>
+        <text x="36" y="334" font-size="10.5" fill="#E8EEFA" font-weight="600">이벤트</text>
+        <text x="36" y="350" fill="#9AABC9">발언 · 정책 · 지정학</text></g>
+    </g>
+
+    <!-- ② SDS -->
+    <g id="sds"><rect class="flash" x="204" y="176" width="112" height="56" rx="9" fill="#0D1424" stroke="#5B8DEF"/>
+      <text x="260" y="198" font-size="10.5" fill="#5B8DEF" text-anchor="middle" font-weight="600">SDS</text>
+      <text x="260" y="216" font-size="9" fill="#E8EEFA" text-anchor="middle">(발표−예상)/σ</text></g>
+    <path d="M174 68 C 196 68 196 190 204 196" stroke="#243352" fill="none" stroke-width="1"/>
+    <path d="M174 122 C 194 122 196 196 204 200" stroke="#243352" fill="none" stroke-width="1"/>
+    <path d="M174 176 L 204 202" stroke="#243352" fill="none" stroke-width="1"/>
+    <path d="M174 230 C 194 230 196 212 204 208" stroke="#243352" fill="none" stroke-width="1"/>
+    <path d="M174 284 C 196 284 196 218 204 212" stroke="#243352" fill="none" stroke-width="1"/>
+    <path d="M174 338 C 198 338 198 224 206 218" stroke="#243352" fill="none" stroke-width="1"/>
+
+    <!-- ③ 바람 -->
+    <g id="winds">
+      <g id="w-r"><circle class="flash" cx="392" cy="80" r="30" fill="#101726" stroke="#5B8DEF" stroke-width="1.5"/>
+        <text x="392" y="77" font-size="10.5" fill="#E8EEFA" text-anchor="middle" font-weight="600">r 위험선호</text>
+        <text x="392" y="92" font-size="9" fill="#9AABC9" text-anchor="middle" id="v-r">+0.12</text></g>
+      <g id="w-d"><circle class="flash" cx="392" cy="168" r="30" fill="#101726" stroke="#3FE0A0" stroke-width="1.5"/>
+        <text x="392" y="165" font-size="10.5" fill="#E8EEFA" text-anchor="middle" font-weight="600">d 달러</text>
+        <text x="392" y="180" font-size="9" fill="#9AABC9" text-anchor="middle" id="v-d">−0.04</text></g>
+      <g id="w-i"><circle class="flash" cx="392" cy="256" r="30" fill="#101726" stroke="#FF5D6E" stroke-width="1.5"/>
+        <text x="392" y="253" font-size="10.5" fill="#E8EEFA" text-anchor="middle" font-weight="600">i 금리</text>
+        <text x="392" y="268" font-size="9" fill="#9AABC9" text-anchor="middle" id="v-i">+0.07</text></g>
+      <g id="w-c"><circle class="flash" cx="392" cy="344" r="30" fill="#101726" stroke="#D9A441" stroke-width="1.5"/>
+        <text x="392" y="341" font-size="10.5" fill="#E8EEFA" text-anchor="middle" font-weight="600">c 중국</text>
+        <text x="392" y="356" font-size="9" fill="#9AABC9" text-anchor="middle" id="v-c">+0.02</text></g>
+    </g>
+    <path d="M316 204 C 344 204 340 80 358 80" stroke="#243352" fill="none" stroke-width="1"/>
+    <path d="M316 206 C 344 206 342 168 358 168" stroke="#243352" fill="none" stroke-width="1"/>
+    <path d="M316 208 C 344 208 342 256 358 256" stroke="#243352" fill="none" stroke-width="1"/>
+    <path d="M316 210 C 344 210 340 344 358 344" stroke="#243352" fill="none" stroke-width="1"/>
+
+    <!-- ④ 여덟 길 (입자 레인) -->
+    <g id="lanes" font-size="9.5">
+      <g><line id="L0" class="lane" x1="470" y1="58"  x2="880" y2="58"  stroke="#FF5D6E"/><line id="G0" class="laneglow" x1="470" y1="58" x2="880" y2="58" stroke="#FF5D6E"/><text x="470" y="48" fill="#E8EEFA" font-weight="600">금리</text><text x="510" y="48" fill="#5E7095">할인율 → 성장주·금</text></g>
+      <g><line id="L1" class="lane" x1="470" y1="122" x2="880" y2="122" stroke="#3FE0A0"/><line id="G1" class="laneglow" x1="470" y1="122" x2="880" y2="122" stroke="#3FE0A0"/><text x="470" y="112" fill="#E8EEFA" font-weight="600">달러</text><text x="510" y="112" fill="#5E7095">신흥국·원자재 역상관</text></g>
+      <g><line id="L2" class="lane" x1="470" y1="186" x2="880" y2="186" stroke="#D9A441"/><line id="G2" class="laneglow" x1="470" y1="186" x2="880" y2="186" stroke="#D9A441"/><text x="470" y="176" fill="#E8EEFA" font-weight="600">중국</text><text x="510" y="176" fill="#5E7095">구리 → 수출국 체인</text></g>
+      <g><line id="L3" class="lane" x1="470" y1="250" x2="880" y2="250" stroke="#FF5D6E"/><line id="G3" class="laneglow" x1="470" y1="250" x2="880" y2="250" stroke="#FF5D6E"/><text x="470" y="240" fill="#E8EEFA" font-weight="600">유가</text><text x="510" y="240" fill="#5E7095">물가 → 금리 2차 점화</text></g>
+      <g><line id="L4" class="lane" x1="470" y1="314" x2="880" y2="314" stroke="#5B8DEF"/><line id="G4" class="laneglow" x1="470" y1="314" x2="880" y2="314" stroke="#5B8DEF"/><text x="470" y="304" fill="#E8EEFA" font-weight="600">유동성</text><text x="524" y="304" fill="#5E7095">밀물 — 크립토 최전선</text></g>
+      <g><line id="L5" class="lane" x1="470" y1="378" x2="880" y2="378" stroke="#FF5D6E"/><line id="G5" class="laneglow" x1="470" y1="378" x2="880" y2="378" stroke="#FF5D6E"/><text x="470" y="368" fill="#E8EEFA" font-weight="600">공포</text><text x="510" y="368" fill="#5E7095" id="convlabel">상관 수렴 감시</text></g>
+      <g><line id="L6" class="lane" x1="470" y1="442" x2="880" y2="442" stroke="#D9A441"/><line id="G6" class="laneglow" x1="470" y1="442" x2="880" y2="442" stroke="#D9A441"/><text x="470" y="432" fill="#E8EEFA" font-weight="600">물류</text><text x="510" y="432" fill="#5E7095">실효 공급 ↓ → 물가</text></g>
+      <g><path id="L7" fill="none" class="lane" d="M470 506 H 880 C 940 506 940 560 880 560 H 520 C 470 560 470 520 470 512" stroke="#A79BFF"/><path id="G7" class="laneglow" fill="none" d="M470 506 H 880" stroke="#A79BFF"/><text x="470" y="496" fill="#A79BFF" font-weight="600">순환 (반사성)</text><text x="556" y="496" fill="#5E7095">가격 → 담보 → 실적 → 가격</text></g>
+    </g>
+    <g id="particles"></g>
+
+    <!-- ⑤ 자산 -->
+    <g id="assets" font-size="9.5">
+      <g id="a-eq"><rect class="nbox flash" x="912" y="42" width="224" height="40" rx="8"/>
+        <text x="924" y="59" font-size="10.5" fill="#E8EEFA" font-weight="600">주식(성장)</text>
+        <text x="1124" y="59" text-anchor="end" id="p-eq" fill="#9AABC9">+0.0%</text>
+        <text x="924" y="74" fill="#5E7095">듀레이션 긴 자산 · i에 −</text></g>
+      <g id="a-bd"><rect class="nbox flash" x="912" y="90" width="224" height="40" rx="8"/>
+        <text x="924" y="107" font-size="10.5" fill="#E8EEFA" font-weight="600">채권 10Y</text>
+        <text x="1124" y="107" text-anchor="end" id="p-bd" fill="#9AABC9">+0.0%</text>
+        <text x="924" y="122" fill="#5E7095">ΔP ≈ −D·Δy</text></g>
+      <g id="a-au"><rect class="nbox flash" x="912" y="138" width="224" height="40" rx="8"/>
+        <text x="924" y="155" font-size="10.5" fill="#E8EEFA" font-weight="600">금</text>
+        <text x="1124" y="155" text-anchor="end" id="p-au" fill="#9AABC9">+0.0%</text>
+        <text x="924" y="170" fill="#5E7095">실질금리의 거울</text></g>
+      <g id="a-cu"><rect class="nbox flash" x="912" y="186" width="224" height="40" rx="8"/>
+        <text x="924" y="203" font-size="10.5" fill="#E8EEFA" font-weight="600">구리</text>
+        <text x="1124" y="203" text-anchor="end" id="p-cu" fill="#9AABC9">+0.0%</text>
+        <text x="924" y="218" fill="#5E7095">c에 강한 + · 중국 청진기</text></g>
+      <g id="a-oil"><rect class="nbox flash" x="912" y="234" width="224" height="40" rx="8"/>
+        <text x="924" y="251" font-size="10.5" fill="#E8EEFA" font-weight="600">원유</text>
+        <text x="1124" y="251" text-anchor="end" id="p-oil" fill="#9AABC9">+0.0%</text>
+        <text x="924" y="266" fill="#5E7095">인플레 점화장치</text></g>
+      <g id="a-bt"><rect class="nbox flash" x="912" y="282" width="224" height="40" rx="8"/>
+        <text x="924" y="299" font-size="10.5" fill="#E8EEFA" font-weight="600">크립토</text>
+        <text x="1124" y="299" text-anchor="end" id="p-bt" fill="#9AABC9">+0.0%</text>
+        <text x="924" y="314" fill="#5E7095">β_r 최대 · 유동성의 돛</text></g>
+      <g id="a-cr"><rect class="nbox flash" x="912" y="330" width="224" height="40" rx="8"/>
+        <text x="924" y="347" font-size="10.5" fill="#E8EEFA" font-weight="600">크레딧 스프레드</text>
+        <text x="1124" y="347" text-anchor="end" id="p-cr" fill="#9AABC9">312bp</text>
+        <text x="924" y="362" fill="#5E7095">반 박자 빠른 경보 · 400 경계</text></g>
+      <g id="a-co2"><rect class="nbox flash" x="912" y="378" width="224" height="40" rx="8"/>
+        <text x="924" y="395" font-size="10.5" fill="#E8EEFA" font-weight="600">탄소 EUA</text>
+        <text x="1124" y="395" text-anchor="end" id="p-co2" fill="#9AABC9">+0.0%</text>
+        <text x="924" y="410" fill="#5E7095">공급 곡선을 법이 그린다</text></g>
+      <g id="a-kr"><rect class="nbox flash" x="912" y="426" width="224" height="40" rx="8"/>
+        <text x="924" y="443" font-size="10.5" fill="#E8EEFA" font-weight="600">코스피 (로컬 렌즈)</text>
+        <text x="1124" y="443" text-anchor="end" id="p-kr" fill="#9AABC9">+0.0%</text>
+        <text x="924" y="458" fill="#5E7095">c·r 이중 노출 수출 시장</text></g>
+    </g>
+  </svg>
+
+  <div class="gauges">
+    <div class="g"><div class="k">국면 w</div><div class="v" id="g-w" style="color:var(--acc)">0.18</div>
+      <div class="bar2"><div class="fill" id="f-w"></div></div></div>
+    <div class="g"><div class="k">평균 |ρ| 수렴도 (0.38 긴장 · 0.55 경보)</div><div class="v" id="g-conv" style="color:var(--ok)">0.24</div>
+      <div class="bar2"><div class="fill" id="f-conv"></div></div></div>
+    <div class="g"><div class="k">변동성 배율 ×(1+1.4w)</div><div class="v" id="g-vol">1.25</div>
+      <div class="bar2"><div class="fill" id="f-vol"></div></div></div>
+    <div class="g"><div class="k">활성 파급 (최근 60초)</div><div class="v" id="g-ev" style="color:var(--gold)">0</div>
+      <div class="bar2"><div class="fill" id="f-ev" style="background:var(--gold)"></div></div></div>
+  </div>
+  </div>
+</div>
+
+<aside class="feed">
+  <h2>LIVE FEED — 파급 로그 (시뮬레이션)</h2>
+  <div class="flist" id="flist"></div>
+  <div class="fnote">각 로그는 [원천 → 바람 → 길 → 자산]의 연출이다. 실서비스에서는 이 자리에 실데이터 이벤트와 검증 아카이브 판정이 흐른다. 수치는 모두 모의.</div>
+</aside>
+</div>
+
+<footer>© Batavia Project · 살아있는 지도 v1 — 이 파일은 클로드 코드 구현의 애니메이션 스펙을 겸한다: 입자 밀도·속도 = f(w), 이벤트 → 사슬 하이라이트 순차 점화(원천 0ms → SDS 400ms → 바람 800ms → 길 1200ms → 자산 1900ms), 국면 AUTO 드리프트. 교육·연구 목적.</footer>
+</div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const NS='http://www.w3.org/2000/svg';
+
+/* ---------- 상태 ---------- */
+let regime='auto';            // calm|tense|storm|auto
+let w=0.18, wTarget=0.18;     // 국면
+let evCount=0;
+const winds={r:0.12,d:-0.04,i:0.07,c:0.02};
+
+/* ---------- 시계 ---------- */
+setInterval(()=>{$('clock').textContent=new Date().toLocaleTimeString('ko-KR',{hour12:false});},1000);
+
+/* ---------- 국면 버튼 ---------- */
+document.querySelectorAll('.rbtn').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('.rbtn').forEach(x=>x.classList.remove('on','storm','tense'));
+    b.classList.add('on');
+    regime=b.dataset.r;
+    if(regime==='storm'){b.classList.add('storm');wTarget=0.85;}
+    else if(regime==='tense'){b.classList.add('tense');wTarget=0.5;}
+    else if(regime==='calm'){wTarget=0.15;}
+  };
+});
+
+/* ---------- 입자 엔진 ---------- */
+const lanes=[...Array(8)].map((_,i)=>{
+  const el=$('L'+i);
+  return {el, len:el.getTotalLength? el.getTotalLength():410, path:i===7, parts:[]};
+});
+const pGroup=$('particles');
+function spawn(l,fast){
+  const c=document.createElementNS(NS,'circle');
+  c.setAttribute('r',fast?2.6:1.9);
+  c.setAttribute('fill',l.el.getAttribute('stroke'));
+  c.setAttribute('opacity',fast?0.95:0.7);
+  pGroup.appendChild(c);
+  l.parts.push({c,t:0,sp:(fast?0.9:0.28+Math.random()*0.18)});
+}
+function step(){
+  const speedK=(1+1.4*w);
+  lanes.forEach((l,i)=>{
+    // 밀도: 국면·레인별 (공포 레인은 w에 비례, 순환 레인은 폭풍에서만 활발)
+    let want= i===5? 2+Math.round(w*10) : i===7? Math.round(w*8) : 3+Math.round(w*5);
+    if(reduce) want=Math.min(want,3);
+    while(l.parts.length<want) spawn(l,false);
+    l.parts.forEach(p=>{
+      p.t+= (reduce?0.15:p.sp*speedK)/240;
+      if(p.t>1){p.t=0;}
+      let x,y;
+      if(l.path){const pt=l.el.getPointAtLength(p.t*l.len); x=pt.x; y=pt.y;}
+      else {x=470+p.t*410; y=+l.el.getAttribute('y1');}
+      p.c.setAttribute('cx',x); p.c.setAttribute('cy',y);
+    });
+    // 과잉 입자 정리
+    while(l.parts.length>want+12){const p=l.parts.shift();p.c.remove();}
+  });
+  requestAnimationFrame(step);
+}
+if(!reduce) requestAnimationFrame(step); else step();
+
+/* ---------- 게이지 ---------- */
+function gauges(){
+  // w 완만 추적 + AUTO 드리프트
+  if(regime==='auto'){ wTarget+= (Math.random()-0.5)*0.06; wTarget=Math.max(0.08,Math.min(0.9,wTarget)); }
+  w += (wTarget-w)*0.08;
+  const conv=0.20+w*0.48, vol=1+1.4*w;
+  $('g-w').textContent=w.toFixed(2);
+  $('f-w').style.width=(w*100)+'%';
+  $('f-w').style.background= w>0.65?'var(--up)': w>0.4?'var(--gold)':'var(--acc)';
+  $('g-w').style.color= w>0.65?'var(--up)': w>0.4?'var(--gold)':'var(--acc)';
+  $('g-conv').textContent=conv.toFixed(2);
+  $('f-conv').style.width=(conv/0.8*100)+'%';
+  const cc= conv>0.55?'var(--up)': conv>0.38?'var(--gold)':'var(--ok)';
+  $('g-conv').style.color=cc; $('f-conv').style.background=cc;
+  $('convlabel').textContent= conv>0.55?'상관 수렴 경보 — 분산 소멸': conv>0.38?'상관 긴장 구간':'상관 수렴 감시';
+  $('g-vol').textContent=vol.toFixed(2);
+  $('f-vol').style.width=((vol-1)/1.4*100)+'%';
+  // 바람 값 잔물결
+  for(const k of ['r','d','i','c']){
+    winds[k]+= (Math.random()-0.5)*0.02*(1+w);
+    winds[k]=Math.max(-0.9,Math.min(0.9,winds[k]));
+    const el=$('v-'+k);
+    el.textContent=(winds[k]>=0?'+':'')+winds[k].toFixed(2);
+    el.setAttribute('fill', winds[k]>=0? '#FF5D6E':'#5B8DEF');
+  }
+  $('g-ev').textContent=evCount;
+  $('f-ev').style.width=Math.min(100,evCount*16)+'%';
+}
+setInterval(gauges,900); gauges();
+
+/* ---------- 이벤트 연출 ---------- */
+const price={eq:0,bd:0,au:0,cu:0,oil:0,bt:0,co2:0,kr:0,cr:312};
+const EVENTS=[
+ {name:'CPI 상방 서프라이즈 +1.6σ', ind:'ind-cpi', wind:'w-i', lanes:[0,1], fx:{eq:-1.2,bd:-0.8,au:-0.9,bt:-1.8,kr:-0.9,cr:+9}, chain:'물가 → i 바람 → 금리·달러 경로', note:'성장주·금 역풍, 은행권 수혜'},
+ {name:'중국 대규모 부양 발표', ind:'ind-econ', wind:'w-c', lanes:[2], fx:{cu:+2.3,oil:+0.8,kr:+1.4,eq:+0.4}, chain:'정책 → c 바람 → 중국 경로', note:'구리 → 수출국 체인 점화'},
+ {name:'유가 공급 차질 (해협 긴장)', ind:'ind-geo', wind:'w-i', lanes:[3,6], fx:{oil:+3.1,eq:-0.6,kr:-0.7,co2:+0.6,cr:+6}, chain:'지정학 → 유가·물류 경로 → 물가', note:'정제 마진 수혜 vs 항공 역풍'},
+ {name:'유동성 확대 (RRP 급감)', ind:'ind-money', wind:'w-r', lanes:[4], fx:{bt:+2.6,eq:+0.9,kr:+0.6,au:+0.3}, chain:'돈 → r 바람 → 유동성 경로', note:'고베타 최전선부터 반응'},
+ {name:'위험회피 충격 — 수렴도 급등', ind:'ind-geo', wind:'w-r', lanes:[5,7], fx:{eq:-1.8,bt:-3.2,cu:-1.1,kr:-1.6,au:+1.2,cr:+14}, chain:'충격 → 공포 경로 + 반사성 역회전', note:'상관 1로 수렴 · 금만 홀로 +', storm:true},
+ {name:'유럽 한파 예보', ind:'ind-real', wind:'w-i', lanes:[6,3], fx:{co2:+2.1,oil:+0.9,eq:-0.2}, chain:'기후 → 가스 → 연료전환 → EUA', note:'날씨가 탄소·물가를 관통'},
+ {name:'COT 쏠림 ±2σ 도달', ind:'ind-pos', wind:'w-r', lanes:[5], fx:{cu:-0.5,bt:-0.8}, chain:'포지셔닝 → 만원 버스 경보', note:'추세 연료 소진 관찰'},
+];
+function flash(id,color){const g=$(id);if(!g)return;const s=g.querySelector('rect,circle');if(!s)return;
+  const o=s.getAttribute('stroke'); s.setAttribute('stroke',color); s.setAttribute('stroke-width','2.6');
+  setTimeout(()=>{s.setAttribute('stroke',o); s.setAttribute('stroke-width', s.tagName==='circle'?'1.5':'1');},1400);}
+function burst(li){const l=lanes[li]; for(let k=0;k<10;k++) spawn(l,true);
+  const g=$('G'+li); g.style.opacity=.5; setTimeout(()=>g.style.opacity=0,1200);}
+function assetFlash(k,v){const map={eq:'a-eq',bd:'a-bd',au:'a-au',cu:'a-cu',oil:'a-oil',bt:'a-bt',co2:'a-co2',kr:'a-kr',cr:'a-cr'};
+  const g=$(map[k]); if(g) {const r=g.querySelector('rect'); r.setAttribute('stroke', v>=0?'#FF5D6E':'#5B8DEF'); setTimeout(()=>r.setAttribute('stroke','#243352'),1600);}
+  if(k==='cr'){price.cr=Math.max(180,price.cr+v); $('p-cr').textContent=Math.round(price.cr)+'bp';
+    $('p-cr').setAttribute('fill', price.cr>400?'#FF5D6E':'#9AABC9'); return;}
+  price[k]=Math.max(-9,Math.min(9,price[k]+v));
+  const el=$('p-'+k); el.textContent=(price[k]>=0?'+':'')+price[k].toFixed(1)+'%';
+  el.setAttribute('fill', price[k]>=0?'#FF5D6E':'#5B8DEF');
+}
+function fire(){
+  const pool= w>0.6? EVENTS : EVENTS.filter(e=>!e.storm);
+  const e=pool[Math.floor(Math.random()*pool.length)];
+  evCount++; setTimeout(()=>evCount=Math.max(0,evCount-1),60000);
+  // 사슬 연출: 원천 → SDS → 바람 → 길 → 자산
+  flash(e.ind,'#F5D98B');
+  setTimeout(()=>flash('sds','#5B8DEF'),400);
+  setTimeout(()=>flash(e.wind,'#FFFFFF'),800);
+  setTimeout(()=>e.lanes.forEach(burst),1200);
+  setTimeout(()=>{for(const[k,v] of Object.entries(e.fx)) assetFlash(k,v);},1900);
+  if(e.storm){wTarget=Math.max(wTarget,0.8);} 
+  // 피드
+  const d=document.createElement('div'); d.className='fitem';
+  const now=new Date().toLocaleTimeString('ko-KR',{hour12:false});
+  const fxs=Object.entries(e.fx).map(([k,v])=>{
+    const name={eq:'성장주',bd:'채권',au:'금',cu:'구리',oil:'원유',bt:'크립토',co2:'EUA',kr:'코스피',cr:'HY'}[k];
+    const cls= (k==='cr'? v>0 : v>=0)? (k==='cr'?'gld':'pos') : 'neg';
+    const val= k==='cr'? (v>0?'+':'')+v+'bp' : (v>=0?'+':'')+v.toFixed(1)+'%';
+    return `<span class="${cls}">${name} ${val}</span>`;
+  }).join(' · ');
+  d.innerHTML=`<div class="t">${now} · SIM</div><b>${e.name}</b>
+    <div class="chain">${e.chain}</div><div class="fx">${fxs}</div>
+    <div class="chain" style="margin-top:2px">↳ ${e.note}</div>`;
+  const list=$('flist'); list.prepend(d);
+  while(list.children.length>14) list.lastChild.remove();
+}
+if(!reduce){ setTimeout(fire,1200); setInterval(fire, 6500+Math.random()*2500); }
+else { fire(); }
+})();
+</script>
+</body>
+</html>

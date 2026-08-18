@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<!-- STATUS: Theory chapter-1 map (static). Source of truth: BATAVIA-MASTER-HANDOFF-v2.md -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>세계는 어떻게 연결되어 움직이는가 — 한 장의 지도</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0F1C; --panel:#101726; --panel2:#0D1424; --line:#243352; --line2:#33456E;
+  --ink:#E8EEFA; --sub:#9AABC9; --dim:#5E7095;
+  --acc:#5B8DEF; --up:#FF5D6E; --gold:#D9A441; --ok:#3FE0A0; --vio:#A79BFF;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --sans:'IBM Plex Sans KR',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:26px 24px 40px}
+.wrap{max-width:1560px;margin:0 auto}
+header{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+h1{font-size:21px;font-weight:700;letter-spacing:.01em}
+h1 b{color:var(--acc)}
+.sub-t{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.14em}
+.legend{margin-left:auto;display:flex;gap:14px;font-family:var(--mono);font-size:10px;color:var(--sub);flex-wrap:wrap}
+.sw{display:inline-block;width:16px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+.mapbox{background:radial-gradient(1200px 600px at 45% 35%, #0D1526 0%, var(--bg) 70%);
+  border:1px solid var(--line);border-radius:16px;margin-top:12px;overflow:auto}
+svg{display:block;min-width:1500px}
+footer{margin-top:12px;font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.8}
+text{font-family:var(--mono)}
+.st{font-family:var(--sans)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>세계는 어떻게 <b>연결</b>되어 움직이는가</h1>
+  <span class="sub-t">BATAVIA PROJECT · SYSTEM MAP v1 — 원인 → 경로 → 자산 → 채점</span>
+  <div class="legend">
+    <span><span class="sw" style="background:var(--acc)"></span>흐름·양(+)</span>
+    <span><span class="sw" style="background:var(--up)"></span>역풍·음(−)</span>
+    <span><span class="sw" style="background:var(--gold)"></span>피드백 루프</span>
+    <span><span class="sw" style="background:var(--ok)"></span>검증 수치</span>
+  </div>
+</header>
+
+<div class="mapbox">
+<svg viewBox="0 0 1500 940" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="바타비아 시스템 지도">
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0 0 L10 5 L0 10 z" fill="#33456E"/></marker>
+  <marker id="arA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0 0 L10 5 L0 10 z" fill="#5B8DEF"/></marker>
+  <marker id="arG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0 0 L10 5 L0 10 z" fill="#D9A441"/></marker>
+</defs>
+
+<!-- ===== 열 제목 ===== -->
+<g font-size="10.5" fill="#5E7095" letter-spacing="2">
+  <text x="40"  y="34">① 계기판 — 원천 데이터</text>
+  <text x="318" y="34">② 놀라움</text>
+  <text x="480" y="34">③ 네 개의 바람 (팩터)</text>
+  <text x="700" y="34">④ 여덟 개의 길 (전달 경로)</text>
+  <text x="1092" y="34">⑤ 자산 — 체질과 공식</text>
+  <text x="40"  y="806">⑥ 채점 루프 — 이 지도가 스스로 고쳐지는 방법</text>
+</g>
+
+<!-- ===== ① 계기판 ===== -->
+<g>
+  <g transform="translate(40,52)">
+    <rect width="212" height="66" rx="9" fill="#101726" stroke="#243352"/>
+    <text x="12" y="22" font-size="12" fill="#E8EEFA" font-weight="600">경기</text>
+    <text x="12" y="40" font-size="9.5" fill="#9AABC9">PMI (50 = 확장|위축 경계)</text>
+    <text x="12" y="54" font-size="9.5" fill="#9AABC9">GDP · 산업생산 · 소매판매</text>
+  </g>
+  <g transform="translate(40,128)">
+    <rect width="212" height="66" rx="9" fill="#101726" stroke="#243352"/>
+    <text x="12" y="22" font-size="12" fill="#E8EEFA" font-weight="600">고용</text>
+    <text x="12" y="40" font-size="9.5" fill="#9AABC9">NFP (매월 첫 금요일)</text>
+    <text x="12" y="54" font-size="9.5" fill="#3FE0A0">삼의 법칙: 저점 +0.5%p → 침체</text>
+  </g>
+  <g transform="translate(40,204)">
+    <rect width="212" height="66" rx="9" fill="#101726" stroke="#243352"/>
+    <text x="12" y="22" font-size="12" fill="#E8EEFA" font-weight="600">물가</text>
+    <text x="12" y="40" font-size="9.5" fill="#9AABC9">CPI · PPI · 임금</text>
+    <text x="12" y="54" font-size="9.5" fill="#3FE0A0">연준 타깃: 코어 PCE 2%</text>
+  </g>
+  <g transform="translate(40,280)">
+    <rect width="212" height="78" rx="9" fill="#101726" stroke="#243352"/>
+    <text x="12" y="22" font-size="12" fill="#E8EEFA" font-weight="600">돈 (유동성·재정)</text>
+    <text x="12" y="40" font-size="9.5" fill="#9AABC9">순유동성 ≈ B/S − RRP − TGA</text>
+    <text x="12" y="54" font-size="9.5" fill="#9AABC9">SOFR 스파이크 = 경색 경보</text>
+    <text x="12" y="68" font-size="9.5" fill="#9AABC9">QRA = 연준 밖의 금리 결정자</text>
+  </g>
+  <g transform="translate(40,368)">
+    <rect width="212" height="66" rx="9" fill="#101726" stroke="#243352"/>
+    <text x="12" y="22" font-size="12" fill="#E8EEFA" font-weight="600">쏠림</text>
+    <text x="12" y="40" font-size="9.5" fill="#3FE0A0">COT ±2σ = 만원 버스</text>
+    <text x="12" y="54" font-size="9.5" fill="#9AABC9">펀딩비(크립토) · 자금 플로우</text>
+  </g>
+  <g transform="translate(40,444)">
+    <rect width="212" height="78" rx="9" fill="#101726" stroke="#243352"/>
+    <text x="12" y="22" font-size="12" fill="#E8EEFA" font-weight="600">실물 · 기후</text>
+    <text x="12" y="40" font-size="9.5" fill="#9AABC9">BDI(원자재) · 항공화물(하이테크)</text>
+    <text x="12" y="54" font-size="9.5" fill="#9AABC9">재고: EIA · LME</text>
+    <text x="12" y="68" font-size="9.5" fill="#9AABC9">엘니뇨 · 한파 · NDVI</text>
+  </g>
+  <g transform="translate(40,532)">
+    <rect width="212" height="56" rx="9" fill="#0D1424" stroke="#243352" stroke-dasharray="4 3"/>
+    <text x="12" y="22" font-size="12" fill="#A79BFF" font-weight="600">대체 데이터</text>
+    <text x="12" y="42" font-size="9.5" fill="#9AABC9">주차장·야간조명·흘수(AIS)·참깨</text>
+  </g>
+  <!-- 계기판 → SDS -->
+  <path d="M252 85 C 290 85 292 210 316 232" fill="none" stroke="#243352" stroke-width="1.2" marker-end="url(#ar)"/>
+  <path d="M252 161 C 288 161 292 220 316 238" fill="none" stroke="#243352" stroke-width="1.2"/>
+  <path d="M252 237 L 316 245" fill="none" stroke="#243352" stroke-width="1.2"/>
+  <path d="M252 319 C 288 319 292 272 316 254" fill="none" stroke="#243352" stroke-width="1.2"/>
+  <path d="M252 401 C 290 401 292 285 316 262" fill="none" stroke="#243352" stroke-width="1.2"/>
+  <path d="M252 483 C 296 483 296 292 318 268" fill="none" stroke="#243352" stroke-width="1.2"/>
+  <path d="M252 560 C 300 560 300 300 320 274" fill="none" stroke="#243352" stroke-width="1.2" stroke-dasharray="4 3"/>
+</g>
+
+<!-- ===== ② 서프라이즈 ===== -->
+<g transform="translate(318,214)">
+  <rect width="132" height="76" rx="10" fill="#0D1424" stroke="#5B8DEF"/>
+  <text x="66" y="24" font-size="11.5" fill="#5B8DEF" text-anchor="middle" font-weight="600">SDS 서프라이즈</text>
+  <text x="66" y="44" font-size="10" fill="#E8EEFA" text-anchor="middle">(발표 − 예상) / σ</text>
+  <text x="66" y="62" font-size="9" fill="#9AABC9" text-anchor="middle">놀라움만이 가격을 민다</text>
+</g>
+<path d="M450 252 L 486 252" stroke="#5B8DEF" stroke-width="1.6" marker-end="url(#arA)"/>
+
+<!-- ===== ③ 네 바람 + w ===== -->
+<g>
+  <g transform="translate(500,60)">
+    <circle cx="60" cy="46" r="34" fill="#101726" stroke="#5B8DEF" stroke-width="1.5"/>
+    <text x="60" y="42" font-size="12" fill="#E8EEFA" text-anchor="middle" font-weight="600">r 위험선호</text>
+    <text x="60" y="58" font-size="8.5" fill="#9AABC9" text-anchor="middle">+상시 드리프트</text>
+  </g>
+  <g transform="translate(500,160)">
+    <circle cx="60" cy="46" r="34" fill="#101726" stroke="#3FE0A0" stroke-width="1.5"/>
+    <text x="60" y="42" font-size="12" fill="#E8EEFA" text-anchor="middle" font-weight="600">d 달러</text>
+    <text x="60" y="58" font-size="8.5" fill="#9AABC9" text-anchor="middle">금리차의 자석</text>
+  </g>
+  <g transform="translate(500,260)">
+    <circle cx="60" cy="46" r="34" fill="#101726" stroke="#FF5D6E" stroke-width="1.5"/>
+    <text x="60" y="42" font-size="12" fill="#E8EEFA" text-anchor="middle" font-weight="600">i 미 금리</text>
+    <text x="60" y="58" font-size="8.5" fill="#9AABC9" text-anchor="middle">할인율의 주인</text>
+  </g>
+  <g transform="translate(500,360)">
+    <circle cx="60" cy="46" r="34" fill="#101726" stroke="#D9A441" stroke-width="1.5"/>
+    <text x="60" y="42" font-size="12" fill="#E8EEFA" text-anchor="middle" font-weight="600">c 중국</text>
+    <text x="60" y="58" font-size="8.5" fill="#9AABC9" text-anchor="middle">구리 소비 ~½</text>
+  </g>
+  <g transform="translate(486,470)">
+    <rect width="150" height="88" rx="10" fill="#0D1424" stroke="#FF5D6E" stroke-dasharray="5 3"/>
+    <text x="75" y="22" font-size="11" fill="#FF5D6E" text-anchor="middle" font-weight="600">국면 w ∈ [0,1]</text>
+    <text x="75" y="41" font-size="9" fill="#E8EEFA" text-anchor="middle">폭풍 시 변동성 ×(1+1.4w)</text>
+    <text x="75" y="57" font-size="9" fill="#9AABC9" text-anchor="middle">로딩 → 위기값 보간</text>
+    <text x="75" y="75" font-size="8.5" fill="#9AABC9" text-anchor="middle">민스키: 안정이 불안정을 낳는다</text>
+  </g>
+  <text x="561" y="590" font-size="9.5" fill="#5E7095" text-anchor="middle">r_i = Σ β·F + ε</text>
+</g>
+
+<!-- ===== ④ 여덟 개의 길 ===== -->
+<g font-size="10">
+  <!-- lanes -->
+  <g transform="translate(668,72)">
+    <line x1="0" y1="0" x2="380" y2="0" stroke="#FF5D6E" stroke-width="1.6" marker-end="url(#arA)"/>
+    <text x="0" y="-8" fill="#E8EEFA" font-weight="600">금리</text>
+    <text x="52" y="-8" fill="#9AABC9" font-size="9">할인율 ↑ → 성장주가 더 아픔 · 금 기회비용 ↑</text>
+  </g>
+  <g transform="translate(668,140)">
+    <line x1="0" y1="0" x2="380" y2="0" stroke="#3FE0A0" stroke-width="1.6" marker-end="url(#arA)"/>
+    <text x="0" y="-8" fill="#E8EEFA" font-weight="600">달러</text>
+    <text x="52" y="-8" fill="#9AABC9" font-size="9">신흥국 달러부채 ↑ · 원자재 표시가 역상관</text>
+  </g>
+  <g transform="translate(668,208)">
+    <line x1="0" y1="0" x2="380" y2="0" stroke="#D9A441" stroke-width="1.6" marker-end="url(#arA)"/>
+    <text x="0" y="-8" fill="#E8EEFA" font-weight="600">중국</text>
+    <text x="52" y="-8" fill="#9AABC9" font-size="9">구리 박사 → 호주·브라질 → 한국 수출 체인</text>
+  </g>
+  <g transform="translate(668,276)">
+    <line x1="0" y1="0" x2="380" y2="0" stroke="#FF5D6E" stroke-width="1.6" marker-end="url(#arA)"/>
+    <text x="0" y="-8" fill="#E8EEFA" font-weight="600">유가</text>
+    <text x="52" y="-8" fill="#9AABC9" font-size="9">세금(수입국)·배당(산유국) → 물가 → 금리 2차 점화</text>
+  </g>
+  <g transform="translate(668,344)">
+    <line x1="0" y1="0" x2="380" y2="0" stroke="#5B8DEF" stroke-width="1.6" marker-end="url(#arA)"/>
+    <text x="0" y="-8" fill="#E8EEFA" font-weight="600">유동성</text>
+    <text x="66" y="-8" fill="#9AABC9" font-size="9">밀물·썰물 — 최전선은 고베타 크립토</text>
+  </g>
+  <g transform="translate(668,412)">
+    <line x1="0" y1="0" x2="380" y2="0" stroke="#FF5D6E" stroke-width="2" marker-end="url(#arA)"/>
+    <text x="0" y="-8" fill="#E8EEFA" font-weight="600">공포</text>
+    <text x="52" y="-8" fill="#3FE0A0" font-size="9">수렴 경보: 평균|ρ| 0.38 긴장 · 0.55 분산 소멸</text>
+  </g>
+  <g transform="translate(668,480)">
+    <line x1="0" y1="0" x2="380" y2="0" stroke="#D9A441" stroke-width="1.6" marker-end="url(#arA)"/>
+    <text x="0" y="-8" fill="#E8EEFA" font-weight="600">물류</text>
+    <text x="52" y="-8" fill="#9AABC9" font-size="9">관문 봉쇄 → 실효 공급 ↓ · 2021 SCFI ×5</text>
+  </g>
+  <!-- 순환도로 (반사성) -->
+  <g transform="translate(668,548)">
+    <path d="M0 0 H 380" stroke="#A79BFF" stroke-width="1.6" marker-end="url(#arA)"/>
+    <text x="0" y="-8" fill="#A79BFF" font-weight="600">순환 (반사성)</text>
+    <text x="110" y="-8" fill="#9AABC9" font-size="9">가격 → 담보·조달 → 실적 → 가격 (버블의 엔진)</text>
+  </g>
+  <path d="M1048 548 C 1090 620 640 660 610 560" fill="none" stroke="#A79BFF" stroke-width="1.2" stroke-dasharray="5 4" marker-end="url(#arG)"/>
+  <text x="828" y="640" font-size="9" fill="#A79BFF" text-anchor="middle">결과가 원인으로 되돌아오는 유일한 길</text>
+</g>
+
+<!-- ===== ⑤ 자산 ===== -->
+<g>
+  <g transform="translate(1090,52)"><rect width="370" height="52" rx="9" fill="#101726" stroke="#243352"/>
+    <text x="12" y="21" font-size="11.5" fill="#E8EEFA" font-weight="600">주식</text>
+    <text x="60" y="21" font-size="9.5" fill="#9AABC9">P = EPS × PER — 배수는 금리·심리의 것</text>
+    <text x="12" y="40" font-size="9" fill="#FF5D6E">성장주 = 듀레이션 긴 주식 (i에 −)</text></g>
+  <g transform="translate(1090,112)"><rect width="370" height="52" rx="9" fill="#101726" stroke="#243352"/>
+    <text x="12" y="21" font-size="11.5" fill="#E8EEFA" font-weight="600">채권</text>
+    <text x="60" y="21" font-size="9.5" fill="#3FE0A0">ΔP/P ≈ −D·Δy (D=7, 금리+1%p→약 −7%)</text>
+    <text x="12" y="40" font-size="9" fill="#9AABC9">2s10s 역전 = 침체의 전조 · 실질 = 명목 − BEI</text></g>
+  <g transform="translate(1090,172)"><rect width="370" height="44" rx="9" fill="#101726" stroke="#243352"/>
+    <text x="12" y="20" font-size="11.5" fill="#E8EEFA" font-weight="600">금</text>
+    <text x="48" y="20" font-size="9.5" fill="#D9A441">≈ 실질금리의 역함수 · 달러 역상관 · 공포 헤지</text>
+    <text x="12" y="36" font-size="9" fill="#9AABC9">d·i에 − / 위기 시 +</text></g>
+  <g transform="translate(1090,224)"><rect width="370" height="44" rx="9" fill="#101726" stroke="#243352"/>
+    <text x="12" y="20" font-size="11.5" fill="#E8EEFA" font-weight="600">원자재</text>
+    <text x="82" y="20" font-size="9.5" fill="#9AABC9">백워데이션=부족(강세) · 콘탱고=여유</text>
+    <text x="12" y="36" font-size="9" fill="#D9A441">구리: c에 강한 + · 기후가 공급·수요를 선결정</text></g>
+  <g transform="translate(1090,276)"><rect width="370" height="40" rx="9" fill="#101726" stroke="#243352"/>
+    <text x="12" y="19" font-size="11.5" fill="#E8EEFA" font-weight="600">FX</text>
+    <text x="48" y="19" font-size="9.5" fill="#9AABC9">두 나라의 비율 — 점이 아니라 간선 · UIP 위반 = 캐리</text>
+    <text x="12" y="33" font-size="9" fill="#9AABC9">CIP: F/S = (1+i자국)/(1+i상대)</text></g>
+  <g transform="translate(1090,324)"><rect width="370" height="40" rx="9" fill="#101726" stroke="#243352"/>
+    <text x="12" y="19" font-size="11.5" fill="#E8EEFA" font-weight="600">크립토</text>
+    <text x="76" y="19" font-size="9.5" fill="#5B8DEF">β_r 최대 — 유동성의 최전선 돛</text>
+    <text x="12" y="33" font-size="9" fill="#9AABC9">펀딩비 = 쏠림의 실시간 가격 · ε 큰 자산</text></g>
+  <g transform="translate(1090,372)"><rect width="370" height="40" rx="9" fill="#101726" stroke="#243352"/>
+    <text x="12" y="19" font-size="11.5" fill="#E8EEFA" font-weight="600">리츠</text>
+    <text x="58" y="19" font-size="9.5" fill="#9AABC9">가치 ≈ NOI / 캡레이트 → 금리 ↑ = 가치 ↓</text>
+    <text x="12" y="33" font-size="9" fill="#9AABC9">데이터센터 리츠 = AI 수요 축과 교차</text></g>
+  <g transform="translate(1090,420)"><rect width="370" height="40" rx="9" fill="#101726" stroke="#243352"/>
+    <text x="12" y="19" font-size="11.5" fill="#E8EEFA" font-weight="600">크레딧</text>
+    <text x="72" y="19" font-size="9.5" fill="#FF5D6E">스프레드 ≈ PD×LGD · 400bp대 = 경계</text>
+    <text x="12" y="33" font-size="9" fill="#3FE0A0">주식보다 반 박자 먼저 겁먹는 조기경보</text></g>
+  <g transform="translate(1090,468)"><rect width="370" height="40" rx="9" fill="#101726" stroke="#243352"/>
+    <text x="12" y="19" font-size="11.5" fill="#E8EEFA" font-weight="600">운송</text>
+    <text x="58" y="19" font-size="9.5" fill="#9AABC9">세 얼굴: 지표 · 자산(FFA) · 경로</text>
+    <text x="12" y="33" font-size="9" fill="#9AABC9">2020: 유조선 = 떠 있는 창고 (유가와 역상관 순간)</text></g>
+  <g transform="translate(1090,516)"><rect width="370" height="40" rx="9" fill="#101726" stroke="#243352"/>
+    <text x="12" y="19" font-size="11.5" fill="#E8EEFA" font-weight="600">탄소</text>
+    <text x="58" y="19" font-size="9.5" fill="#D9A441">공급 곡선을 법이 그린다 (cap·MSR)</text>
+    <text x="12" y="33" font-size="9" fill="#9AABC9">가스↑ → 석탄 전환 → 배출권 수요↑ · K-ETS</text></g>
+  <g transform="translate(1090,564)"><rect width="370" height="52" rx="9" fill="#0D1424" stroke="#5B8DEF"/>
+    <text x="12" y="20" font-size="11.5" fill="#5B8DEF" font-weight="600">개별 주식 (미시)</text>
+    <text x="12" y="37" font-size="9" fill="#9AABC9">r = β시장 + β섹터 + Σβ팩터 + ε (ε > ½)</text>
+    <text x="12" y="49" font-size="9" fill="#3FE0A0">미시일수록 통계 → 이벤트 · PEAD 표류 ~60일</text></g>
+</g>
+
+<!-- ===== ⑥ 채점 루프 ===== -->
+<g transform="translate(40,822)">
+  <rect width="1420" height="86" rx="12" fill="#0D1424" stroke="#D9A441" stroke-dasharray="6 4"/>
+  <g font-size="10.5" fill="#E8EEFA">
+    <text x="26" y="34" font-weight="600" fill="#D9A441">① 전망 등록</text>
+    <text x="26" y="52" font-size="9" fill="#9AABC9">가설·기준 봉인 (해시 공증)</text>
+    <text x="216" y="44" fill="#33456E">▶</text>
+    <text x="260" y="34" font-weight="600" fill="#D9A441">② 지평</text>
+    <text x="260" y="52" font-size="9" fill="#9AABC9">발언 60분 · 실적 1일+표류 60일 · 규제 5일</text>
+    <text x="586" y="44" fill="#33456E">▶</text>
+    <text x="630" y="34" font-weight="600" fill="#D9A441">③ 기계 판정</text>
+    <text x="630" y="52" font-size="9" fill="#9AABC9">방향 적중 기준 +0.1% · 사람 개입 불가</text>
+    <text x="906" y="44" fill="#33456E">▶</text>
+    <text x="950" y="34" font-weight="600" fill="#D9A441">④ 간선 갱신</text>
+    <text x="950" y="52" font-size="9" fill="#3FE0A0">v' = (1−α)v + α·관측  (α 0.1~0.2)</text>
+    <text x="1220" y="34" font-weight="600" fill="#D9A441">⑤ 지도 개정</text>
+    <text x="1220" y="52" font-size="9" fill="#9AABC9">아웃오브샘플 통과분만</text>
+  </g>
+</g>
+<path d="M1420 850 C 1478 700 1470 200 1200 96 C 1150 78 1000 60 940 60" fill="none" stroke="#D9A441" stroke-width="1.3" stroke-dasharray="6 4" marker-end="url(#arG)" opacity=".8"/>
+<text x="1452" y="470" font-size="9.5" fill="#D9A441" transform="rotate(90 1452 470)">채점이 지도를 다시 그린다 — 적응시장가설</text>
+
+<!-- ===== 도구 상자 ===== -->
+<g transform="translate(668,682)">
+  <rect width="792" height="104" rx="10" fill="#101726" stroke="#243352"/>
+  <text x="16" y="24" font-size="10.5" fill="#5E7095" letter-spacing="2">도구 상자 — 이 지도의 눈금들</text>
+  <g font-size="9.5" fill="#9AABC9">
+    <text x="16"  y="48"><tspan fill="#E8EEFA">z 문턱</tspan> 2.3 주목 · 3.4 파탄 의심</text>
+    <text x="16"  y="68"><tspan fill="#E8EEFA">허스트 H</tspan> &gt;0.5 추세의 계절 · &lt;0.5 회귀의 계절</text>
+    <text x="16"  y="88"><tspan fill="#E8EEFA">창</tspan> 상관 60 · 베타/변동성 120 · λ(EWMA) 0.94</text>
+    <text x="300" y="48"><tspan fill="#E8EEFA">꼬리</tspan> P(|r|&gt;x) ~ x^−α, α ≈ 3 (세제곱 법칙)</text>
+    <text x="300" y="68"><tspan fill="#E8EEFA">손실회피</tspan> λ ≈ 2.25 — 잃는 고통은 두 배</text>
+    <text x="300" y="88"><tspan fill="#E8EEFA">MC 미리보기</tspan> 40경로 × 지평 70 (시드 고정)</text>
+    <text x="586" y="48"><tspan fill="#E8EEFA">기본법칙</tspan> IR = IC × √BR</text>
+    <text x="586" y="68"><tspan fill="#E8EEFA">켈리</tspan> f* = W − (1−W)/R → 실무 ½ 이하</text>
+    <text x="586" y="88"><tspan fill="#E8EEFA">기대값</tspan> P·이득 − (1−P)·손실 &gt; 비용</text>
+  </g>
+</g>
+
+<!-- 바람→길 연결 -->
+<path d="M596 106 C 640 106 636 72 664 72" stroke="#243352" stroke-width="1.1" fill="none"/>
+<path d="M596 206 C 640 206 636 140 664 140" stroke="#243352" stroke-width="1.1" fill="none"/>
+<path d="M596 306 C 640 306 636 276 664 276" stroke="#243352" stroke-width="1.1" fill="none"/>
+<path d="M596 406 C 640 406 636 208 664 208" stroke="#243352" stroke-width="1.1" fill="none"/>
+<path d="M636 514 C 656 514 652 412 664 412" stroke="#243352" stroke-width="1.1" fill="none"/>
+</svg>
+</div>
+
+<footer>
+  읽는 법 — 왼쪽에서 오른쪽으로: 계기판의 원천 데이터가 '놀라움(SDS)'으로 변환되어 네 바람(팩터)을 밀고, 바람은 여덟 개의 길을 타고 자산의 체질(β)에 닿는다. 여덟 번째 순환(반사성)만이 결과를 원인으로 되돌리며, 맨 아래 채점 루프가 이 지도 전체를 데이터로 다시 그린다. 초록 숫자 = 검증된 눈금 · 본 지도는 정본 THEORY CORE 제3판의 1:1 시각 번역이다. © Batavia Project — 교육·연구 목적.
+</footer>
+</div>
+</body>
+</html>

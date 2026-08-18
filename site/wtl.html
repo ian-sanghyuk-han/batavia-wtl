@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+<!-- STATUS: Earlier WTL mock. Where product hierarchy is implied, HANDOFF v2 SS1.1 wins (Event Card first). -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Trading Live — Logic & Scenario Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F6F8FB; --panel:#FFFFFF; --panel-2:#F1F4F9; --line:#E6EBF3; --line-2:#CDD7E5;
+  --ink:#14294E; --ink2:#41577E; --ink-3:#8A99B5; --navy:#16335C; --acc:#1F4FBF;
+  --up:#DE2B41; --dn:#2668D9; --gold:#B07A12; --ok:#0F9B62;
+  --mapbg:#FBFCFE; --nodefill:#FFFFFF; --nodeline:#8B99B0;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --sans:'IBM Plex Sans KR',-apple-system,'Apple SD Gothic Neo',sans-serif;
+  --shadow:0 1px 2px rgba(20,41,78,.05),0 6px 20px rgba(20,41,78,.05);
+}
+[data-theme="dark"]{
+  --bg:#0A0F1C; --panel:#101726; --panel-2:#151E31; --line:#1C2740; --line-2:#2A3A5E;
+  --ink:#E8EEFA; --ink2:#95A5C4; --ink-3:#5E7095; --navy:#DCE6F8; --acc:#5B8DEF;
+  --up:#FF5D6E; --dn:#4D9FFF; --gold:#D9A441; --ok:#3FE0A0;
+  --mapbg:#0B1322; --nodefill:#101B30; --nodeline:#4E6490;
+  --shadow:0 2px 6px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.55;
+  transition:background .3s,color .3s}
+body{padding:16px 20px 30px}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.wrap{max-width:1420px;margin:0 auto}
+button{font-family:inherit}
+
+/* ---------- header ---------- */
+header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line-2)}
+.brand h1{font-size:18px;font-weight:700;color:var(--navy);letter-spacing:.01em}
+.brand h1 b{color:var(--acc)}
+.brand p{font-size:11px;color:var(--ink-3)}
+.feed{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;color:var(--ink2);
+  border:1px solid var(--line-2);border-radius:999px;padding:5px 12px;background:var(--panel)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--gold)}
+@media (prefers-reduced-motion:no-preference){.dot{animation:blink 1.6s infinite}}
+@keyframes blink{50%{opacity:.25}}
+.sep{color:var(--line-2)}
+.hud{font-family:var(--mono);font-size:10px;color:var(--ink-3)}
+.spacer{flex:1}
+select,button.ctl{font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--panel);
+  border:1px solid var(--line-2);border-radius:8px;padding:6px 10px;cursor:pointer}
+select:hover,button.ctl:hover{border-color:#9FB2D4}
+button.ctl:focus-visible,select:focus-visible,.tab:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+
+/* ---------- nav & logic panel ---------- */
+.navrow{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.tab{font-size:13px;font-weight:600;color:var(--ink2);background:var(--panel);border:1px solid var(--line-2);
+  border-radius:999px;padding:8px 18px;cursor:pointer;transition:all .15s}
+.tab:hover{transform:translateY(-1px)}
+.tab.on{color:#fff;background:var(--acc);border-color:var(--acc)}
+.logicwrap{position:relative;margin-left:auto}
+.logicbtn{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--acc);
+  border:1px solid var(--acc);background:var(--panel);border-radius:999px;padding:7px 14px;cursor:pointer}
+.logicpop{position:absolute;top:calc(100% + 6px);right:0;z-index:30;background:var(--panel);
+  border:1px solid var(--line-2);border-radius:12px;padding:11px 13px;box-shadow:var(--shadow);
+  display:none;width:238px}
+.logicpop.on{display:block}
+.logicpop .lt{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--ink-3);margin-bottom:6px}
+.logicpop label{display:flex;align-items:center;gap:8px;padding:3.5px 0;cursor:pointer;font-size:12.5px;color:var(--ink2)}
+.logicpop input{accent-color:var(--acc)}
+
+/* ---------- cards ---------- */
+section.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:13px 16px;
+  min-width:0;box-shadow:var(--shadow)}
+.card h2{font-size:11px;font-weight:700;letter-spacing:.13em;color:var(--ink-3);text-transform:uppercase;
+  font-family:var(--mono);display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.card h2 .sub{letter-spacing:0;text-transform:none;font-weight:400}
+@media (prefers-reduced-motion:no-preference){
+  section.card{animation:rise .45s cubic-bezier(.2,.7,.3,1) both}
+  @keyframes rise{from{opacity:0;transform:translateY(9px)}}
+  .arc{stroke-dasharray:5 9;animation:flow linear infinite;animation-duration:var(--d,3s)}
+  @keyframes flow{to{stroke-dashoffset:-140}}
+  .halo{animation:halo 2.4s ease-out infinite}
+  @keyframes halo{0%{r:10;opacity:.5}80%{r:25;opacity:0}100%{r:25;opacity:0}}
+  .route.alt{animation:flow 1.2s linear infinite}
+  .cp.closed{animation:cpx 1s ease-in-out infinite}
+  @keyframes cpx{50%{opacity:.35}}
+}
+.view{margin-top:26px;scroll-margin-top:74px}
+.navrow{position:sticky;top:0;z-index:40;background:var(--bg);padding:10px 0 10px;transition:background .3s}
+
+/* ---------- map view ---------- */
+.mapgrid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px}
+.maptools{position:absolute;bottom:10px;left:10px;z-index:7;display:flex;gap:6px}
+.mtb{font-size:12px;font-family:var(--mono);color:var(--ink2);background:color-mix(in srgb,var(--panel) 92%,transparent);
+  border:1px solid var(--line-2);border-radius:8px;padding:5px 9px;cursor:pointer}
+.mtb:hover{border-color:#9FB2D4}
+.mapguide{position:absolute;bottom:46px;left:10px;z-index:8;width:270px;display:none;
+  background:color-mix(in srgb,var(--panel) 96%,transparent);border:1px solid var(--line-2);border-radius:11px;
+  padding:11px 13px;font-size:11.5px;box-shadow:var(--shadow);line-height:1.7}
+.mapguide.on{display:block}
+.mapguide b{color:var(--ink)}
+.mapguide .gl{display:inline-block;width:20px;text-align:center}
+.mapwrap:fullscreen{background:var(--bg);padding:16px;display:flex;flex-direction:column}
+.mapwrap:fullscreen .mapbox{flex:1;aspect-ratio:auto}
+.mapwrap.fsfix{position:fixed;inset:0;z-index:99;background:var(--bg);padding:16px;display:flex;flex-direction:column}
+.mapwrap.fsfix .mapbox{flex:1;aspect-ratio:auto}
+.ship{fill:var(--ink2);opacity:.75}
+.ship.stuck{fill:var(--up);opacity:1}
+@media (prefers-reduced-motion:no-preference){.ship.stuck{animation:cpx .8s infinite}}
+.ship.gold{fill:var(--gold);opacity:1}
+.rip{fill:none;stroke:var(--gold);stroke-width:2}
+.ripn{fill:none;stroke-width:2}
+@media (prefers-reduced-motion:no-preference){
+  .rip{animation:ripx 1.7s ease-out forwards}
+  @keyframes ripx{0%{r:8;opacity:.9;stroke-width:2.5}100%{r:210;opacity:0;stroke-width:.5}}
+  .ripn{animation:ripn 1s ease-out forwards}
+  @keyframes ripn{0%{r:6;opacity:.9}100%{r:24;opacity:0}}
+}
+.mapbox.eventon{box-shadow:0 0 0 2px var(--gold),0 0 24px rgba(217,164,65,.28)}
+.evbanner{font-size:13px}
+.evbanner b{font-size:13.5px}
+.mapbox{position:relative;aspect-ratio:1080/470;border-radius:10px;overflow:hidden;margin-top:10px;
+  background:var(--mapbg);border:1px solid var(--line)}
+.mapbox canvas,.mapbox svg{position:absolute;inset:0;width:100%;height:100%}
+.evbanner{position:absolute;top:10px;left:10px;right:10px;z-index:6;display:none;align-items:center;gap:9px;
+  background:color-mix(in srgb,var(--panel) 94%,transparent);border:1px solid var(--line-2);
+  border-left:4px solid var(--gold);border-radius:10px;padding:7px 12px;font-size:12px;box-shadow:var(--shadow)}
+.evbanner.on{display:flex}
+.evbanner b{color:var(--gold)}
+.evbanner .cnt{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--ink-3)}
+.arc{fill:none;stroke-linecap:round;transition:opacity .5s,stroke-width .5s}
+.ncode{font-family:var(--mono);font-size:10px;fill:var(--ink2);font-weight:600;letter-spacing:.04em}
+.nchg{font-family:var(--mono);font-size:9px}
+.nbadge{font-size:12px;font-weight:700}
+.node{cursor:pointer}
+.route{fill:none;stroke:var(--ink-3);stroke-width:1;stroke-dasharray:2 5;opacity:.45;stroke-linecap:round}
+.route.cut{stroke:var(--up);stroke-width:1.6;stroke-dasharray:3 4;opacity:.9}
+.route.alt{stroke:var(--gold);stroke-width:1.6;stroke-dasharray:6 5;opacity:.95}
+.cp{fill:var(--panel);stroke:var(--ink-3);stroke-width:1.4}
+.cp.closed{fill:var(--up);stroke:var(--up)}
+.cplab{font-family:var(--mono);font-size:8.5px;fill:var(--ink-3)}
+.legend{display:flex;gap:14px;font-size:11px;color:var(--ink2);margin-top:9px;flex-wrap:wrap}
+.sw{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+.srow{display:flex;align-items:center;gap:10px;background:var(--panel-2);border:1px solid var(--line);
+  border-radius:11px;padding:8px 11px;margin-top:7px}
+.srow .ar{font-size:16px;font-weight:700;width:18px;text-align:center}
+.srow .mid{flex:1;min-width:0}
+.srow .anm{font-weight:600;font-size:12.5px}
+.srow .sc2{font-family:var(--mono);font-size:9px;color:var(--ink-3);margin-left:6px}
+.srow .why{color:var(--ink2);font-size:10.5px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srow .st{margin-left:auto;font-size:10px;font-weight:700}
+.disc{font-size:10px;color:var(--ink-3);margin-top:9px;line-height:1.5}
+
+/* ---------- grid view ---------- */
+.ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:13px}
+.gcard{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:12px 14px;box-shadow:var(--shadow)}
+.gcard .gh{display:flex;align-items:baseline;gap:7px}
+.gcard .gh b{font-size:12.5px;font-weight:600}
+.gcard .info{margin-left:auto;font-size:10px;color:var(--acc);cursor:pointer;border:1px solid var(--acc);
+  border-radius:999px;padding:1px 7px;background:none}
+.gcard .gv{font-family:var(--mono);font-size:21px;font-weight:700;margin-top:7px}
+.gcard .gs{font-size:11px;color:var(--ink2);margin-top:3px;line-height:1.45}
+.gcard .gbar{position:relative;height:5px;background:var(--panel-2);border-radius:3px;margin-top:8px;overflow:hidden}
+.gcard .gbar .z{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--line-2)}
+.gcard .gbar .b{position:absolute;top:0;bottom:0;border-radius:3px;transition:all .4s}
+.gtbl{width:100%;border-collapse:collapse;margin-top:6px;font-size:11.5px}
+.gtbl td{padding:3.5px 2px;border-bottom:1px solid var(--line)}
+.gtbl tr:last-child td{border-bottom:0}
+.gtbl .r{text-align:right;font-family:var(--mono)}
+
+/* ---------- lab view ---------- */
+.labgrid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px}
+.scrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.scbtn{font-size:12.5px;font-weight:600;color:var(--ink2);background:var(--panel-2);border:1px solid var(--line-2);
+  border-radius:10px;padding:9px 14px;cursor:pointer;transition:all .15s}
+.scbtn:hover{transform:translateY(-1px)}
+.scbtn.on{color:var(--acc);border-color:var(--acc);background:color-mix(in srgb,var(--acc) 8%,var(--panel))}
+.pbtbl{width:100%;border-collapse:collapse;margin-top:11px;font-size:12px}
+.pbtbl th{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--ink-3);text-align:left;
+  padding:5px 4px;border-bottom:1px solid var(--line-2);font-weight:600}
+.pbtbl td{padding:6px 4px;border-bottom:1px solid var(--line);vertical-align:middle}
+.pbtbl .r{text-align:right;font-family:var(--mono)}
+.dirb{font-weight:700}
+.mcband{position:relative;height:9px;background:var(--panel-2);border-radius:5px;min-width:110px}
+.mcband .rng{position:absolute;top:2px;bottom:2px;border-radius:4px;opacity:.3}
+.mcband .med{position:absolute;top:0;bottom:0;width:2.5px;border-radius:2px}
+.mcband .zz{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--line-2)}
+button.run{font-size:13px;font-weight:700;color:#fff;background:var(--acc);border:1px solid var(--acc);
+  border-radius:10px;padding:10px 20px;cursor:pointer;margin-top:12px}
+button.run:hover{filter:brightness(1.08)}
+.vertbl{width:100%;border-collapse:collapse;margin-top:8px;font-size:11.5px}
+.vertbl td{padding:4px 3px;border-bottom:1px solid var(--line)}
+.mut{color:var(--ink-3)}
+
+/* ---------- library view ---------- */
+.lib{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:13px}
+.lcard{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:14px 16px;box-shadow:var(--shadow)}
+.lcard h3{font-size:14px;font-weight:700;color:var(--navy);display:flex;align-items:baseline;gap:8px}
+.lcard h3 .lc{font-family:var(--mono);font-size:9.5px;color:var(--acc);border:1px solid var(--acc);
+  border-radius:999px;padding:1px 8px;font-weight:600}
+.lcard .frm{font-family:var(--mono);font-size:12px;background:var(--panel-2);border:1px solid var(--line);
+  border-radius:8px;padding:8px 11px;margin:9px 0;overflow-x:auto;white-space:nowrap}
+.lcard p{font-size:12.5px;color:var(--ink2);margin-top:5px}
+.lcard p b{color:var(--ink)}
+.lcard .lim{font-size:11px;color:var(--ink-3);margin-top:8px;padding-top:7px;border-top:1px dashed var(--line)}
+
+#news{list-style:none;margin-top:9px;max-height:240px;overflow-y:auto;scrollbar-width:thin}
+#news li{padding:6px 2px;border-bottom:1px solid var(--line);font-size:11.5px;display:flex;gap:7px;align-items:baseline}
+#news .t{font-family:var(--mono);font-size:9.5px;color:var(--ink-3);white-space:nowrap}
+.tag{font-family:var(--mono);font-size:8.5px;padding:2px 6px;border-radius:5px;white-space:nowrap;border:1px solid}
+.tag.geo{color:#C21F35;border-color:#F2C3CA;background:#FDEFF1}
+.tag.pol{color:#1D5FC4;border-color:#C3D7F4;background:#EFF5FD}
+.tag.chn{color:#B06A00;border-color:#EED9AE;background:#FCF5E6}
+.tag.etc{color:#8792A5;border-color:#DDE3EC;background:#F4F6FA}
+[data-theme="dark"] .tag.geo{color:#FF8E9C;border-color:#5B2530;background:#2A141A}
+[data-theme="dark"] .tag.pol{color:#8FD0FF;border-color:#1F4468;background:#0F1C2E}
+[data-theme="dark"] .tag.chn{color:#FFC98A;border-color:#5B4A1F;background:#241C0B}
+[data-theme="dark"] .tag.etc{color:#9AA3B8;border-color:#2A3348;background:#141A28}
+
+footer{margin-top:18px;font-size:10.5px;color:var(--ink-3);line-height:1.7}
+@media (max-width:1050px){.mapgrid,.labgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="brand">
+    <h1>WORLD TRADING <b>LIVE</b></h1>
+    <p>by Batavia · 이론과 논리의 실시간 검증 플랫폼 — 정보 제공 전용</p>
+  </div>
+  <div class="feed"><span class="dot"></span><span>SIM</span>
+    <span class="num" id="clock">D1 09:00</span><span class="sep">·</span>
+    <span class="num" id="realT">00:00:00</span></div>
+  <span class="hud" id="hud">1× · 1틱=1분 · 실제 1h ≈ 시뮬 4.2일</span>
+  <div class="spacer"></div>
+  <select id="spdSel" aria-label="속도"><option value="1100">0.5×</option><option value="600" selected>1×</option><option value="300">2×</option></select>
+  <button class="ctl" id="themeBtn" aria-label="테마 전환">🌙</button>
+  <button class="ctl" id="pauseBtn" aria-pressed="false">일시정지</button>
+</header>
+
+<nav class="navrow" aria-label="페이지">
+  <button class="tab on" data-v="map">라이브 지도</button>
+  <button class="tab" data-v="grid">로직 그리드</button>
+  <button class="tab" data-v="lab">시나리오 랩</button>
+  <button class="tab" data-v="lib">로직 라이브러리</button>
+  <div class="logicwrap">
+    <button class="logicbtn" id="logicBtn" aria-haspopup="true" aria-expanded="false">⚙ Live Logic</button>
+    <div class="logicpop" id="logicPop"><div class="lt">표시할 로직 선택</div></div>
+  </div>
+</nav>
+
+<!-- ============ VIEW: MAP ============ -->
+<div class="view" id="v_map">
+  <div class="mapgrid">
+    <section class="card">
+      <h2>글로벌 관계 지도
+        <span class="sub" id="mapSub"></span>
+        <span style="margin-left:auto;letter-spacing:0;text-transform:none">
+          <select id="baseSel" aria-label="기준 시장"></select></span></h2>
+      <div class="mapwrap" id="mapWrap">
+      <div class="mapbox" id="mapBox">
+        <canvas id="land" aria-hidden="true"></canvas>
+        <svg id="map" viewBox="0 0 1080 470" role="img" aria-label="세계 시장 관계 지도"></svg>
+        <div class="evbanner" id="evBanner" role="status"><span>⚡</span><span id="evTxt"></span><span class="cnt" id="evCnt"></span></div>
+        <div class="maptools">
+          <button class="mtb" id="guideBtn" aria-expanded="false">? 지도 읽는 법</button>
+          <button class="mtb" id="fsBtn" aria-label="전체화면">⛶ 전체화면</button>
+        </div>
+        <div class="mapguide" id="mapGuide">
+          <b>지도 읽는 법</b><br>
+          <span class="gl">●</span> 원 = 시장. <b style="color:var(--acc)">파란 링</b>은 현재 기준 시장<br>
+          <span class="gl">◠</span> 곡선 = 기준 시장과의 60분 상관 — <b style="color:var(--up)">빨강 동행</b>·<b style="color:var(--dn)">파랑 역행</b>, 굵기=강도<br>
+          <span class="gl">▲▼</span> 노드 배지 = 이벤트 전망(긍정/부정)<br>
+          <span class="gl">◆</span> 다이아몬드 = 초크포인트(해상 관문)<br>
+          <span class="gl">┄</span> 점선 = 주요 무역 항로, <b style="color:var(--gold)">금색</b>=우회 항로<br>
+          <span class="gl">➤</span> 작은 삼각형 = 항해 중인 선박(시뮬) — 봉쇄 시 정지·점멸<br>
+          <span class="gl">◎</span> 퍼지는 원 = 이벤트 파문(진앙에서 확산)
+        </div>
+      </div>
+      </div>
+      <div class="legend">
+        <span><span class="sw" style="background:var(--up)"></span>동행(+ρ) / 긍정 전망</span>
+        <span><span class="sw" style="background:var(--dn)"></span>역행(−ρ) / 부정 전망</span>
+        <span style="color:var(--ink-3)">선 굵기 = 상관 강도 · ◆ = 초크포인트</span>
+      </div>
+    </section>
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <section class="card">
+        <h2>시장 신호 <span class="sub">긍정/중립/부정 · 근거 로직</span></h2>
+        <div id="sig"></div>
+        <p class="disc">※ 통계·이벤트 기반 상태 표시이며 특정 상품의 거래 권유가 아닙니다.</p>
+      </section>
+      <section class="card">
+        <h2>뉴스와이어</h2>
+        <ul id="news"></ul>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- ============ VIEW: GRID ============ -->
+<div class="view" id="v_grid">
+  <div class="ggrid" id="ggrid"></div>
+  <p class="disc" style="margin-top:12px">각 카드의 ⓘ를 누르면 로직 라이브러리의 해설로 이동합니다. Live Logic에서 카드 구성을 바꿀 수 있습니다.</p>
+</div>
+
+<!-- ============ VIEW: LAB ============ -->
+<div class="view" id="v_lab">
+  <div class="labgrid">
+    <section class="card">
+      <h2>시나리오 랩 <span class="sub">중요 이벤트를 미리 돌려보기 — 몬테카를로 40경로</span></h2>
+      <div class="scrow" id="scrow"></div>
+      <div id="pbWrap"></div>
+      <button class="run" id="runMC" style="display:none">▶ 40경로 미리 돌려보기</button>
+      <p class="disc">시뮬레이션 엔진(SIM) 위에서 시나리오 충격을 40개의 난수 경로로 70분(시뮬) 전개한 분포입니다. 미래 예측이 아닌 <b>로직의 함의</b>를 보여주며, 거래 권유가 아닙니다.</p>
+    </section>
+    <section class="card">
+      <h2>라이브 검증 기록 <span class="sub">발동된 시나리오의 자동 채점</span></h2>
+      <div id="verBox"><p class="disc">아직 발동·판정된 시나리오가 없습니다. 시뮬레이션이 흐르면 자동으로 쌓입니다.</p></div>
+    </section>
+  </div>
+</div>
+
+<!-- ============ VIEW: LIBRARY ============ -->
+<div class="view" id="v_lib">
+  <div class="lib" id="lib"></div>
+</div>
+
+<footer>World Trading Live v1.0 (SIM) — 본 서비스는 정보 제공과 이론·논리의 검증만을 목적으로 하며, 계좌 연동·거래 기능이 없고 투자 자문·일임·운용을 제공하지 않습니다. Data: Simulated. © Batavia Project.</footer>
+</div>
+
+<script>
+'use strict';
+/* ================= 1. 지리 ================= */
+const LAND={top:77,step:2,rows:["000000030023c3ffffff8000200000000007000000000","00000000a82fc007ffff00000000030003ffc001c8000","0000000e88f7f003fffa0000000004007ffffcc000000","7fe7fffe03c801ff0005fffffffffbe210000010027fe","00fffafe76dcaf00fff800001c0fde138000000000000","1f80000000007c3e007fffff800140020000000000000","31fffffffffd1f80f801e000f9ebfffffffffffffffff","00fffffffff8034078000003e7fffffffffffffffffff","01fdffffffe01e0038000003e7ffffffffffffffff2f0","007807ffffe01e4000000086e3ffffffffffffff80200","001002fffff80fe000000180c7fffffffffffffe00e00","0000017fffff9ff80000038207fffffffffffffe00e00","0000007fffffdffc000006c7ffffffffffffffff40800","0000003ffffffffc000000ffffffffffffffffff40000","00000007ffffffc60000007fffffffffffffffff00000","0000000fffffffc10000007ffffbeffffffffffe40000","0000000fffffff600000007f7f97cffffffffffc00000","0000000ffffffe00000007f19f03cffffffffff8c0000","0000000ffffff800000003c26f7fe7ffffffffe000000","0000000ffffff000000007c025ffc7fffffff84080000","00000007fffff0000000018345ffe7fffffffe6300000","00000003fffff000000001fe022ffffffffffc4f00000","00000001ffffc000000003ff000ffffffffffc1800000","00000000ffff8000000007ffef7ffffffffffe0000000","000000003fc04000000007ffffdfdffffffffe0000000","000000005f80400000001fffffefe7fffffffc0000000","000000002f80000000001fffffe7f01ffffff80000000","000000000780c00000003ffffff7ff0ffffff20000000","000000000786100000003ffffffbfe07f8ff000000000","0000000003cc030000003ffffff9fe01f07e800000000","0000000000fc000000003ffffffdf801e05f020000000","00000000000f000000007ffffffde001c01f020000000","000000000003000000003ffffffe8001c01f820000000","000000000001070000003fffffff3000c013008000000","000000000000aff000001fffffffe0008012000000000","0000000000001ff800000fffffffe0002000008000000","0000000000001fff00000607ffffc000002c180000000","0000000000001fff80000001ffff80000014380000000","0000000000003fff80000001ffff0000001cfa0000000","0000000000003fffe0000003fffe0000000c781800000","0000000000003ffffc000001fffc00000006742b80000","0000000000007fffff000000fffc000000020001e0000","0000000000003fffff800000fffc00000001e001f0800","0000000000001fffff000000fffc000000000880d0200","0000000000001ffffe0000007ffc00000000000000000","0000000000000ffffe000000fffc20000000001c40000","0000000000000ffffc000000fffc20000000007c60040","00000000000003fffc000000fff8e000000001ffe0000","00000000000001fffc000000fff0e000000001ffe0000","00000000000001fffc0000007ff0c00000000ffff8080","00000000000001fff00000007ff0c00000001ffff8000","00000000000001ffc00000007fe0c00000001ffffc000","00000000000001ffc00000003fc0000000001ffffe000","00000000000003ff800000003fc0000000001ffffe000","00000000000003ff000000001f80000000000ffffe000","00000000000003ff000000001f00000000000f07fc000","00000000000003f8000000000000000000000803f8000","00000000000007fc000000000000000000000000f8004","00000000000007e000000000000000000000000000006","00000000000007a00000000000000000000000003000c","00000000000003c000000000000000000000000010018","000000000000078000000000000000000000000000030","000000000000078000000000000000000000000000000","0000000000000f0000000000000000080000000000000","000000000000060000000000000000000000000000000","000000000000030000000000000000000000000000000","000000000000000000000000000000000000000000000"]};
+const VW=1080,VH=470,X=lon=>(lon+179)/358*VW,Y=lat=>(77-lat)/132*(VH-14)+7;
+
+/* ================= 2. 유니버스 ================= */
+const A=[
+ {c:'SPX',n:'S&P500',lon:-74,lat:40.7,px:5540,vol:1,L:{r:.9,d:-.05,i:-.35,c:.1}},
+ {c:'SX5E',n:'유로스톡스',lon:8.7,lat:50.1,px:4980,vol:1,L:{r:.8,d:-.1,i:-.25,c:.2}},
+ {c:'UKX',n:'FTSE100',lon:-.1,lat:51.5,px:8240,vol:.85,L:{r:.6,d:-.05,i:-.1,c:.15}},
+ {c:'NKY',n:'니케이',lon:139.8,lat:35.7,px:40100,vol:1.1,L:{r:.75,d:.25,i:-.2,c:.2}},
+ {c:'KOSPI',n:'코스피',lon:127,lat:37.6,px:2742,vol:1.05,L:{r:.8,d:-.25,i:-.2,c:.45}},
+ {c:'SHCOMP',n:'상해종합',lon:121.5,lat:31.2,px:3050,vol:.95,L:{r:.35,d:-.1,i:0,c:.9}},
+ {c:'NIFTY',n:'니프티',lon:72.9,lat:19.1,px:24400,vol:1,L:{r:.7,d:-.3,i:-.15,c:.1}},
+ {c:'IBOV',n:'보베스파',lon:-46.6,lat:-23.5,px:128500,vol:1.15,L:{r:.7,d:-.45,i:-.1,c:.35}},
+ {c:'BRENT',n:'브렌트유',lon:55.3,lat:25.2,px:82.4,vol:1.3,L:{r:.45,d:-.3,i:.25,c:.25}},
+ {c:'GOLD',n:'금',lon:28,lat:-26.2,px:2412,vol:.75,L:{r:-.15,d:-.55,i:-.5,c:0}},
+ {c:'COPPER',n:'구리',lon:-70.6,lat:-33.4,px:4.35,vol:1.05,L:{r:.55,d:-.35,i:.05,c:.7}},
+ {c:'ASX',n:'ASX200',lon:151.2,lat:-33.9,px:7890,vol:.9,L:{r:.7,d:-.2,i:-.1,c:.5}},
+ {c:'BTC',n:'비트코인',lon:103.8,lat:1.35,px:67200,vol:3,L:{r:1.05,d:-.4,i:-.4,c:.05}},
+ {c:'US10Y',n:'미국채10Y',lon:-87.6,lat:41.8,px:4.32,vol:.7,L:{r:.2,d:.05,i:.9,c:0}},
+ {c:'NATGAS',n:'천연가스',lon:-91,lat:29.7,px:2.85,vol:1.8,L:{r:.25,d:-.2,i:.3,c:.1}},
+ {c:'JCI',n:'자카르타',lon:106.8,lat:-6.2,px:7250,vol:1,L:{r:.65,d:-.4,i:-.1,c:.5}},
+];
+const n=A.length,BASE=0.0016,HORIZON=70;
+const BASES=[[4,'🇰🇷 코스피 기준'],[0,'🇺🇸 S&P500 기준'],[3,'🇯🇵 니케이 기준'],[1,'🇪🇺 유로스톡스 기준'],
+ [2,'🇬🇧 FTSE 기준'],[5,'🇨🇳 상해 기준'],[6,'🇮🇳 니프티 기준'],[7,'🇧🇷 보베스파 기준'],[11,'🇦🇺 ASX 기준'],[15,'🇮🇩 자카르타 기준']];
+
+/* ================= 3. 시나리오 (긍/부 전망 전용) ================= */
+const SH={
+ OIL:{title:'중동 공급 차질',tag:'geo',f:{i:.2},a:{8:.85},close:true,
+  hl:'[속보] 호르무즈 해협 유조선 통항 중단 — 걸프 원유 선적 차질',
+  out:[[8,1,.85,'공급 충격 → 원유 직접 수혜'],[9,1,.62,'지정학 프리미엄 → 안전자산'],[13,1,.55,'유가발 인플레 → 금리 상방'],[14,1,.6,'대체 에너지 수요'],[3,-1,.6,'원유 수입국 교역조건 악화'],[6,-1,.66,'원유 수입 의존 최상위'],[4,-1,.55,'에너지 수입국 부담']]},
+ HAWK:{title:'연준 매파 서프라이즈',tag:'pol',f:{d:.55,i:.45,r:-.18},a:{},
+  hl:'[속보] 파월 "금리, 더 오래 더 높게" — 시장 예상보다 매파적',
+  out:[[13,1,.8,'정책 경로 직결'],[9,-1,.78,'실질금리 상승 → 무이자 자산 부담'],[10,-1,.62,'달러 강세 → 원자재 압박'],[6,-1,.7,'신흥국 자금 유출'],[7,-1,.7,'고베타 신흥국'],[4,-1,.62,'외인 수급 민감'],[0,-1,.55,'할인율 상승'],[12,-1,.66,'유동성 민감 자산']]},
+ DOVE:{title:'연준 완화 신호',tag:'pol',f:{d:-.5,i:-.45,r:.22},a:{},
+  hl:'[속보] 미 고용 둔화 — 조기 인하 기대 급부상',
+  out:[[13,-1,.78,'정책 경로 직결'],[9,1,.74,'실질금리 하락 수혜'],[6,1,.62,'신흥국 자금 유입'],[7,1,.66,'고베타 신흥국'],[0,1,.6,'할인율 하락'],[4,1,.58,'외인 수급 개선'],[12,1,.64,'유동성 민감 자산']]},
+ CNS:{title:'중국 대규모 부양',tag:'chn',f:{c:.7,r:.12},a:{},
+  hl:'[속보] 中 1.5조 위안 인프라·소비 부양 패키지 발표',
+  out:[[5,1,.8,'정책 직접 수혜'],[10,1,.74,'인프라 → 금속 수요'],[11,1,.64,'대중 원자재 수출국'],[4,1,.6,'대중 수출 1위 상대'],[15,1,.6,'원자재 수출 신흥국'],[8,1,.5,'수요 증가 기대']]},
+ CNW:{title:'중국 부동산 부실',tag:'chn',f:{c:-.7,r:-.18},a:{},
+  hl:'[속보] 中 대형 개발사 역외채 디폴트 우려 확산',
+  out:[[5,-1,.8,'신용 위축 직격'],[10,-1,.74,'건설 → 금속 수요 붕괴'],[11,-1,.6,'대중 수출 타격'],[4,-1,.6,'중국 성장 베타'],[15,-1,.62,'원자재 신흥국 동반']]},
+ ROFF:{title:'글로벌 위험회피',tag:'geo',f:{r:-.28},a:{},reg:1,
+  hl:'[속보] 지정학 긴장 급고조 — 안전자산으로 자금 대피',
+  out:[[0,-1,.72,'위험자산 전반 압박'],[1,-1,.72,'위험자산 전반'],[3,-1,.66,'위험자산 전반'],[4,-1,.7,'고베타 시장'],[9,1,.76,'대표 안전자산'],[12,-1,.7,'최고베타 자산'],[13,-1,.6,'안전자산 선호 → 금리 하락'],[15,-1,.64,'신흥국 이탈']]},
+};
+const NOISE=[['etc','대형 기술주 실적 컨센서스 상회'],['etc','ECB 위원 원론적 발언'],['pol','미 국채 입찰 수요 견조'],['etc','일본 소매판매 예상 부합']];
+
+/* ================= 4. 엔진 ================= */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);
+  t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+let rng=mulberry32(42);
+function randn(g){g=g||rng;let u=0,v=0;while(!u)u=g();while(!v)v=g();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+let tick=0,w=0,tw=0,regT=0,cool=0;
+const prices=A.map(a=>a.px),retBuf=A.map(()=>[]),active=[],sigEv=[];
+const fE={r:0,d:0,i:0,c:0};
+/* 확장 로직 상태 */
+let pi=2.4, ygap=0, pol=4.3, liq=0, hy=3.5;
+let closure=null,lastEv=null;
+const EPI={OIL:[56.5,26.6],HAWK:[-87.6,41.8],DOVE:[-87.6,41.8],CNS:[121.5,31.2],CNW:[121.5,31.2],ROFF:[10,30]};
+const VER={list:[],byId:{}}; /* 검증 기록 */
+function fire(id){
+  const s=SH[id];active.push({id,left:30});cool=85;
+  if(s.reg!==undefined){tw=s.reg;regT=170;}
+  if(s.close)closure={until:tick+HORIZON};
+  lastEv={title:s.title,until:tick+HORIZON};
+  eventFX(id);
+  addNews(s.tag,s.hl);
+  const rec={id,title:s.title,t0:tick,outs:s.out.map(([a,dir,conf])=>({a,dir,conf,px0:prices[a]})),done:false};
+  VER.list.unshift(rec);if(VER.list.length>40)VER.list.pop();
+  s.out.forEach(([a,dir,conf])=>{sigEv.push({a,dir,conf,why:s.title,until:tick+HORIZON});setBadge(a,dir,conf);});
+  renderSignals();
+}
+function scoreVer(){
+  VER.list.forEach(rec=>{
+    if(rec.done||tick-rec.t0<HORIZON)return;
+    rec.done=true;let hit=0;
+    rec.outs.forEach(o=>{const mv=(prices[o.a]/o.px0-1)*o.dir;if(mv>0.001)hit++;});
+    rec.hit=hit;rec.tot=rec.outs.length;
+    const b=VER.byId[rec.id]||(VER.byId[rec.id]={n:0,h:0,t:0});
+    b.n++;b.h+=hit;b.t+=rec.tot;
+    renderVer();
+  });
+}
+function step(){
+  tick++;
+  if(regT>0&&--regT===0)tw=0;
+  w+=(tw-w)*0.06;
+  if(cool>0)cool--;else if(rng()<0.0045){
+    const p=Object.keys(SH);fire(p[Math.floor(rng()*p.length)]);}
+  if(rng()<0.018){const z=NOISE[Math.floor(rng()*NOISE.length)];addNews(z[0],z[1]);}
+  const F={r:randn()*(1+1.4*w)+0.045-0.4*w,d:randn()*.9+0.2*w,i:randn()*.9,c:randn()*.9};
+  const add=new Array(n).fill(0);
+  for(let k=active.length-1;k>=0;k--){const s=SH[active[k].id];
+    for(const f in s.f)F[f]+=s.f[f];for(const i in s.a)add[i]+=s.a[i];
+    if(--active[k].left<=0)active.splice(k,1);}
+  for(const k in fE)fE[k]=fE[k]*.93+F[k]*.07;
+  /* 확장 로직 시뮬 */
+  pi+=0.015*(fE.i*1.1+((prices[8]/A[8].px-1)*2))-0.012*(pi-2.4)+randn()*0.006;
+  ygap=ygap*0.985+fE.r*0.03;
+  const taylor=1.0+pi+0.5*(pi-2)+0.5*(ygap*10);
+  pol+=0.006*(taylor-pol)+randn()*0.004;
+  liq=liq*0.995-0.0007+(fE.i<-0.3?0.004:0)-(fE.i>0.3?0.004:0)+randn()*0.008;
+  hy=Math.max(2.2,3.5+w*3+Math.max(0,-fE.r)*0.9+randn()*0.05+(hy-3.5)*0.9-(hy-3.5)*0.9);
+  hy=3.5+((hy-3.5)*0.9)+w*0.35+Math.max(0,-fE.r)*0.09+randn()*0.03;
+  A.forEach((a,k)=>{
+    const ret=(a.L.r*F.r+a.L.d*F.d+a.L.i*F.i+a.L.c*F.c+randn()+add[k])*BASE*a.vol;
+    prices[k]*=(1+ret);retBuf[k].push(ret);if(retBuf[k].length>200)retBuf[k].shift();
+  });
+  for(let k=sigEv.length-1;k>=0;k--)if(sigEv[k].until<=tick){clearBadge(sigEv[k].a);sigEv.splice(k,1);renderSignals();}
+  scoreVer();
+}
+function pearson(i,j,m){
+  const a=retBuf[i],b=retBuf[j],sa=a.length-m,sb=b.length-m;
+  let ma=0,mb=0;for(let k=0;k<m;k++){ma+=a[sa+k];mb+=b[sb+k];}ma/=m;mb/=m;
+  let cv=0,va=0,vb=0;for(let k=0;k<m;k++){const x=a[sa+k]-ma,y=b[sb+k]-mb;cv+=x*y;va+=x*x;vb+=y*y;}
+  const d=Math.sqrt(va*vb);return d>1e-12?cv/d:0;}
+function momoZ(i){
+  const rb=retBuf[i],m=Math.min(120,rb.length);if(m<40)return 0;
+  let mu=0;for(let k=rb.length-m;k<rb.length;k++)mu+=rb[k];mu/=m;
+  let va=0;for(let k=rb.length-m;k<rb.length;k++)va+=(rb[k]-mu)*(rb[k]-mu);
+  const sd=Math.sqrt(va/m)||1e-9;
+  let r20=0;for(let k=rb.length-20;k<rb.length;k++)r20+=rb[k];
+  return r20/(sd*Math.sqrt(20));}
+
+/* ================= 5. Live Logic 레지스트리 ================= */
+const LOGICS=[
+ ['corr','상관 네트워크'],['rho','상관 수렴도'],['momo','모멘텀 상태'],['event','이벤트 전망'],
+ ['taylor','테일러 갭'],['liq','유동성 지수'],['cot','포지셔닝 쏠림'],['hy','크레딧 스프레드'],['route','항로·초크포인트'],
+];
+const LON={};LOGICS.forEach(([k])=>LON[k]=true);
+const logicPop=document.getElementById('logicPop'),logicBtn=document.getElementById('logicBtn');
+LOGICS.forEach(([k,nm])=>{
+  const l=document.createElement('label');
+  l.innerHTML=`<input type="checkbox" id="lg_${k}" checked> ${nm}`;
+  logicPop.appendChild(l);
+  l.querySelector('input').addEventListener('change',e=>{LON[k]=e.target.checked;applyLogics();});
+});
+logicBtn.addEventListener('click',e=>{e.stopPropagation();
+  const on=!logicPop.classList.contains('on');
+  logicPop.classList.toggle('on',on);logicBtn.setAttribute('aria-expanded',on);});
+document.addEventListener('click',()=>{logicPop.classList.remove('on');logicBtn.setAttribute('aria-expanded','false');});
+function applyLogics(){
+  arcG.style.display=LON.corr?'':'none';
+  routeG.style.display=LON.route?'':'none';
+  ndEl.forEach(nd=>{if(nd.badge.dataset.on)nd.badge.setAttribute('opacity',LON.event?(0.4+(+nd.badge.dataset.conf)*.55):0);});
+  document.querySelectorAll('[data-logic]').forEach(el=>{
+    el.style.display=LON[el.dataset.logic]?'':'none';});
+}
+
+/* ================= 6. 지도 ================= */
+const PAL={light:{land:'#CBD6E7',grid:'#EDF1F8',eq:'#E2E9F3'},dark:{land:'#26406E',grid:'#0F1E3B',eq:'#13284D'}};
+let theme='light';
+const cv=document.getElementById('land');
+function drawLand(){
+  const box=cv.parentElement,dpr=window.devicePixelRatio||1;
+  cv.width=box.clientWidth*dpr;cv.height=box.clientHeight*dpr;
+  const c=cv.getContext('2d');c.scale(dpr*box.clientWidth/VW,dpr*box.clientHeight/VH);
+  c.clearRect(0,0,VW,VH);
+  const P=PAL[theme];
+  c.strokeStyle=P.grid;c.lineWidth=.7;
+  for(let lo=-150;lo<=150;lo+=30){c.beginPath();c.moveTo(X(lo),0);c.lineTo(X(lo),VH);c.stroke();}
+  for(let la=-40;la<=60;la+=20){c.beginPath();c.moveTo(0,Y(la));c.lineTo(VW,Y(la));c.stroke();}
+  c.strokeStyle=P.eq;c.beginPath();c.moveTo(0,Y(0));c.lineTo(VW,Y(0));c.stroke();
+  c.fillStyle=P.land;
+  LAND.rows.forEach((hex,ri)=>{const lat=LAND.top-ri*2;
+    for(let h=0;h<hex.length;h++){const nib=parseInt(hex[h],16);
+      for(let b=0;b<4;b++)if(nib&(8>>b)){c.beginPath();c.arc(X(-179+(h*4+b)*2),Y(lat),1.9,0,7);c.fill();}}});
+}
+const svgNS='http://www.w3.org/2000/svg',map=document.getElementById('map');
+function el(t,at,p){const e=document.createElementNS(svgNS,t);for(const k in at)e.setAttribute(k,at[k]);(p||map).appendChild(e);return e;}
+/* 항로 */
+const CPS=[{id:'hormuz',nm:'호르무즈',lon:56.5,lat:26.6},{id:'suez',nm:'수에즈',lon:32.35,lat:30},
+ {id:'malacca',nm:'말라카',lon:100.5,lat:3},{id:'panama',nm:'파나마',lon:-79.7,lat:9.1},
+ {id:'bab',nm:'바브엘만데브',lon:43.4,lat:12.6},{id:'bosporus',nm:'보스포루스',lon:29,lat:41.1},
+ {id:'gibraltar',nm:'지브롤터',lon:-5.6,lat:35.95}];
+const ROUTES=[
+ {id:'gulf_asia',via:['hormuz'],pts:[[50,26.3],[56.5,26.6],[61,23.5],[72,9],[95,5.5],[100.5,3],[105,2],[112,8],[119,18],[124,28],[128,34]]},
+ {id:'gulf_eu',via:['hormuz'],pts:[[56.5,26.6],[57,23],[51,13.5],[43.4,12.6],[39,17],[34.5,27],[32.35,30],[28,32.5],[18,35],[5,37.2],[-5.6,35.95],[-9.5,38.5],[-9,44],[-4,48.8],[2,50.8]]},
+ {id:'asia_eu',via:[],pts:[[112,8],[100.5,3],[95,5.5],[80,6.5],[60,13],[43.4,12.6],[34.5,27],[32.35,30],[18,35],[-5.6,35.95],[-4,48.8]]},
+ {id:'atlantic',via:[],pts:[[-4,48.8],[-15,47],[-35,43],[-55,41],[-70,40.5]]},
+ {id:'panama_r',via:[],pts:[[-70,35],[-74,26],[-79.7,9.1],[-95,11],[-115,18],[-135,26]]},
+ {id:'cape',via:[],alt:true,pts:[[100.5,3],[92,-2],[75,-9],[55,-19],[34,-31],[19,-35.2],[8,-25],[-2,-8],[-9,8],[-14,22],[-11,32],[-5.6,35.95]]},
+];
+const routeG=el('g',{}),arcG=el('g',{}),nodeG=el('g',{});
+const routeEls={},cpEls={};
+ROUTES.forEach(r=>{
+  const d=r.pts.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join(' ');
+  const path=el('path',{d,class:'route'},routeG);
+  if(r.alt)path.style.opacity=.2;
+  routeEls[r.id]=path;
+});
+CPS.forEach(c=>{
+  const x=X(c.lon),y=Y(c.lat),g=el('g',{},routeG);
+  cpEls[c.id]=el('rect',{x:x-4,y:y-4,width:8,height:8,transform:`rotate(45 ${x} ${y})`,class:'cp'},g);
+  el('title',{},g).textContent='초크포인트 · '+c.nm;
+  el('text',{x:x+7,y:y-6,class:'cplab'},g).textContent=c.nm;
+});
+/* ---- 선박 ---- */
+const shipG=el('g',{},routeG.parentNode);
+const SHIPS=[];
+function initShips(){
+  ROUTES.forEach(r=>{
+    const path=routeEls[r.id];
+    if(!path.getTotalLength)return;
+    const len=path.getTotalLength();
+    const cnt=r.alt?3:(r.id==='atlantic'||r.id==='panama_r'?2:3);
+    for(let k=0;k<cnt;k++){
+      const elp=el('path',{d:'M0 -4.2 L3.2 3.2 L-3.2 3.2 Z',class:'ship'+(r.alt?' gold':'')},shipG);
+      if(r.alt)elp.style.display='none';
+      SHIPS.push({r,path,len,prog:(k+0.3)/cnt+Math.random()*0.1,spd:(0.0009+Math.random()*0.0007)*(r.alt?1.6:1),el:elp});
+    }
+  });
+}
+function tickShips(){
+  const closed=closure&&closure.until>tick;
+  SHIPS.forEach(sp=>{
+    const cut=closed&&sp.r.via.includes('hormuz');
+    if(sp.r.alt)sp.el.style.display=closed?'':'none';
+    if(!cut)sp.prog=(sp.prog+sp.spd)%1;
+    sp.el.setAttribute('class','ship'+(sp.r.alt?' gold':'')+(cut?' stuck':''));
+    const P1=sp.path.getPointAtLength(sp.prog*sp.len);
+    const P2=sp.path.getPointAtLength(Math.min(sp.len,(sp.prog+0.008)*sp.len));
+    const ang=Math.atan2(P2.y-P1.y,P2.x-P1.x)*180/Math.PI+90;
+    sp.el.setAttribute('transform',`translate(${P1.x.toFixed(1)} ${P1.y.toFixed(1)}) rotate(${ang.toFixed(0)})`);
+  });
+}
+function updateRoutes(){
+  const closed=closure&&closure.until>tick;
+  cpEls.hormuz.setAttribute('class','cp'+(closed?' closed':''));
+  ROUTES.forEach(r=>{
+    const p=routeEls[r.id];
+    if(r.alt){p.setAttribute('class','route'+(closed?' alt':''));p.style.opacity=closed?'':.2;return;}
+    p.setAttribute('class','route'+(closed&&r.via.includes('hormuz')?' cut':''));
+  });
+  const bn=document.getElementById('evBanner'),box=document.getElementById('mapBox');
+  const evOn=lastEv&&lastEv.until>tick;
+  if(evOn){bn.classList.add('on');box.classList.add('eventon');
+    document.getElementById('evTxt').innerHTML='<b>'+lastEv.title+'</b>'+(closed?' — 호르무즈 봉쇄, 희망봉 우회 항로 활성':' — 영향 전망이 지도에 표시 중');
+    document.getElementById('evCnt').textContent='지평 종료까지 '+(lastEv.until-tick)+'분';
+  }else{bn.classList.remove('on');box.classList.remove('eventon');}
+}
+/* 노드·아크 */
+let baseIdx=4,arcs=[],ndEl=[];
+function buildNodes(){
+  nodeG.innerHTML='';ndEl=[];
+  A.forEach((a,i)=>{
+    const x=X(a.lon),y=Y(a.lat),g=el('g',{class:'node'},nodeG);
+    if(i===baseIdx)el('circle',{cx:x,cy:y,r:10,fill:'none',stroke:'var(--acc)','stroke-width':2,class:'halo'},g);
+    el('circle',{cx:x,cy:y,r:i===baseIdx?8:5.5,fill:i===baseIdx?'var(--acc)':'var(--nodefill)',
+      stroke:i===baseIdx?'var(--acc)':'var(--nodeline)','stroke-width':1.6},g);
+    const an=x>VW*.55?'end':'start',lx=an==='start'?12:-12;
+    el('text',{x:x+lx,y:y+2,'text-anchor':an,class:'ncode',
+      style:i===baseIdx?'fill:var(--acc);font-size:11px':''},g).textContent=a.c;
+    const chg=el('text',{x:x+lx,y:y+13,'text-anchor':an,class:'nchg',fill:'var(--ink-3)'},g);
+    const badge=el('text',{x,y:y-14,'text-anchor':'middle',class:'nbadge',opacity:0},g);
+    el('title',{},g).textContent=a.n;
+    g.addEventListener('click',()=>{if(BASES.some(b=>b[0]===i)){baseIdx=i;document.getElementById('baseSel').value=i;rebase();}});
+    ndEl[i]={chg,badge};
+  });
+  sigEv.forEach(e=>setBadge(e.a,e.dir,e.conf));
+}
+function buildArcs(){
+  arcG.innerHTML='';arcs=[];
+  const hx=X(A[baseIdx].lon),hy2=Y(A[baseIdx].lat);
+  A.forEach((a,j)=>{if(j===baseIdx)return;
+    const x2=X(a.lon),y2=Y(a.lat),dx=x2-hx,dy=y2-hy2,len=Math.hypot(dx,dy);
+    let px=-dy/len,py=dx/len;if(py>0){px=-px;py=-py;}
+    const off=Math.min(70,len*.2),cx=(hx+x2)/2+px*off,cy=(hy2+y2)/2+py*off;
+    const p=el('path',{d:`M${hx} ${hy2} Q ${cx.toFixed(1)} ${cy.toFixed(1)} ${x2} ${y2}`,
+      class:'arc','stroke-width':0,opacity:0,stroke:'#999'},arcG);
+    arcs.push({j,p,tt:el('title',{},p)});
+  });
+}
+function eventFX(id){
+  if(typeof el!=='function'||!ndEl.length)return;
+  const s=SH[id],[elon,elat]=EPI[id]||[0,20],ex=X(elon),ey=Y(elat);
+  const g=el('g',{},map);
+  el('circle',{cx:ex,cy:ey,class:'rip'},g);
+  const g2=el('circle',{cx:ex,cy:ey,class:'rip',style:'animation-delay:.35s'},g);
+  s.out.forEach(([a,dir],k)=>{
+    setTimeout(()=>{
+      if(!ndEl[a])return;
+      const nx=X(A[a].lon),ny=Y(A[a].lat);
+      const c=el('circle',{cx:nx,cy:ny,class:'ripn',stroke:dir>0?'var(--up)':'var(--dn)'},g);
+      setTimeout(()=>c.remove(),1100);
+    },250+k*160);
+  });
+  setTimeout(()=>g.remove(),2600);
+}
+function setBadge(a,dir,conf){if(!ndEl[a])return;
+  const b=ndEl[a].badge;
+  b.textContent=dir>0?'▲':'▼';
+  b.setAttribute('fill',dir>0?'var(--up)':'var(--dn)');
+  b.setAttribute('opacity',LON.event?(0.4+conf*.55):0);
+  b.dataset.on=1;b.dataset.conf=conf;
+}
+function clearBadge(a){if(ndEl[a]){ndEl[a].badge.setAttribute('opacity',0);ndEl[a].badge.dataset.on='';}}
+function rebase(){
+  document.getElementById('mapSub').textContent=`— 모든 선은 ${A[baseIdx].n}와의 60분 롤링 상관`;
+  buildNodes();buildArcs();applyLogics();drawAll();
+}
+
+/* ================= 7. 신호·뉴스 ================= */
+function clockStr(t){const m=540+t;return 'D'+(Math.floor(m/1440)+1)+' '+String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
+const newsEl=document.getElementById('news');
+function addNews(tag,hl){
+  const li=document.createElement('li');
+  li.innerHTML=`<span class="t num">${clockStr(tick)}</span><span class="tag ${tag}">${
+    {geo:'지정학',pol:'통화정책',chn:'중국',etc:'일반'}[tag]}</span><span class="hl">${hl}</span>`;
+  newsEl.prepend(li);while(newsEl.children.length>28)newsEl.removeChild(newsEl.lastChild);
+}
+function renderSignals(){
+  const box=document.getElementById('sig'),rows=[];
+  const byA={};
+  sigEv.forEach(e=>{if(!byA[e.a]||byA[e.a].conf<e.conf)byA[e.a]=e;});
+  if(LON.event)for(const a in byA){const e=byA[a];
+    rows.push({a:+a,dir:e.dir,txt:e.dir>0?'긍정':'부정',why:e.why+' 영향 (신뢰 '+Math.round(e.conf*100)+'%)',pri:e.conf+1});}
+  if(LON.momo)A.forEach((_,i)=>{if(byA[i])return;const z=momoZ(i);
+    if(Math.abs(z)>=2.3)rows.push({a:i,dir:z>0?1:-1,txt:z>0?'긍정':'부정',
+      why:'모멘텀 z='+z.toFixed(1)+' — 통계적 '+(z>0?'상방':'하방')+' 추세 상태',pri:Math.abs(z)/3});});
+  rows.sort((x,y)=>y.pri-x.pri);
+  box.innerHTML=rows.slice(0,7).map(r=>{
+    const col=r.dir>0?'var(--up)':'var(--dn)';
+    return `<div class="srow"><span class="ar" style="color:${col}">${r.dir>0?'▲':'▼'}</span>
+     <span class="mid"><span><span class="anm">${A[r.a].n}</span><span class="sc2">${A[r.a].c}</span></span>
+     <span class="why">${r.why}</span></span><span class="st" style="color:${col}">${r.txt}</span></div>`;}).join('')
+   ||'<div class="srow"><span class="why" style="white-space:normal;color:var(--ink-3)">현재 뚜렷한 신호 없음 — 중립 국면입니다</span></div>';
+}
+
+/* ================= 8. 로직 그리드 ================= */
+const GDEFS=[
+ {id:'taylor',lg:'taylor',nm:'테일러 갭'},{id:'liq',lg:'liq',nm:'유동성 지수'},
+ {id:'hy',lg:'hy',nm:'크레딧 스프레드'},{id:'rho',lg:'rho',nm:'상관 수렴도'},
+ {id:'fr',lg:'corr',nm:'위험선호 팩터'},{id:'fd',lg:'corr',nm:'달러 팩터'},
+ {id:'fi',lg:'corr',nm:'미 금리 팩터'},{id:'fc',lg:'corr',nm:'중국 팩터'},
+ {id:'cot',lg:'cot',nm:'포지셔닝 쏠림'},{id:'momo',lg:'momo',nm:'모멘텀 리더'},
+ {id:'pairs',lg:'corr',nm:'상관 상위 페어'},{id:'ver',lg:'event',nm:'전망 적중률'},
+];
+const ggrid=document.getElementById('ggrid');
+GDEFS.forEach(g=>{
+  const d=document.createElement('div');d.className='gcard';d.dataset.logic=g.lg;
+  d.innerHTML=`<div class="gh"><b>${g.nm}</b><button class="info" data-lib="${g.lg}">ⓘ 설명</button></div>
+    <div class="gv num" id="gv_${g.id}">—</div><div class="gs" id="gs_${g.id}"></div>
+    <div class="gbar" id="gb_${g.id}" style="display:none"><span class="z"></span><span class="b"></span></div>`;
+  ggrid.appendChild(d);
+});
+document.querySelectorAll('.info').forEach(b=>b.addEventListener('click',()=>{showView('lib');
+  const t=document.getElementById('lib_'+b.dataset.lib);if(t)t.scrollIntoView({behavior:'smooth',block:'center'});}));
+function setG(id,val,desc,bar,col){
+  document.getElementById('gv_'+id).textContent=val;
+  if(col)document.getElementById('gv_'+id).style.color=col;
+  document.getElementById('gs_'+id).innerHTML=desc;
+  const gb=document.getElementById('gb_'+id);
+  if(bar!==undefined){gb.style.display='';
+    const v=Math.max(-1,Math.min(1,bar)),pct=Math.abs(v)*50,b=gb.querySelector('.b');
+    b.style.left=v>=0?'50%':(50-pct)+'%';b.style.width=pct+'%';
+    b.style.background=v>=0?'var(--up)':'var(--dn)';}
+}
+function renderGrid(){
+  const taylor=1.0+pi+0.5*(pi-2)+0.5*(ygap*10),gap=taylor-pol;
+  setG('taylor',(gap>=0?'+':'')+gap.toFixed(2)+'%p',
+    `이론 적정금리 ${taylor.toFixed(2)}% vs 정책금리 ${pol.toFixed(2)}% — ${gap>0.4?'정책이 이론보다 완화적 → 긴축 압력 잠재':gap<-0.4?'정책이 이론보다 긴축적 → 완화 여지':'이론과 정책 대체로 정합'}`,gap/2,gap>0.4?'var(--up)':gap<-0.4?'var(--dn)':'var(--ink)');
+  setG('liq',(liq>=0?'+':'')+liq.toFixed(2)+'σ',
+    `중앙은행 자금 공급의 여유(시뮬 지수). ${liq<-0.5?'유동성 위축 국면 — 위험자산 역풍':liq>0.5?'유동성 풍부 — 위험자산 순풍':'중립 범위'}`,liq,liq>0?'var(--ok)':'var(--dn)');
+  setG('hy',hy.toFixed(0)+'bp'.replace('bp','0bp')==='' ? '' : (hy*100).toFixed(0)+'bp',
+    `하이일드-국채 스프레드(시뮬). ${hy>4.5?'신용 스트레스 확대 — 위험 경보':hy>3.8?'경계 구간':'신용 환경 안정'}`,(hy-3.5)/2,hy>4.5?'var(--up)':'var(--ink)');
+  const m=Math.min(60,retBuf[0].length);let sum=0,c=0;
+  const rhoB=new Array(n).fill(0);
+  if(m>=12){for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){const r=pearson(i,j,m);sum+=Math.abs(r);c++;
+    if(i===baseIdx)rhoB[j]=r;if(j===baseIdx)rhoB[i]=r;}}
+  const avg=c?sum/c:0;
+  setG('rho',avg.toFixed(2),avg>.55?'수렴(위험) — 위기 시 "상관이 1로 간다" 진행 중, 분산효과 소멸':avg>.38?'긴장 — 공통 팩터 지배력 상승':'분산 양호 — 자산들이 각자의 이야기로 움직임',avg*2-0.8,avg>.55?'var(--up)':'var(--ink)');
+  const FN={fr:['r','위험자산 공통 동력. 양수=위험선호'],fd:['d','달러 강세=신흥국·원자재 역풍'],fi:['i','금리·인플레 축(연준)'],fc:['c','중국 수요 축(원자재·아시아)']};
+  for(const id in FN){const[k,ds]=FN[id];const v=Math.max(-2,Math.min(2,fE[k]));
+    setG(id,(v>=0?'+':'')+v.toFixed(2)+'σ',ds,v/2,v>.15?'var(--up)':v<-.15?'var(--dn)':'var(--ink)');}
+  let mx=0,mi=0;A.forEach((_,i)=>{const z=Math.abs(momoZ(i));if(z>mx){mx=z;mi=i;}});
+  setG('cot',mx.toFixed(1)+'σ',`가장 쏠린 자산: <b>${A[mi].n}</b> — 추세 추종 자금의 집중도(시뮬 프록시). 극단(3σ+)은 역발상 관찰 대상`,undefined,mx>3?'var(--up)':'var(--ink)');
+  const zs=A.map((_,i)=>[i,momoZ(i)]).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).slice(0,4);
+  setG('momo','',`<table class="gtbl">${zs.map(([i,z])=>`<tr><td>${A[i].n}</td><td class="r" style="color:${z>0?'var(--up)':'var(--dn)'}">z ${z>=0?'+':''}${z.toFixed(1)}</td></tr>`).join('')}</table>`);
+  if(m>=12){const ps=[];for(let i=0;i<n;i++)for(let j=i+1;j<n;j++)ps.push([i,j,pearson(i,j,m)]);
+    ps.sort((a,b)=>Math.abs(b[2])-Math.abs(a[2]));
+    setG('pairs','',`<table class="gtbl">${ps.slice(0,4).map(([i,j,r])=>`<tr><td>${A[i].c}·${A[j].c}</td><td class="r" style="color:${r>0?'var(--up)':'var(--dn)'}">${r>=0?'+':''}${r.toFixed(2)}</td></tr>`).join('')}</table>`);}
+  let vn=0,vh=0,vt=0;VER.list.forEach(r=>{if(r.done){vn++;vh+=r.hit;vt+=r.tot;}});
+  setG('ver',vn?Math.round(vh/vt*100)+'%':'—',vn?`판정된 시나리오 ${vn}건 · 자산 전망 ${vt}건 중 ${vh}건 적중 — 전망은 항상 채점됩니다`:'아직 판정 없음 — 시뮬레이션이 흐르면 자동 채점',undefined,'var(--acc)');
+  return rhoB;
+}
+
+/* ================= 9. 시나리오 랩 ================= */
+let scSel=null;
+const scrow=document.getElementById('scrow');
+Object.keys(SH).forEach(id=>{
+  const b=document.createElement('button');b.className='scbtn';b.id='sc_'+id;b.textContent=SH[id].title;
+  b.addEventListener('click',()=>{scSel=id;
+    document.querySelectorAll('.scbtn').forEach(x=>x.classList.toggle('on',x.id==='sc_'+id));
+    renderPlaybook();});
+  scrow.appendChild(b);
+});
+function renderPlaybook(mc){
+  const s=SH[scSel],w=document.getElementById('pbWrap');
+  document.getElementById('runMC').style.display='';
+  w.innerHTML=`<table class="pbtbl"><thead><tr><th>자산</th><th>전망</th><th>신뢰</th><th>근거 로직</th>${mc?'<th>40경로 분포 (P10—중앙값—P90)</th><th class="r">상승확률</th>':''}</tr></thead><tbody>`+
+   s.out.map(([a,dir,conf,why])=>{
+    const col=dir>0?'var(--up)':'var(--dn)';
+    let mcCells='';
+    if(mc){const st=mc[a];
+      const lo=st.p10,hi=st.p90,md=st.med,R=4;
+      const pos=v=>50+Math.max(-1,Math.min(1,v/R))*50;
+      mcCells=`<td><span class="mcband"><span class="zz"></span>
+        <span class="rng" style="left:${Math.min(pos(lo),pos(hi))}%;width:${Math.abs(pos(hi)-pos(lo))}%;background:${md>=0?'var(--up)':'var(--dn)'}"></span>
+        <span class="med" style="left:${pos(md)}%;background:${md>=0?'var(--up)':'var(--dn)'}"></span></span>
+        <span class="num" style="font-size:10px;color:var(--ink-3)"> ${md>=0?'+':''}${md.toFixed(1)}%</span></td>
+        <td class="r" style="color:${st.pUp>=.5?'var(--up)':'var(--dn)'}">${Math.round(st.pUp*100)}%</td>`;}
+    return `<tr><td><b>${A[a].n}</b> <span class="mut num" style="font-size:9.5px">${A[a].c}</span></td>
+     <td><span class="dirb" style="color:${col}">${dir>0?'▲ 긍정':'▼ 부정'}</span></td>
+     <td class="r">${Math.round(conf*100)}%</td><td style="color:var(--ink2);font-size:11.5px">${why}</td>${mcCells}</tr>`;
+   }).join('')+`</tbody></table>`;
+}
+function runMC(){
+  if(!scSel)return null;
+  const s=SH[scSel],K=40,H=HORIZON,res=A.map(()=>[]);
+  for(let k=0;k<K;k++){
+    const g=mulberry32(1000+k*7);
+    let lw=w,ltw=s.reg!==undefined?s.reg:tw;
+    const cum=new Array(n).fill(0);
+    for(let t=0;t<H;t++){
+      lw+=(ltw-lw)*0.06;
+      const F={r:randn(g)*(1+1.4*lw)+0.045-0.4*lw,d:randn(g)*.9+0.2*lw,i:randn(g)*.9,c:randn(g)*.9};
+      if(t<30){for(const f in s.f)F[f]+=s.f[f];}
+      A.forEach((a,i)=>{
+        let add=(t<30&&s.a[i])?s.a[i]:0;
+        cum[i]+=(a.L.r*F.r+a.L.d*F.d+a.L.i*F.i+a.L.c*F.c+randn(g)+add)*BASE*a.vol;
+      });
+    }
+    cum.forEach((v,i)=>res[i].push(v*100));
+  }
+  const stats={};
+  s.out.forEach(([a])=>{
+    const arr=res[a].slice().sort((x,y)=>x-y);
+    stats[a]={p10:arr[Math.floor(K*.1)],med:arr[Math.floor(K*.5)],p90:arr[Math.floor(K*.9)],
+      pUp:arr.filter(v=>v>0).length/K};
+  });
+  return stats;
+}
+document.getElementById('runMC').addEventListener('click',()=>{const mc=runMC();if(mc)renderPlaybook(mc);});
+function renderVer(){
+  const box=document.getElementById('verBox');
+  const done=VER.list.filter(r=>r.done).slice(0,10);
+  if(!done.length)return;
+  let vh=0,vt=0;VER.list.forEach(r=>{if(r.done){vh+=r.hit;vt+=r.tot;}});
+  box.innerHTML=`<p style="font-size:12.5px;margin-top:6px">전체 적중률 <b class="num" style="color:var(--acc)">${Math.round(vh/vt*100)}%</b> <span class="mut">(전망 ${vt}건 중 ${vh}건, 지평 70분)</span></p>
+   <table class="vertbl">${done.map(r=>`<tr><td class="num mut" style="font-size:10px">${clockStr(r.t0)}</td>
+    <td>${r.title}</td><td class="r num" style="color:${r.hit/r.tot>=.5?'var(--ok)':'var(--up)'}">${r.hit}/${r.tot}</td></tr>`).join('')}</table>`;
+}
+
+/* ================= 10. 라이브러리 ================= */
+const LIB=[
+ ['corr','상관 네트워크','ρ = cov(A,B) / (σA·σB)','두 자산 수익률이 함께 움직인 정도(−1~+1)를 최근 60분 창으로 계속 다시 잰다. 상관은 고정된 성질이 아니라 국면 따라 변하는 <b>상태</b>이기 때문.','지도의 모든 연결선이 이 값이다. 상관 높은 자산 둘을 보유하면 분산이 아니라 같은 베팅의 반복이다.','과거 창 기반이라 급변 국면 초기는 늦게 반영한다.'],
+ ['rho','상관 수렴도 (평균 |ρ|)','mean( |ρ(i,j)| for all pairs )','모든 페어 상관 절대값의 평균. 위기 때 "모든 상관이 1로 간다"는 현상을 하나의 숫자로 감시한다.','0.55를 넘으면 자산들이 각자의 이야기를 멈추고 하나의 공포로 움직이는 중 — 분산효과 소멸 경보.','수렴의 원인(어느 팩터인가)은 팩터 게이지와 함께 읽어야 한다.'],
+ ['momo','모멘텀 z-score','z = Σr(20) / (σ_실현 · √20)','최근 20분 수익률을 그 자산의 실현 변동성으로 나눈 표준화 점수. |z|≥2.3이면 통계적으로 드문 추세 상태.','신호 패널의 "모멘텀" 근거가 이것. 변동성으로 나누므로 조용한 자산의 작은 움직임도, 시끄러운 자산의 큰 움직임도 같은 자로 잰다.','평균회귀 국면에서는 역효과 — 국면 필터와 함께 쓴다.'],
+ ['event','이벤트 전망과 검증','전망(방향·신뢰) → 70분 후 실현과 대조','시나리오 발동 시 자산별 전망을 기록하고, 지평이 지나면 실제 변화와 대조해 자동 채점한다. 적중률은 항상 공개된다.','이 플랫폼의 심장. 채점 없는 전망은 소음이며, 우리는 우리 논리의 성적표를 숨기지 않는다.','시뮬 단계의 적중률은 엔진 일관성의 증명이지 실제 시장 예측력의 증명이 아니다.'],
+ ['taylor','테일러 준칙과 테일러 갭','i* = r* + π + 0.5(π−π*) + 0.5(산출갭)','물가와 성장으로 "이론상 적정 기준금리"를 계산하는 고전 준칙(Taylor, 1993). 우리는 예측이 아니라 <b>갭</b>(이론−실제 정책금리)을 게이지로 쓴다.','갭이 크게 양수면 정책이 이론 대비 완화적 → 긴축 서프라이즈 위험 잠재. 음수면 그 반대.','자연이자율 r*은 관측 불가라 준칙 자체가 논쟁적 — 그래서 수치가 아니라 방향과 변화를 본다.'],
+ ['liq','유동성 지수','중앙은행 B/S · 역레포(RRP) · 단기금리(SOFR) 합성','시중에 도는 돈의 여유를 추적한다. 2019 레포 발작, 2023 SVB 모두 이 계열 지표가 먼저 흔들렸다.','위험자산의 밀물과 썰물. 유동성 위축 국면의 악재는 두 배로 아프다.','시뮬 단계에서는 합성 지수이며, 실데이터 단계에서 연준 H.4.1·RRP·SOFR로 대체된다.'],
+ ['cot','포지셔닝 쏠림 (COT)','투기 자금의 방향별 쏠림 표준화 (CFTC 주간 보고)','선물 시장에서 투기 자금이 어느 쪽에 얼마나 몰려 있는지를 본다. 극단적 쏠림은 "모두가 이미 그 배에 탔다"는 뜻.','만원 버스는 더 태울 손님이 없다 — 극단(±3σ)은 추세의 연료 소진, 역발상 관찰 대상.','주간 발표라 후행성이 있고, 쏠림이 곧 반전 시점을 말해주지는 않는다.'],
+ ['hy','크레딧 스프레드','하이일드 회사채 금리 − 국채 금리','신용도 낮은 기업이 돈을 빌릴 때 얹는 웃돈. 채권 시장이 매기는 "부도 공포의 가격".','주식보다 반 박자 먼저 겁먹는 경향이 있어 위험회피의 조기 경보로 쓴다. 400bp대 진입은 경계 신호.','스프레드 확대가 곧 폭락은 아니다 — 속도(변화율)가 수준보다 중요하다.'],
+ ['route','항로·초크포인트','7대 해협 + 주요 무역로 (AIS 연동 예정)','세계 교역의 관문(호르무즈·수에즈·말라카 등)과 항로를 지도에 상시 표시하고, 봉쇄 이벤트 시 우회로와 파급을 연출한다.','유가·운임·수입국 증시로 번지는 공급망 충격을 눈으로 따라갈 수 있다.','시뮬 단계는 정적 항로이며, 실데이터 단계에서 AIS 선박 스트림으로 살아난다.'],
+ ['beta','베타 (민감도)','β = cov(A,M) / var(M)','기준 자산이 1% 움직일 때 대상 자산이 평균 몇 % 움직였는지의 회귀 기울기.','"코스피는 S&P의 몇 배로 반응하는가" — 관계의 방향(상관)에 크기를 더한 자.','과거 창 기반 추정치라 구조 변화 시점엔 어긋난다.'],
+ ['arcar','이벤트 스터디 (AR/CAR)','AR = 실제수익 − (α+β·시장수익), CAR = ΣAR','사건 전후, 시장 전체 요인을 제거한 "그 사건만의 순수 효과"를 재는 학계 표준 방법론.','영향력 엔진(예: 특정 인물 발언의 파급 측정)의 수학적 기초. 향후 버전에서 라이브로 제공.','기대수익 모형(β) 추정의 품질에 결과가 좌우된다.'],
+];
+const libEl=document.getElementById('lib');
+LIB.forEach(([id,nm,frm,what,use,lim])=>{
+  const d=document.createElement('div');d.className='lcard';d.id='lib_'+id;
+  d.innerHTML=`<h3>${nm}<span class="lc">LOGIC</span></h3><div class="frm">${frm}</div>
+   <p><b>무엇인가</b> — ${what}</p><p><b>어떻게 쓰는가</b> — ${use}</p><p class="lim">한계 — ${lim}</p>`;
+  libEl.appendChild(d);
+});
+
+/* ================= 11. 뷰 전환·컨트롤 ================= */
+function showView(v){
+  const el=document.getElementById('v_'+v);
+  if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===v));
+}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>showView(t.dataset.v)));
+const baseSel=document.getElementById('baseSel');
+BASES.forEach(([i,nm])=>{const o=document.createElement('option');o.value=i;o.textContent=nm;baseSel.appendChild(o);});
+baseSel.value=4;
+baseSel.addEventListener('change',e=>{baseIdx=+e.target.value;rebase();});
+document.getElementById('themeBtn').addEventListener('click',function(){
+  theme=theme==='light'?'dark':'light';
+  document.documentElement.setAttribute('data-theme',theme);
+  this.textContent=theme==='light'?'🌙':'☀️';drawLand();});
+const T0=Date.now();
+setInterval(()=>{const e=Math.floor((Date.now()-T0)/1000);
+  document.getElementById('realT').textContent=
+    String(Math.floor(e/3600)).padStart(2,'0')+':'+String(Math.floor(e/60)%60).padStart(2,'0')+':'+String(e%60).padStart(2,'0');
+},1000);
+let timer=null,interval=600,paused=false;
+const HUDS={1100:'0.5× · 1틱=1분 · 실제 1h ≈ 시뮬 2.1일',600:'1× · 1틱=1분 · 실제 1h ≈ 시뮬 4.2일',300:'2× · 1틱=1분 · 실제 1h ≈ 시뮬 8.3일'};
+function start(){clearInterval(timer);timer=setInterval(()=>{step();drawAll();},interval);}
+document.getElementById('spdSel').addEventListener('change',e=>{interval=+e.target.value;
+  document.getElementById('hud').textContent=HUDS[interval];if(!paused)start();});
+document.getElementById('pauseBtn').addEventListener('click',function(){
+  paused=!paused;this.textContent=paused?'재생':'일시정지';this.setAttribute('aria-pressed',paused);
+  if(paused)clearInterval(timer);else start();});
+window.addEventListener('resize',drawLand);
+const mapWrap=document.getElementById('mapWrap');
+document.getElementById('fsBtn').addEventListener('click',()=>{
+  if(document.fullscreenElement){document.exitFullscreen&&document.exitFullscreen();return;}
+  if(mapWrap.requestFullscreen)mapWrap.requestFullscreen().catch(()=>mapWrap.classList.toggle('fsfix'));
+  else mapWrap.classList.toggle('fsfix');
+  setTimeout(drawLand,120);
+});
+document.addEventListener('fullscreenchange',()=>setTimeout(drawLand,120));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&mapWrap.classList.contains('fsfix')){mapWrap.classList.remove('fsfix');drawLand();}});
+const guideBtn=document.getElementById('guideBtn'),mapGuide=document.getElementById('mapGuide');
+guideBtn.addEventListener('click',e=>{e.stopPropagation();
+  const on=!mapGuide.classList.contains('on');
+  mapGuide.classList.toggle('on',on);guideBtn.setAttribute('aria-expanded',on);});
+document.addEventListener('click',()=>mapGuide.classList.remove('on'));
+
+/* ================= 12. 메인 렌더 ================= */
+function drawAll(){
+  const rhoB=renderGrid();
+  arcs.forEach(e=>{
+    const r=rhoB[e.j],a=Math.abs(r);
+    if(a<.1){e.p.setAttribute('opacity',0);return;}
+    e.p.setAttribute('stroke',r>=0?'var(--up)':'var(--dn)');
+    e.p.setAttribute('stroke-width',(0.6+a*4.4).toFixed(2));
+    e.p.setAttribute('opacity',(0.18+a*.6).toFixed(2));
+    e.tt.textContent=`${A[baseIdx].c} ↔ ${A[e.j].c}  ρ=${r>=0?'+':''}${r.toFixed(2)}`;
+    const nd=4.2-a*3.2,od=parseFloat(e.p.dataset.d||0);
+    if(Math.abs(nd-od)>.45){e.p.style.setProperty('--d',nd.toFixed(2)+'s');e.p.dataset.d=nd;}
+  });
+  A.forEach((a,i)=>{const chg=(prices[i]/a.px-1)*100;
+    ndEl[i].chg.textContent=(chg>=0?'+':'')+chg.toFixed(1)+'%';
+    ndEl[i].chg.setAttribute('fill',chg>0.02?'var(--up)':chg<-0.02?'var(--dn)':'var(--ink-3)');});
+  document.getElementById('clock').textContent=clockStr(tick);
+  updateRoutes();tickShips();
+}
+
+/* ================= 시작 ================= */
+for(let k=0;k<130;k++)step();
+buildNodes();buildArcs();rebase();
+initShips();
+drawLand();renderSignals();
+start();
+</script>
+</body>
+</html>

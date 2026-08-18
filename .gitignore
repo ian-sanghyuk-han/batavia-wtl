@@ -1,0 +1,17 @@
+# secrets & local env — never commit keys
+.env
+.env.*
+*.key
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# notebooks
+.ipynb_checkpoints/
+
+# os
+Thumbs.db
+.DS_Store

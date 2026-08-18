@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<!-- STATUS: Standalone scoreboard component, ESTIMATES only. Source of truth: BATAVIA-MASTER-HANDOFF-v2.md -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Batavia Scoreboard — 로직 리그 (추정 목업)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F7F8FB; --paper:#FFFFFF; --paper2:#F1F4F9; --line:#E3E8F1; --line2:#C9D4E4;
+  --ink:#131F3A; --ink2:#45577A; --ink3:#8593AF; --navy:#16335C; --acc:#1F4FBF;
+  --up:#C9273D; --dn:#2668D9; --ok:#0E8A57; --warn:#B07A12; --gold:#B07A12;
+  --mono:'IBM Plex Mono',ui-monospace,monospace; --serif:'IBM Plex Serif',serif;
+  --sans:'IBM Plex Sans KR',-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.6;padding:0 20px 60px}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.wrap{max-width:1100px;margin:0 auto}
+.mockbar{position:sticky;top:0;z-index:50;background:#131F3A;color:#F5D98B;text-align:center;
+  font-family:var(--mono);font-size:11px;letter-spacing:.1em;padding:6px 10px;margin:0 -20px}
+.mockbar b{color:#FFE9AE}
+header.mast{padding:38px 0 20px;border-bottom:3px double var(--line2)}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--ink3)}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(25px,4vw,37px);color:var(--navy);margin-top:6px}
+h1 em{font-style:italic;color:var(--acc)}
+.credo{margin-top:8px;font-size:14px;color:var(--ink2)}
+nav.tabs{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
+nav.tabs span{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--ink3);background:var(--paper);
+  border:1px solid var(--line2);border-radius:999px;padding:6px 15px}
+nav.tabs span.on{color:#fff;background:var(--navy);border-color:var(--navy)}
+section{margin-top:36px}
+h2.sec{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--ink3);
+  display:flex;align-items:baseline;gap:12px}
+h2.sec .sub{letter-spacing:0;font-family:var(--sans);font-weight:400;font-size:12px;color:var(--ink2)}
+h2.sec::after{content:'';flex:1;height:1px;background:var(--line2);align-self:center}
+
+/* featured */
+.feat{margin-top:14px;background:var(--paper);border:1px solid var(--line2);border-radius:15px;
+  padding:22px 26px;box-shadow:0 1px 2px rgba(19,31,58,.05),0 12px 32px rgba(19,31,58,.07)}
+.feat .head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.feat .rank{font-family:var(--mono);font-size:12px;color:#fff;background:var(--navy);border-radius:8px;padding:3px 10px}
+.feat h3{font-family:var(--serif);font-size:21px;font-weight:600;color:var(--navy)}
+.feat .core{font-family:var(--mono);font-size:10px;color:var(--acc)}
+.feat .hash{margin-left:auto;font-family:var(--mono);font-size:9.5px;color:var(--ink3)}
+.statrow{display:flex;gap:0;margin-top:16px;border:1px solid var(--line);border-radius:11px;overflow:hidden}
+.st{flex:1;padding:11px 8px;text-align:center;border-right:1px solid var(--line)}
+.st:last-child{border-right:0}
+.st .v{font-family:var(--mono);font-size:19px;font-weight:600}
+.st .k{font-size:10.5px;color:var(--ink3);margin-top:1px}
+.st .v.pos{color:var(--up)}.st .v.neg{color:var(--dn)}.st .v.mdd{color:var(--up)}
+.chartbox{margin-top:16px;border:1px solid var(--line);border-radius:11px;padding:12px 12px 4px;background:#FDFEFF}
+.chartbox .ct{font-size:11.5px;color:var(--ink2)}
+.chartbox .ct b{color:var(--ink)}
+.legendrow{display:flex;gap:16px;font-family:var(--mono);font-size:9.5px;color:var(--ink3);padding:4px 4px 6px;flex-wrap:wrap}
+.lg{display:inline-flex;align-items:center;gap:5px}
+.lg i{width:16px;height:0;border-top:2.5px solid}
+.lg i.band{height:8px;background:#DCE5F2;border:0}
+.lg i.dd{height:8px;background:rgba(201,39,61,.14);border:0}
+
+/* league table */
+.ledger{width:100%;border-collapse:collapse;margin-top:14px;background:var(--paper);
+  border:1px solid var(--line2);border-radius:12px;overflow:hidden;font-size:12.5px}
+.ledger thead th{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--ink3);
+  text-align:right;padding:10px 10px;border-bottom:1px solid var(--line2);background:var(--paper2);font-weight:600}
+.ledger thead th:nth-child(-n+2){text-align:left}
+.ledger td{padding:10px;border-bottom:1px solid var(--line);text-align:right;vertical-align:middle}
+.ledger td:nth-child(-n+2){text-align:left}
+.ledger tr:last-child td{border-bottom:0}
+.rk{font-family:var(--mono);font-size:11px;color:var(--ink3);width:34px}
+.lname{font-weight:600}
+.lname .core{display:block;font-family:var(--mono);font-size:9px;color:var(--acc);font-weight:400}
+.pos{color:var(--up)}.neg{color:var(--dn)}
+.gr{font-family:var(--mono);font-size:10.5px;font-weight:600;border-radius:6px;padding:2px 8px;border:1px solid;white-space:nowrap}
+.gA{color:var(--ok);border-color:#B9E2CF;background:#EDF9F3}
+.gB{color:var(--acc);border-color:#BDD0F5;background:#EFF4FE}
+.gC{color:var(--warn);border-color:#EAD7A8;background:#FBF5E7}
+.gF{color:var(--up);border-color:#F1C1C9;background:#FCF0F2}
+tr.dead td{background:#FBFBFD;color:var(--ink3)}
+tr.dead .lname{color:var(--ink2)}
+.stamp-mini{display:inline-block;transform:rotate(-7deg);border:2px solid #B3202F;color:#B3202F;
+  border-radius:6px;padding:1px 8px;font-family:var(--serif);font-weight:600;font-size:12px;letter-spacing:.2em;text-indent:.2em}
+
+/* period strip */
+.periods{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:14px}
+.pcard{background:var(--paper);border:1px solid var(--line2);border-radius:12px;padding:14px 16px}
+.pcard .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--ink3)}
+.pcard .v{font-family:var(--mono);font-size:26px;font-weight:600;margin-top:4px}
+.pcard .m{font-family:var(--mono);font-size:10px;color:var(--ink3);margin-top:3px}
+.pcard .m b{color:var(--up);font-weight:600}
+
+/* pain */
+.pain{margin-top:14px;background:#FCF7F8;border:1px solid #F1C1C9;border-radius:13px;padding:18px 22px}
+.pain h3{font-family:var(--serif);font-size:16px;color:#8A1B29}
+.pain p{font-size:12.5px;color:var(--ink2);margin-top:6px}
+.pain table{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px}
+.pain th{font-family:var(--mono);font-size:9.5px;color:var(--ink3);text-align:left;padding:6px 8px;border-bottom:1px solid #EAD3D8}
+.pain td{padding:7px 8px;border-bottom:1px solid #F3E2E6}
+.pain td.num{text-align:right}
+footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line2);font-size:10.5px;color:var(--ink3);line-height:1.8}
+</style>
+</head>
+<body>
+<div class="mockbar">MOCK · 추정 시뮬레이션 — 아래의 모든 성과·확률·낙폭은 <b>학계 문헌과 역사 데이터의 감각을 빌린 가상의 추정치</b>이며 실측 결과가 아닙니다. 실측판은 검증 아카이브 가동 후 이 자리에 게시됩니다.</div>
+<div class="wrap">
+
+<header class="mast">
+  <div class="kicker">BATAVIA PROJECT · VERIFICATION ARCHIVE</div>
+  <h1>Scoreboard — <em>로직 리그</em></h1>
+  <p class="credo">모든 로직은 리그에 등록되고, 채점되고, 순위표에 앉는다 — 꼴찌까지 전시된다. 수익을 보여줄 때는 반드시 같은 크기로 고통(낙폭)을 보여준다.</p>
+  <nav class="tabs">
+    <span>HISTORY 역사 검증</span><span>BACKTESTS 백테스트</span><span>LIVE 라이브 채점</span><span class="on">SCOREBOARD 로직 리그</span>
+  </nav>
+</header>
+
+<!-- ===== FEATURED ===== -->
+<section>
+  <h2 class="sec">FEATURED <span class="sub">— 리그 1위의 성적표 전문(全文)</span></h2>
+  <article class="feat">
+    <div class="head">
+      <span class="rank">RANK #1</span>
+      <h3>크레딧 선행 — HY 스프레드 급확대 신호</h3>
+      <span class="core">코어 2.6 · 증거등급 A−</span>
+      <span class="hash">사전등록 d02b7aa · 2026-08-03 · 재현: python run.py --exp 003</span>
+    </div>
+    <div class="statrow">
+      <div class="st"><div class="v pos num">+64.2%</div><div class="k">가상 누적 (비용 후)</div></div>
+      <div class="st"><div class="v num">+3.6%</div><div class="k">연복리 환산</div></div>
+      <div class="st"><div class="v num" style="color:var(--ok)">63.1%</div><div class="k">적중률 [CI 58.9–67.1]</div></div>
+      <div class="st"><div class="v num">412</div><div class="k">신호 표본 n</div></div>
+      <div class="st"><div class="v mdd num">−18.4%</div><div class="k">최대 낙폭 (MDD)</div></div>
+      <div class="st"><div class="v num">+0.31%</div><div class="k">신호당 기대값 (비용 차감)</div></div>
+    </div>
+    <div class="chartbox">
+      <div class="ct"><b>가상 에쿼티 커브 2010–2026</b> — 신호를 기계적으로 따랐다면(비용 0.08%/신호 차감). 회색 구름: 부트스트랩 1,000회의 "운이었다면" 궤적 범위. 붉은 띠: 낙폭 구간.</div>
+      <svg viewBox="0 0 860 250" width="100%" role="img" aria-label="가상 에쿼티 커브와 부트스트랩 밴드">
+        <!-- 낙폭 구간 -->
+        <rect x="240" y="18" width="60" height="196" fill="rgba(201,39,61,0.10)"/>
+        <rect x="472" y="18" width="46" height="196" fill="rgba(201,39,61,0.10)"/>
+        <rect x="700" y="18" width="34" height="196" fill="rgba(201,39,61,0.10)"/>
+        <!-- 부트스트랩 밴드 -->
+        <path d="M40,208 L120,206 200,200 280,204 360,192 440,184 520,190 600,172 680,168 760,158 820,150
+                 L820,196 760,204 680,212 600,214 520,222 440,220 360,226 280,232 200,228 120,226 40,224 Z"
+              fill="#DCE5F2" opacity="0.75"/>
+        <!-- 비용 전(점선) -->
+        <polyline points="40,214 120,205 200,192 240,196 300,201 360,178 440,163 472,171 518,176 600,142 680,131 700,137 734,141 760,120 820,106"
+          fill="none" stroke="#8FA6CC" stroke-width="1.6" stroke-dasharray="4 4"/>
+        <!-- 비용 후(실선) -->
+        <polyline points="40,216 120,209 200,198 240,202 300,208 360,187 440,173 472,182 518,187 600,155 680,146 700,153 734,157 760,138 820,124"
+          fill="none" stroke="#1F4FBF" stroke-width="2.6" stroke-linejoin="round"/>
+        <line x1="40" y1="216" x2="820" y2="216" stroke="#C9D4E4" stroke-width="1"/>
+        <text x="44" y="240" font-family="IBM Plex Mono" font-size="10" fill="#8593AF">2010</text>
+        <text x="420" y="240" font-family="IBM Plex Mono" font-size="10" fill="#8593AF">2018</text>
+        <text x="790" y="240" font-family="IBM Plex Mono" font-size="10" fill="#8593AF">2026</text>
+        <text x="826" y="126" font-family="IBM Plex Mono" font-size="11" fill="#1F4FBF" font-weight="600">+64%</text>
+        <text x="252" y="34" font-family="IBM Plex Mono" font-size="9" fill="#C9273D">2015–16</text>
+        <text x="478" y="34" font-family="IBM Plex Mono" font-size="9" fill="#C9273D">2020.3</text>
+        <text x="702" y="34" font-family="IBM Plex Mono" font-size="9" fill="#C9273D">2024.8</text>
+      </svg>
+      <div class="legendrow">
+        <span class="lg"><i style="border-color:#1F4FBF"></i>비용 후 누적(가상)</span>
+        <span class="lg"><i style="border-color:#8FA6CC;border-top-style:dashed"></i>비용 전</span>
+        <span class="lg"><i class="band"></i>부트스트랩 1,000회 밴드</span>
+        <span class="lg"><i class="dd"></i>낙폭 구간 — 고통의 전시</span>
+      </div>
+    </div>
+  </article>
+</section>
+
+<!-- ===== LEAGUE ===== -->
+<section>
+  <h2 class="sec">LEAGUE TABLE <span class="sub">— 11개 로직 · 2010–2026 추정 · 비용 차감 · 꼴찌까지 전시</span></h2>
+  <table class="ledger">
+    <thead><tr>
+      <th>#</th><th>로직</th><th>표본 n</th><th>적중률 ±CI</th><th>신호당 효과</th><th>기대값</th>
+      <th>가상 누적</th><th>최근 90d</th><th>MDD</th><th>등급</th>
+    </tr></thead>
+    <tbody>
+      <tr><td class="rk">1</td><td class="lname">크레딧 선행<span class="core">코어 2.6</span></td>
+        <td class="num">412</td><td class="num">63.1 ±4.1%</td><td class="num">+49bp</td><td class="num">+0.31%</td>
+        <td class="num pos">+64.2%</td><td class="num pos">+3.8%</td><td class="num neg">−18.4%</td>
+        <td><span class="gr gA">A− ↑</span></td></tr>
+      <tr><td class="rk">2</td><td class="lname">변동성 프리미엄 수확<span class="core">코어 1.4 · 좌측 꼬리 주의</span></td>
+        <td class="num">640</td><td class="num">66.8 ±3.2%</td><td class="num">+38bp</td><td class="num">+0.24%</td>
+        <td class="num pos">+138.5%</td><td class="num pos">+5.2%</td><td class="num neg">−34.1%</td>
+        <td><span class="gr gA">A−</span></td></tr>
+      <tr><td class="rk">3</td><td class="lname">모멘텀 12−1 (크로스에셋)<span class="core">코어 5.5 · 증거 A</span></td>
+        <td class="num">1,920</td><td class="num">55.2 ±1.9%</td><td class="num">+31bp</td><td class="num">+0.19%</td>
+        <td class="num pos">+96.3%</td><td class="num pos">+2.9%</td><td class="num neg">−23.8%</td>
+        <td><span class="gr gA">A</span></td></tr>
+      <tr><td class="rk">4</td><td class="lname">엔 캐리 — 금리차 구조<span class="core">코어 9.5 · UIP 위반</span></td>
+        <td class="num">520</td><td class="num">60.3 ±3.6%</td><td class="num">+34bp</td><td class="num">+0.21%</td>
+        <td class="num pos">+71.4%</td><td class="num pos">+2.1%</td><td class="num neg">−31.2%</td>
+        <td><span class="gr gB">B+ · 급반전 꼬리</span></td></tr>
+      <tr><td class="rk">5</td><td class="lname">수렴도 경보 (변동성 예보형)<span class="core">코어 5.2 — 손익 아닌 경보 정확도</span></td>
+        <td class="num">96</td><td class="num">62.4 ±8.0%</td><td class="num">경보→실현 Vol ↑</td><td class="num">—</td>
+        <td class="num" style="color:var(--ink3)">방어용</td><td class="num pos">경보 3/4 적중</td><td class="num">—</td>
+        <td><span class="gr gB">B+ ↑</span></td></tr>
+      <tr><td class="rk">6</td><td class="lname">PEAD — 실적 후 표류<span class="core">코어 9.11 · 증거 A</span></td>
+        <td class="num">3,140</td><td class="num">56.4 ±1.5%</td><td class="num">+22bp</td><td class="num">+0.12%</td>
+        <td class="num pos">+58.1%</td><td class="num pos">+1.6%</td><td class="num neg">−15.0%</td>
+        <td><span class="gr gA">A · 소형주 편중 주의</span></td></tr>
+      <tr><td class="rk">7</td><td class="lname">허스트 스위치<span class="core">코어 5.9 → 8.2</span></td>
+        <td class="num">760</td><td class="num">56.1 ±3.0%</td><td class="num">+19bp</td><td class="num">+0.11%</td>
+        <td class="num pos">+48.7%</td><td class="num pos">+1.9%</td><td class="num neg">−13.2%</td>
+        <td><span class="gr gB">B+ ↑</span></td></tr>
+      <tr><td class="rk">8</td><td class="lname">COT 쏠림 역발상<span class="core">코어 2.7 · 7.5</span></td>
+        <td class="num">180</td><td class="num">54.2 ±6.1%</td><td class="num">+41bp</td><td class="num">+0.15%</td>
+        <td class="num pos">+31.2%</td><td class="num pos">+1.4%</td><td class="num neg">−17.3%</td>
+        <td><span class="gr gB">B</span></td></tr>
+      <tr><td class="rk">9</td><td class="lname">FOMC 사전 드리프트<span class="core">코어 7.2 · 발표 후 부패 관찰</span></td>
+        <td class="num">128</td><td class="num">57.8 ±7.2%</td><td class="num">+18bp</td><td class="num">+0.07%</td>
+        <td class="num pos">+18.4%</td><td class="num neg">−0.6%</td><td class="num neg">−9.8%</td>
+        <td><span class="gr gC">C+ ↓ 부패 의심</span></td></tr>
+      <tr><td class="rk">10</td><td class="lname">계절성 (핼러윈 계열)<span class="core">코어 1.8 · C등급 표본</span></td>
+        <td class="num">190</td><td class="num">52.3 ±5.9%</td><td class="num">+9bp</td><td class="num">+0.03%</td>
+        <td class="num pos">+12.1%</td><td class="num pos">+0.4%</td><td class="num neg">−11.5%</td>
+        <td><span class="gr gC">C</span></td></tr>
+      <tr class="dead"><td class="rk">11</td><td class="lname">피보나치 되돌림<span class="core">코어 부록 D · EXP-001</span></td>
+        <td class="num">2,860</td><td class="num">50.8 ±1.9%</td><td class="num">−1bp</td><td class="num">−0.02%</td>
+        <td class="num neg">−3.4%</td><td class="num neg">−0.2%</td><td class="num neg">−12.6%</td>
+        <td><span class="stamp-mini">기각</span></td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:11px;color:var(--ink3);margin-top:9px">등급 화살표(↑↓)는 최근 12개월 재채점에 따른 변동. 수렴도 경보는 방향 로직이 아니라 변동성 예보라 손익 대신 경보 정확도로 채점한다. 모든 수치는 추정 시뮬레이션.</p>
+</section>
+
+<!-- ===== PERIOD RETURNS ===== -->
+<section>
+  <h2 class="sec">PERIOD RETURNS <span class="sub">— 상위 5개 로직 동일가중 합성(가상) · 기간 손익률과 같은 기간의 낙폭</span></h2>
+  <div class="periods">
+    <div class="pcard"><div class="k">최근 30일</div><div class="v pos num">+1.2%</div><div class="m">기간 내 최대 낙폭 <b>−1.9%</b></div></div>
+    <div class="pcard"><div class="k">최근 90일</div><div class="v pos num">+3.8%</div><div class="m">기간 내 최대 낙폭 <b>−3.4%</b></div></div>
+    <div class="pcard"><div class="k">최근 1년</div><div class="v pos num">+11.4%</div><div class="m">기간 내 최대 낙폭 <b>−7.7%</b></div></div>
+    <div class="pcard"><div class="k">누적 (2010~)</div><div class="v pos num">+64.2%</div><div class="m">역사적 최대 낙폭 <b>−18.4%</b></div></div>
+  </div>
+</section>
+
+<!-- ===== PAIN ===== -->
+<section>
+  <h2 class="sec">DRAWDOWN LEDGER <span class="sub">— 고통의 전시: 이 리그가 겪었을 최악의 구간들</span></h2>
+  <div class="pain">
+    <h3>수익을 보여주는 곳은 많다. 고통을 같은 크기로 보여주는 곳이 이곳이다.</h3>
+    <p>아래는 각 로직이 역사적으로 통과했을 최악의 에피소드 추정이다 — 이 낙폭을 견딜 수 없다면 그 수익 곡선은 당신의 것이 아니다.</p>
+    <table>
+      <thead><tr><th>시기</th><th>로직</th><th>사건</th><th style="text-align:right">추정 낙폭</th><th style="text-align:right">회복 소요</th></tr></thead>
+      <tbody>
+        <tr><td class="num">2018.02</td><td>변동성 프리미엄</td><td>볼마겟돈 — VIX 하루 +116%</td><td class="num" style="color:var(--up);font-weight:600">−27%</td><td class="num">14개월</td></tr>
+        <tr><td class="num">2020.03</td><td>엔 캐리</td><td>코로나 급반전 — 안전통화 쇄도</td><td class="num" style="color:var(--up);font-weight:600">−19%</td><td class="num">9개월</td></tr>
+        <tr><td class="num">2024.08</td><td>엔 캐리</td><td>BOJ 서프라이즈 — 되감기의 날</td><td class="num" style="color:var(--up);font-weight:600">−12%</td><td class="num">5개월</td></tr>
+        <tr><td class="num">2015–16</td><td>크레딧 선행</td><td>에너지 부도 사이클 — 잦은 허위 경보</td><td class="num" style="color:var(--up);font-weight:600">−18%</td><td class="num">17개월</td></tr>
+        <tr><td class="num">2022</td><td>PEAD</td><td>금리 급등기 — 표류 약화</td><td class="num" style="color:var(--up);font-weight:600">−11%</td><td class="num">8개월</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  본 페이지는 <b>추정 목업</b>입니다. 모든 성과는 가상이며(비용 0.08%/신호 반영, 세금·호가 충격 미반영), 과거 성과 — 실측이든 추정이든 — 는 미래 수익을 보장하지 않습니다. 실측판의 모든 수치는 사전등록 커밋과 재현 스크립트가 병기됩니다.<br>
+  Batavia Project Verification Archive · SCOREBOARD — 교육·연구 목적의 통계 전시이며 투자 자문·권유가 아닙니다.
+</footer>
+</div>
+</body>
+</html>
