@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<!-- STATUS: OBSERVATORY — DS v2.0 "HOLOGRAM INSTRUMENT" applied to REAL data (owner's Claude Design turn-4, ~70% direction + Claude Code integration). Parallel build; index.html untouched until approval. -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>BATAVIA — 관측소 · Observatory</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#050b11">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital@0;1&family=Space+Mono:wght@400;700&family=Rajdhani:wght@300;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+<style>
+:root{
+  --bg:#050b11; --pane:rgba(8,20,30,.82); --pane2:rgba(10,26,40,.9); --edge:#12303f; --edge2:#1c4a5e;
+  --cy:#7FD8FF; --cy2:#5ad0e6; --cyd:#3d5a6b; --txt:#EAF9FF; --sub:#7fa9c0; --dim:#4f6b78;
+  --news:#FF6A6E; --tank:#FFC96B; --cargo:#7FD8FF; --gold:#c9a55a; --paper:#e9e4d3;
+  --up:#ff6257; --dn:#5c9dff; --ok:#41b096; --amb:#e8a33d;
+  --mono:'Space Mono',ui-monospace,monospace; --disp:'Rajdhani',sans-serif;
+  --serif:'Libre Caslon Text',Georgia,serif;
+  --sans:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);overflow:hidden}
+canvas#globe{position:fixed;inset:0;width:100%;height:100%;cursor:grab;touch-action:none}
+canvas#globe.drag{cursor:grabbing}
+/* 주사선 — 홀로그램 광학 */
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:40;opacity:.05;
+  background:repeating-linear-gradient(0deg,transparent 0 2px,#7FD8FF 2px 3px)}
+.hud{position:fixed;z-index:10;font-size:11px}
+.lbl{font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;color:var(--dim)}
+.lbl b{color:var(--sub);font-weight:400}
+.pane{background:var(--pane);border:1px solid var(--edge);backdrop-filter:blur(6px)}
+.pane .hd{display:flex;align-items:baseline;gap:8px;padding:8px 12px;border-bottom:1px solid var(--edge)}
+/* ── 상단 마스트 ── */
+#mast{top:0;left:0;right:0;display:flex;align-items:center;gap:14px;padding:10px 18px;
+  background:linear-gradient(180deg,rgba(5,11,17,.92),rgba(5,11,17,.65));border-bottom:1px solid var(--edge)}
+#mast .wm{font-family:var(--mono);font-weight:700;font-size:13px;letter-spacing:.34em}
+#mast .obs{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;color:var(--sub)}
+#mast .verd{font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;color:var(--dim);margin-left:auto}
+#mast .verd b{color:var(--gold);font-weight:400}
+#mast .verd a{color:inherit;text-decoration:none}
+#mast .clock{font-family:var(--mono);font-size:9px;color:var(--sub)}
+#mast .live{color:var(--ok);animation:bl 1.6s infinite}
+@keyframes bl{50%{opacity:.25}}
+/* ── 국면(우상) ── */
+#regime{top:58px;right:18px;text-align:right;width:240px}
+#regime .big{font-family:var(--disp);font-weight:300;font-size:64px;line-height:1;letter-spacing:.02em}
+#regime .sea{font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;color:var(--cy)}
+#regime .mean{font-size:11px;color:var(--sub);margin-top:2px}
+/* ── 뉴스 배너(중상) ── */
+#banner{top:64px;left:50%;transform:translateX(-50%);max-width:min(620px,90vw);display:flex;align-items:center;gap:10px;
+  padding:8px 14px;border-left:2px solid var(--news)}
+#banner .dot{width:7px;height:7px;border-radius:50%;background:var(--news);box-shadow:0 0 9px var(--news);flex:none;animation:bl 2s infinite}
+#banner .h{font-family:var(--mono);font-size:11px;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#banner .m{font-family:var(--mono);font-size:8px;color:var(--dim);white-space:nowrap}
+#banner a{color:var(--gold);text-decoration:none}
+/* ── 원장 연산(좌) ── */
+#ledger{top:120px;left:18px;width:280px;max-height:calc(100vh - 240px);overflow-y:auto;scrollbar-width:none}
+#ledger::-webkit-scrollbar{display:none}
+.comp{padding:10px 12px;border-bottom:1px solid var(--edge)}
+.comp .id{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--cy2);letter-spacing:.06em}
+.comp .id time{color:var(--dim)}
+.comp .io{font-family:var(--mono);font-size:9px;color:var(--sub);margin-top:5px;line-height:1.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.comp .io b{color:var(--dim);font-weight:400;margin-right:4px}
+.comp .out{display:flex;align-items:baseline;gap:8px;margin-top:4px}
+.comp .out .v{font-family:var(--disp);font-weight:500;font-size:30px;line-height:1}
+.comp .out .u{font-family:var(--mono);font-size:9px;color:var(--dim)}
+.comp .out .badge{font-family:var(--mono);font-size:8px;border:1px solid var(--cyd);color:var(--sub);padding:1px 6px;margin-left:auto}
+.comp .prov{font-family:var(--mono);font-size:7.5px;letter-spacing:.1em;color:var(--dim);margin-top:5px}
+.prov .ms{color:var(--ok)} .prov .es{color:var(--amb)}
+#ledger .foot{padding:9px 12px;font-family:var(--mono);font-size:7.5px;letter-spacing:.08em;color:var(--dim);line-height:1.9}
+/* ── 우측: 레이더 + 다음 이벤트 + 항해일지 ── */
+#rail{top:196px;right:18px;width:272px;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 320px);overflow-y:auto;scrollbar-width:none}
+#rail::-webkit-scrollbar{display:none}
+.rrow{display:flex;align-items:baseline;gap:8px;padding:7px 12px;border-bottom:1px solid var(--edge);font-family:var(--mono);font-size:9.5px}
+.rrow .cid{color:var(--dim);font-size:8px;width:44px;flex:none}
+.rrow .nm{color:var(--txt);letter-spacing:.02em;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rrow .ev{color:var(--cy)} .rrow .hit{color:var(--sub)}
+#nextev .serif{font-family:var(--serif);font-style:italic;font-size:13.5px;line-height:1.75;color:var(--paper);padding:10px 12px}
+#nextev .dday{font-family:var(--disp);font-weight:600;font-size:26px;color:var(--gold)}
+#nextev .row{display:flex;align-items:baseline;gap:8px;padding:8px 12px 0}
+#nextev .evn{font-family:var(--mono);font-size:11px;letter-spacing:.04em}
+#nextev .when{font-family:var(--mono);font-size:8px;color:var(--dim);padding:2px 12px 0}
+#nextev .pp{display:flex;align-items:baseline;gap:6px;padding:6px 12px}
+#nextev .pp .v{font-family:var(--disp);font-weight:500;font-size:24px}
+#nextev .open{display:block;text-align:right;font-family:var(--mono);font-size:9px;letter-spacing:.14em;
+  color:var(--gold);text-decoration:none;padding:8px 12px;border-top:1px solid var(--edge)}
+.logrow{display:flex;gap:8px;padding:6px 12px;border-bottom:1px solid var(--edge);font-family:var(--mono);font-size:8.5px;color:var(--sub);line-height:1.6}
+.logrow time{color:var(--cy2);flex:none}
+.logrow .src{color:var(--dim);flex:none}
+/* ── 선박 검문 카드 ── */
+#shipcard{display:none;top:120px;left:316px;width:236px}
+#shipcard.on{display:block}
+#shipcard .nm{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.08em;padding:9px 12px 0}
+#shipcard .r{font-family:var(--mono);font-size:9px;color:var(--sub);padding:3px 12px;line-height:1.6}
+#shipcard .r b{color:var(--dim);font-weight:400}
+#shipcard .x{position:absolute;top:6px;right:9px;color:var(--dim);cursor:pointer;font-family:var(--mono);font-size:10px}
+/* ── 하단 상태바 ── */
+#deck{bottom:0;left:0;right:0;display:flex;align-items:center;gap:0;border-top:1px solid var(--edge);
+  background:rgba(5,11,17,.92);font-family:var(--mono);font-size:9.5px;padding-bottom:env(safe-area-inset-bottom)}
+#deck .cell{display:flex;align-items:baseline;gap:6px;padding:9px 14px;border-right:1px solid var(--edge);white-space:nowrap}
+#gates{overflow:hidden}
+#delta{flex:1;overflow:hidden}
+#delta .in{display:inline-flex;gap:18px;white-space:nowrap;animation:mq 36s linear infinite;padding-left:100%}
+@keyframes mq{to{transform:translateX(-100%)}}
+@media(prefers-reduced-motion:reduce){#delta .in{animation:none;padding-left:0}}
+#deck b{font-weight:400}
+.red{color:var(--up)} .blu{color:var(--dn)}
+#hint{bottom:52px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:8px;
+  letter-spacing:.2em;color:var(--cyd);border:1px solid var(--edge);padding:4px 12px;background:var(--pane)}
+#backlink{top:10px;right:18px;z-index:20;font-family:var(--mono);font-size:8.5px;color:var(--dim);text-decoration:none;letter-spacing:.1em}
+/* ── 모바일 ── */
+@media(max-width:900px){
+  #ledger,#rail{position:fixed;top:auto;max-height:44vh}
+  #ledger{display:none;bottom:44px;left:0;right:0;width:auto}
+  #rail{display:none;bottom:44px;left:0;right:0;width:auto}
+  #ledger.on,#rail.on{display:block}
+  #shipcard{left:12px;right:12px;width:auto;top:auto;bottom:48px}
+  #regime{top:52px;right:12px;width:170px}
+  #regime .big{font-size:44px}
+  #banner{top:auto;bottom:88px;left:12px;right:12px;transform:none;max-width:none}
+  #mast .obs,#mast .verd span.hidesm{display:none}
+  #hint{display:none}
+  #mtabs{display:flex}
+}
+#mtabs{display:none;position:fixed;z-index:15;bottom:0;left:0;right:0;border-top:1px solid var(--edge2);
+  background:rgba(4,9,14,.96);font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;padding-bottom:env(safe-area-inset-bottom)}
+#mtabs div,#mtabs a{flex:1;text-align:center;color:var(--dim);padding:11px 0;cursor:pointer;text-decoration:none}
+#mtabs .on{color:var(--cy)}
+@media(max-width:900px){#deck{bottom:38px}#mtabs{display:flex}}
+</style>
+</head>
+<body>
+<canvas id="globe"></canvas>
+
+<div class="hud" id="mast">
+  <span class="wm">BATAVIA</span>
+  <span class="obs">관측소 · OBSERVATORY W.T.L.</span>
+  <span class="verd"><a href="verdicts/index.html">판정 · VERDICTS&nbsp; <b id="vc">— · —</b> <span class="hidesm">— FREE FOREVER</span></a></span>
+  <span class="clock"><span id="utc">--:--</span> UTC <span class="live">●</span> LIVE</span>
+</div>
+
+<div class="hud" id="regime">
+  <div class="lbl">시장 국면 · MARKET REGIME w — <span id="regTag">추정 · ESTIMATED</span></div>
+  <div class="big" id="regV">—</div>
+  <div class="sea" id="regSea">—</div>
+  <div class="mean" id="regMean"></div>
+</div>
+
+<div class="hud pane" id="banner">
+  <span class="dot"></span>
+  <div style="min-width:0">
+    <div class="h" id="bh">관측 대기 · AWAITING SIGNAL</div>
+    <div class="m" id="bm"></div>
+  </div>
+</div>
+
+<div class="hud pane" id="ledger">
+  <div class="hd"><span class="lbl">원장 · LEDGER — LIVE COMPUTATION</span><span class="lbl" style="margin-left:auto;color:var(--cy2)">67 ACTIVE</span></div>
+  <div id="comps"></div>
+  <div class="foot">52 BASE + 12 INTERACTION + 3 GATES · 13 SLOTS AWAIT MEASUREMENT<br>
+  파이프라인 · PIPELINE&nbsp; QUOTES 2× · NEWS 15M · SHIPS 1H · BRIEF 07:30</div>
+</div>
+
+<div class="hud pane" id="shipcard">
+  <span class="x" onclick="this.parentElement.classList.remove('on')">ESC ✕</span>
+  <div class="hd"><span class="lbl">선박 · AIS — <span class="ms" style="color:var(--ok)">실측 · MEASURED</span></span></div>
+  <div class="nm" id="shNm">—</div>
+  <div class="r" id="shR1"></div>
+  <div class="r" id="shR2"></div>
+  <div class="r" id="shR3"></div>
+</div>
+
+<div class="hud" id="rail">
+  <div class="pane" id="radar">
+    <div class="hd"><span class="lbl">기회 · OPPORTUNITY RADAR</span><span class="lbl" style="margin-left:auto;color:var(--amb)">SIM</span></div>
+    <div class="lbl" style="padding:7px 12px 0">EV(σ) × HIT RATE · LEDGER ONLY · RANKED, NOT INSTRUCTED</div>
+    <div class="rrow"><span class="cid">L-M07</span><span class="nm">CPI DRIFT WINDOW</span><span class="ev">+0.42σ</span><span class="hit">58%</span></div>
+    <div class="rrow"><span class="cid">L-S02</span><span class="nm">DISPERSION CARRY</span><span class="ev">+0.31σ</span><span class="hit">61%</span></div>
+    <div class="rrow" style="border-bottom:none"><span class="cid">L-I09</span><span class="nm">OIL/FX WEDGE</span><span class="ev">+0.18σ</span><span class="hit">52%</span></div>
+    <div class="lbl" style="padding:6px 12px 9px;color:var(--amb)">측정 가동 P3 — 그때까지 SIM</div>
+  </div>
+  <div class="pane" id="nextev">
+    <div class="hd"><span class="lbl">다음 이벤트 · NEXT EVENT</span><span class="lbl" style="margin-left:auto"><span class="dday" id="dday">D-—</span></span></div>
+    <div class="row"><span class="evn" id="evn">—</span></div>
+    <div class="when" id="evw"></div>
+    <div class="pp"><span class="lbl">선반영 · PRE-PRICING — <span style="color:var(--ok)">실측</span></span><span class="v" id="ppv">—</span><span class="lbl">/100</span></div>
+    <div class="serif" id="asym">—</div>
+    <div class="prov lbl" style="padding:0 12px 8px" id="evprov"></div>
+    <a class="open" href="card.html">OPEN THE CARD →</a>
+  </div>
+  <div class="pane" id="vlog">
+    <div class="hd"><span class="lbl">항해일지 · VOYAGE LOG — 15 MIN</span></div>
+    <div id="logrows"></div>
+  </div>
+</div>
+
+<div class="hud" id="hint">드래그 · DRAG / 스크롤 · SCROLL — ROTATE THE EARTH</div>
+
+<div class="hud" id="deck">
+  <div class="cell" id="gates"><span class="lbl">관문 · GATES/24H</span><span id="gateVals" style="color:var(--sub)">—</span></div>
+  <div class="cell" id="delta"><div class="in" id="deltaIn"><span class="lbl">델타 · DELTA 2×</span></div></div>
+  <div class="cell"><span class="lbl"><span class="red">RED=UP</span> · <span class="blu">BLUE=DOWN</span></span></div>
+</div>
+
+<div id="mtabs">
+  <div class="on" data-p="globe">◐ 지구본</div>
+  <div data-p="ledger">☰ 원장</div>
+  <div data-p="rail">◎ 기회·이벤트</div>
+  <a href="card.html">▦ 카드</a>
+  <a href="verdicts/index.html">⚖ 판정</a>
+</div>
+
+<script>
+(function(){
+'use strict';
+/* ══ DS v2.0 HOLO 테마 (디자인 캔버스 터언4 그대로) ══ */
+const T={ocean0:'#0a161f',ocean1:'#050b11',limb:'rgba(127,216,255,.55)',grat:'rgba(127,216,255,.10)',
+  land:'#0e1e2a',coast:'rgba(127,216,255,.5)',lane:'rgba(127,216,255,.30)',news:'#FF6A6E',
+  tanker:'#FFC96B',cargo:'#7FD8FF',anchor:'#3d5a6b',label:'#7fa9c0',choke:'#7FD8FF',chokeText:'#EAF9FF'};
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const cv=document.getElementById('globe');
+let land=null,rot={lon:105,lat:12},fleet=[],newsEv=[],chokes={},drag=null,raf=null,idle=!reduce;
+const CHOKE_POS={'말라카':[102.8,2.0],'수에즈':[32.5,30.2],'호르무즈':[56.4,26.4],'파나마':[-79.7,9.1],'희망봉':[18.5,-34.4]};
+const CHOKE_AB={'말라카':'MAL','수에즈':'SUE','호르무즈':'HOR','파나마':'PAN','희망봉':'CGH'};
+const CITIES=[['SEOUL',126.98,37.57],['TOKYO',139.69,35.69],['SINGAPORE',103.85,1.29],['MUMBAI',72.88,19.08],
+ ['RIYADH',46.72,24.69],['HONG KONG',114.17,22.32],['SHANGHAI',121.47,31.23],['LONDON',-.13,51.5],
+ ['NEW YORK',-74.0,40.7],['FRANKFURT',8.68,50.11],['SÃO PAULO',-46.6,-23.5],['SYDNEY',151.2,-33.9]];
+
+function draw(now){
+  const w=cv.clientWidth,h=cv.clientHeight,dpr=Math.min(2,devicePixelRatio||1);
+  if(cv.width!==Math.round(w*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);}
+  const ctx=cv.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+  if(!window.d3)return;
+  const small=w<900;
+  const proj=d3.geoOrthographic().rotate([-rot.lon,-rot.lat]).clipAngle(90)
+    .scale(Math.min(w,h)*(small?.46:.44)).translate([w/2,h*(small?.44:.5)]);
+  const path=d3.geoPath(proj,ctx);
+  const center=[rot.lon,rot.lat];
+  const cx2=w/2,cy2=h*(small?.44:.5),R=proj.scale();
+  const g=ctx.createRadialGradient(cx2-R*.3,cy2-R*.35,R*.2,cx2,cy2,R);
+  g.addColorStop(0,T.ocean0);g.addColorStop(1,T.ocean1);
+  ctx.beginPath();path({type:'Sphere'});ctx.fillStyle=g;ctx.fill();
+  ctx.strokeStyle=T.limb;ctx.lineWidth=1;ctx.stroke();
+  ctx.beginPath();path(d3.geoGraticule().step([15,15])());ctx.strokeStyle=T.grat;ctx.lineWidth=.6;ctx.stroke();
+  if(land){ctx.beginPath();path(land);ctx.fillStyle=T.land;ctx.fill();ctx.strokeStyle=T.coast;ctx.lineWidth=.7;ctx.stroke();}
+  /* 실측 함대 */
+  fleet.forEach(s=>{
+    const pos=[s.lo,s.la];
+    if(d3.geoDistance(pos,center)>1.42)return;
+    const p=proj(pos);if(!p)return;
+    if(s.sog>=0.5&&s.cog!=null){
+      const pN=proj([s.lo,Math.min(89,s.la+.6)]);if(!pN)return;
+      const aN=Math.atan2(pN[1]-p[1],pN[0]-p[0]),a=aN+s.cog*Math.PI/180;
+      ctx.save();ctx.translate(p[0],p[1]);ctx.rotate(a);
+      ctx.fillStyle=s.t==='tanker'?T.tanker:s.t==='cargo'?T.cargo:T.anchor;
+      ctx.beginPath();ctx.moveTo(4.2,0);ctx.lineTo(-2.6,2.1);ctx.lineTo(-2.6,-2.1);ctx.closePath();ctx.fill();ctx.restore();
+    }else{
+      ctx.beginPath();ctx.arc(p[0],p[1],2.2,0,7);
+      ctx.strokeStyle=s.t==='tanker'?T.tanker:s.t==='cargo'?T.cargo:T.anchor;ctx.lineWidth=1;ctx.stroke();}
+  });
+  /* 도시 */
+  ctx.font='8.5px "Space Mono",monospace';ctx.fillStyle=T.label;
+  CITIES.forEach(([n,lo,la])=>{
+    if(d3.geoDistance([lo,la],center)>1.32)return;
+    const p=proj([lo,la]);if(!p)return;
+    ctx.fillRect(p[0]-1,p[1]-1,2,2);ctx.fillText(n,p[0]+5,p[1]+3);});
+  /* 관문 */
+  for(const nm in CHOKE_POS){
+    const c=CHOKE_POS[nm];
+    if(d3.geoDistance(c,center)>1.42)continue;
+    const p=proj(c);if(!p)continue;
+    ctx.save();ctx.translate(p[0],p[1]);ctx.rotate(Math.PI/4);
+    ctx.strokeStyle=T.choke;ctx.lineWidth=1.2;ctx.strokeRect(-3.2,-3.2,6.4,6.4);ctx.restore();
+    const v=chokes[nm]&&chokes[nm].total;
+    if(v){ctx.font='700 10px "Space Mono",monospace';ctx.fillStyle=T.chokeText;ctx.fillText(v,p[0]+9,p[1]-3);}
+    ctx.font='7.5px "Space Mono",monospace';ctx.fillStyle=T.choke;ctx.fillText(CHOKE_AB[nm]+' /1H',p[0]+9,p[1]+7);}
+  /* 뉴스 진앙 + 파문 */
+  newsEv.forEach(e=>{
+    if(d3.geoDistance([e.lo,e.la],center)>1.4)return;
+    const p=proj([e.lo,e.la]);if(!p)return;
+    ctx.beginPath();ctx.arc(p[0],p[1],3,0,7);
+    ctx.fillStyle=T.news;ctx.shadowColor=T.news;ctx.shadowBlur=9;ctx.fill();ctx.shadowBlur=0;
+    if(!reduce){const k=Math.max(1,e.sev-2);
+      for(let i=0;i<k;i++){const ph=((now/2400)+(i/k))%1;
+        ctx.beginPath();ctx.arc(p[0],p[1],4+ph*(10+6*k),0,7);
+        ctx.strokeStyle=T.news;ctx.globalAlpha=(1-ph)*.55;ctx.lineWidth=1;ctx.stroke();}
+      ctx.globalAlpha=1;}});
+  if(idle&&!drag)rot.lon+=.012;
+  raf=requestAnimationFrame(draw);
+}
+/* 조작 — 디자인 그대로: 드래그·스크롤 회전 */
+cv.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,moved:0};cv.setPointerCapture(e.pointerId);cv.classList.add('drag');});
+cv.addEventListener('pointermove',e=>{if(!drag)return;
+  const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.moved+=Math.abs(dx)+Math.abs(dy);
+  rot.lon-=dx*.35;rot.lat=Math.max(-60,Math.min(60,rot.lat+dy*.35));
+  drag.x=e.clientX;drag.y=e.clientY;});
+cv.addEventListener('pointerup',e=>{cv.classList.remove('drag');
+  if(drag&&drag.moved<4)tapShip(e.clientX,e.clientY);drag=null;});
+cv.addEventListener('wheel',e=>{e.preventDefault();rot.lon+=e.deltaY*.18+e.deltaX*.18;},{passive:false});
+
+function tapShip(cx,cy){
+  if(!window.d3||!fleet.length)return;
+  const w=cv.clientWidth,h=cv.clientHeight,small=w<900;
+  const proj=d3.geoOrthographic().rotate([-rot.lon,-rot.lat]).clipAngle(90)
+    .scale(Math.min(w,h)*(small?.46:.44)).translate([w/2,h*(small?.44:.5)]);
+  let best=null,bd=14;
+  fleet.forEach(s=>{
+    if(d3.geoDistance([s.lo,s.la],[rot.lon,rot.lat])>1.42)return;
+    const p=proj([s.lo,s.la]);if(!p)return;
+    const d=Math.hypot(p[0]-cx,p[1]-cy);if(d<bd){bd=d;best=s;}});
+  if(!best)return;
+  const tko={tanker:'TANKER',cargo:'CARGO',unknown:'VESSEL'}[best.t]||'VESSEL';
+  document.getElementById('shNm').textContent=best.nm||'UNNAMED '+tko;
+  document.getElementById('shR1').innerHTML=`<b>TYPE</b> ${tko} · <b>SPD</b> ${best.sog!=null?best.sog+' KN':'—'} · <b>HDG</b> ${best.cog!=null?String(best.cog).padStart(3,'0')+'°':'—'}`;
+  document.getElementById('shR2').innerHTML=`<b>DEST</b> ${best.dest||'—'} <span style="color:var(--dim)">(MASTER INPUT)</span>`;
+  document.getElementById('shR3').innerHTML=`<b>DRAUGHT</b> ${best.dr?best.dr+' M':'—'} · <b>POS</b> ${best.la.toFixed(2)}, ${best.lo.toFixed(2)}`;
+  document.getElementById('shipcard').classList.add('on');
+}
+addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('shipcard').classList.remove('on');});
+
+/* ══ 실데이터 배선 ══ */
+const $=id=>document.getElementById(id);
+function relEn(ts){if(!ts)return'';let t;
+  if(/^\d{14}$/.test(ts))t=Date.UTC(+ts.slice(0,4),+ts.slice(4,6)-1,+ts.slice(6,8),+ts.slice(8,10),+ts.slice(10,12),+ts.slice(12,14));
+  else{const d=new Date(ts);if(isNaN(d))return'';t=d.getTime();}
+  const m=Math.max(0,Math.round((Date.now()-t)/60000));
+  return m<60?m+'M':m<1440?Math.round(m/60)+'H':Math.round(m/1440)+'D';}
+setInterval(()=>{$('utc').textContent=new Date().toISOString().slice(11,16);},1000);
+
+fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/land-110m.json').then(r=>r.json())
+  .then(t=>{land=topojson.feature(t,t.objects.land);}).catch(()=>{});
+
+fetch('data/ships.json?t='+Date.now()).then(r=>r.json()).then(d=>{
+  fleet=d.fleet||[];chokes=d.chokepoints||{};
+  $('gateVals').innerHTML=Object.keys(CHOKE_AB).map(nm=>{
+    const b=chokes[nm];return `${CHOKE_AB[nm]} <b style="color:${b&&b.total?'var(--txt)':'var(--dim)'}">${b?b.total:'—'}</b>`;}).join(' ');
+}).catch(()=>{});
+
+fetch('data/news.json?t='+Date.now()).then(r=>r.json()).then(d=>{
+  const evs=(d.events||[]).slice(0,12);
+  newsEv=evs;
+  if(evs[0]){
+    $('bh').textContent=evs[0].name.toUpperCase().slice(0,80);
+    $('bm').innerHTML=`${(evs[0].src||'').toUpperCase()} · ${relEn(evs[0].ts_pub||evs[0].ts)} · IMPACT ${evs[0].sev}/5 · <a href="${(evs[0].url||'').replace(/"/g,'')}" target="_blank" rel="noopener">SOURCE ↗</a>`;}
+  $('logrows').innerHTML=evs.slice(0,4).map(e=>
+    `<div class="logrow"><time>${relEn(e.ts_pub||e.ts)}</time><span class="src">${(e.src||'').toUpperCase().slice(0,10)}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.name}</span></div>`).join('');
+}).catch(()=>{});
+
+Promise.all([fetch('data/regime.json?t='+Date.now()).then(r=>r.json()),
+             fetch('data/event_card.json?t='+Date.now()).then(r=>r.json()),
+             fetch('data/briefing.json?t='+Date.now()).then(r=>r.json()).catch(()=>null)])
+.then(([rg,ec,br])=>{
+  const wv=rg.w.value,cvv=rg.conv.value;
+  $('regV').textContent=wv.toFixed(2);
+  $('regSea').textContent=wv<0.3?'STEADY SEAS':wv<0.5?'RISING SWELL':wv<0.7?'HEAVY WEATHER':'FULL STORM';
+  $('regMean').textContent=wv<0.3?'개별 장세 · 분산 유효':wv<0.5?'너울 감지 · 주의':wv<0.7?'폭풍 접근 · 긴장':'생존 규칙 우선';
+  /* 원장 연산 3판 — 전부 실데이터 */
+  const pp=ec.prepricing||{},A=pp.assets||{};
+  const inline=[A.us2y&&`Δ2Y ${(A.us2y.cur*100).toFixed(0)}bp`,A.us10y&&`Δ10Y ${(A.us10y.cur*100).toFixed(0)}bp`,
+    A.dxy&&`DXY ${A.dxy.cur>0?'+':''}${A.dxy.cur}%`,A.spx&&`SPX ${A.spx.cur>0?'+':''}${A.spx.cur}%`].filter(Boolean).join(' · ');
+  const comps=[
+    {id:'L-INF-001 · F1+F2 — CPI PRE-PRICING',io:[`<b>IN</b> ${inline}`,`<b>FN</b> percentile( x , 44 CPI windows )`],
+     v:pp.index,u:'/100',badge:null,prov:`<span class="ms">실측 · MEASURED</span> — CORE §2.3·7.1 · n=44`},
+    {id:'G1 · 게이트 — REGIME GATE w',io:[`<b>IN</b> VIXpct ${rg.w.components.vix_pct} · HYpct ${rg.w.components.hy_pct} · C ${rg.w.components.conv}`,
+     `<b>FN</b> w = .45·vix + .35·hy + .20·C`],
+     v:wv.toFixed(2),u:'',badge:wv>0.5?'GATE FIRED':'GATE OPEN',prov:`<span class="es">추정 · ESTIMATED</span> — CORE §4·G1 · GATE 1/3`},
+    {id:'§5.2 · ρ̄ — CONVERGENCE',io:[`<b>IN</b> ${rg.conv.basket.length} ASSETS · 60D RETURNS`,`<b>FN</b> mean |ρ| , all pairs`],
+     v:cvv.toFixed(2),u:'',badge:cvv>0.55?'ALERT':cvv>0.38?'TENSION':'DISPERSED',
+     prov:`<span class="ms">실측 · MEASURED</span> — CORE §5.2 · n=60`}];
+  $('comps').innerHTML=comps.map(c=>`<div class="comp">
+    <div class="id"><span>${c.id}</span><time>${new Date(rg.updated_utc).toISOString().slice(11,19)}</time></div>
+    ${c.io.map(x=>`<div class="io">${x}</div>`).join('')}
+    <div class="out"><span class="v">${c.v}</span><span class="u">${c.u}</span>${c.badge?`<span class="badge">${c.badge}</span>`:''}</div>
+    <div class="prov">${c.prov}</div></div>`).join('');
+  /* 다음 이벤트 */
+  const rel=new Date(ec.event.release_kst.replace(' ','T')+'+09:00');
+  $('dday').textContent='D-'+Math.max(0,Math.ceil((rel-Date.now())/86400000));
+  $('evn').textContent='US CPI — AUGUST DATA';
+  $('evw').textContent=ec.event.release_et+' ET · '+ec.event.release_kst+' KST';
+  $('ppv').textContent=pp.index;
+  $('asym').textContent=br&&br.lines?br.lines[4]:'—';
+  $('evprov').textContent='L-INF-001 · F1+F2 · §2.3 · n=44';
+}).catch(()=>{});
+
+/* 판정 카운트 (실측) */
+Promise.all(['exp001','exp002','exp003'].map(x=>fetch('data/experiments/'+x+'.json').then(r=>r.json()).catch(()=>null)))
+.then(es=>{let rej=0,nc=0,conf=0;
+  es.filter(Boolean).forEach(e=>{
+    if(e.confirmed===true)conf++;
+    else if(String(e.verdict||'').includes('REJECT'))rej++;
+    else nc++;});
+  $('vc').textContent=`${rej} REJ · ${nc} NC · ${conf} CONF`;}).catch(()=>{});
+
+/* 시세 델타 */
+fetch('data/market.json?t='+Date.now()).then(r=>r.json()).then(d=>{
+  const M=d.series,f=(k,lbl)=>{const g=M[k];if(!g)return'';
+    const lvl=g.delta_kind==='level';const dv=lvl?(g.value-g.prev)*100:((g.value-g.prev)/g.prev*100);
+    const up=dv>=0;return `<span>${lbl} ${g.value>=1000?g.value.toFixed(0):g.value} <span class="${up?'red':'blu'}">${up?'▲':'▼'}${Math.abs(dv).toFixed(lvl?0:2)}${lvl?'bp':'%'}</span></span>`;};
+  $('deltaIn').innerHTML='<span class="lbl">델타 · DELTA 2×</span>'+
+    [f('us2y','US2Y'),f('dxy','DXY'),f('spx','SPX'),f('kospi','KOSPI'),f('wti','WTI'),f('copper','CU'),f('vix','VIX'),f('btc','BTC')].join('');
+}).catch(()=>{});
+
+/* 모바일 탭 */
+document.querySelectorAll('#mtabs div').forEach(t=>{t.onclick=()=>{
+  document.querySelectorAll('#mtabs div').forEach(x=>x.classList.remove('on'));t.classList.add('on');
+  $('ledger').classList.toggle('on',t.dataset.p==='ledger');
+  $('rail').classList.toggle('on',t.dataset.p==='rail');};});
+
+addEventListener('resize',()=>{});
+requestAnimationFrame(draw);
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>
