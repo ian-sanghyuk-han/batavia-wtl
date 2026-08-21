@@ -131,22 +131,23 @@ fetch(COUNTRIES).then(r=>r.json()).then(topo=>{
 }).catch(e=>{document.getElementById('ncty').textContent='로드 실패';});
 
 /* ── 라벨 v3: 경제 티어 + 줌 게이팅 + 크기 위계 ──
-   T1 대국 = 항상·큰 글씨 · T2 중견 = 줌<2.5 · T3 전국 = 줌<1.85 · T4 도시 = 줌<1.95 */
+   T1 대국 = 항상·큰 글씨 · T2 중견 = 줌<2.5 · T3 전국 = 줌<1.85
+   T4 주요 도시 = 줌<1.95 · T5 광역 도시 = 줌<1.6 */
 function labelSprite(txt,tier){
   const c=document.createElement('canvas');c.width=640;c.height=96;
   const x=c.getContext('2d');
-  const size=tier===1?40:tier===2?31:tier===4?28:24; /* 크기 = 경제 위계 */
+  const size=tier===1?40:tier===2?31:tier===4?28:tier===5?23:24; /* 크기 = 위계 */
   x.font=`600 ${size}px Consolas,monospace`;x.textAlign='center';x.textBaseline='middle';
   x.letterSpacing=tier===1?'5px':'3px';
   x.lineWidth=7;x.strokeStyle='rgba(4,8,13,.85)';x.strokeText(txt,320,48); /* 헤일로 */
   x.fillStyle=tier===1?'rgba(224,238,248,.95)':tier===2?'rgba(196,216,232,.88)'
-    :tier===4?'rgba(159,199,224,.95)':'rgba(158,180,198,.8)';
+    :tier===4?'rgba(159,199,224,.95)':tier===5?'rgba(143,178,204,.85)':'rgba(158,180,198,.8)';
   x.fillText(txt,320,48);
   const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;
   const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,
     depthTest:false,opacity:0})); /* 구에 잘리지 않음 — 노출은 페이드가 결정 */
   s.renderOrder=20;
-  const k=tier===1?.34:tier===2?.26:tier===4?.22:.20;
+  const k=tier===1?.34:tier===2?.26:tier===4?.22:tier===5?.18:.20;
   s.scale.set(k,k*96/640,1);return s;}
 const labelObjs=[];
 function addLabel(txt,la,lo,tier){
@@ -154,33 +155,49 @@ function addLabel(txt,la,lo,tier){
   s.position.copy(toV3(la,lo,R*1.012));
   labelObjs.push({s,tier,normal:s.position.clone().normalize()});
   earth.add(s);}
-/* 도시(관측 노드) — T4 */
-[['SEOUL',37.5,127],['TOKYO',35.7,139.7],['NEW YORK',40.7,-74],['LONDON',51.5,-.1],
+/* 도시 — T4 주요 금융·정책 도시(줌<1.95) · T5 광역 주요 도시(줌<1.6) */
+const CITY4=[['SEOUL',37.5,127],['TOKYO',35.7,139.7],['NEW YORK',40.7,-74],['LONDON',51.5,-.1],
  ['SHANGHAI',31.2,121.5],['RIYADH',24.7,46.7],['SINGAPORE',1.35,103.8],
  ['HONG KONG',22.3,114.2],['MUMBAI',19,72.8],['FRANKFURT',50.1,8.7],
- ['SÃO PAULO',-23.5,-46.6],['SYDNEY',-33.9,151.2]].forEach(([n,la,lo])=>addLabel(n,la,lo,4));
+ ['SÃO PAULO',-23.5,-46.6],['SYDNEY',-33.9,151.2],
+ ['MOSCOW',55.75,37.62],['PARIS',48.86,2.35],['CHICAGO',41.88,-87.63],['BEIJING',39.9,116.4],
+ ['DUBAI',25.2,55.27],['ZURICH',47.37,8.54],['TORONTO',43.65,-79.38],['MEXICO CITY',19.43,-99.13],
+ ['ISTANBUL',41.01,28.98],['JAKARTA',-6.2,106.85],['JOHANNESBURG',-26.2,28.05],['CAIRO',30.04,31.24],
+ ['BUENOS AIRES',-34.6,-58.38],['LOS ANGELES',34.05,-118.24],['WASHINGTON',38.9,-77.04]];
+const CITY5=[['SAN FRANCISCO',37.77,-122.42],['HOUSTON',29.76,-95.37],['MIAMI',25.76,-80.19],
+ ['VANCOUVER',49.28,-123.12],['BOGOTÁ',4.71,-74.07],['LIMA',-12.05,-77.04],['SANTIAGO',-33.45,-70.67],
+ ['MADRID',40.42,-3.7],['AMSTERDAM',52.37,4.9],['MILAN',45.46,9.19],['STOCKHOLM',59.33,18.07],
+ ['WARSAW',52.23,21.01],['VIENNA',48.21,16.37],['ATHENS',37.98,23.73],['TEL AVIV',32.08,34.78],
+ ['DOHA',25.29,51.53],['TEHRAN',35.69,51.39],['KYIV',50.45,30.52],['LAGOS',6.52,3.38],
+ ['NAIROBI',-1.29,36.82],['CASABLANCA',33.57,-7.59],['KARACHI',24.86,67.01],['NEW DELHI',28.61,77.21],
+ ['DHAKA',23.81,90.41],['BANGKOK',13.76,100.5],['KUALA LUMPUR',3.14,101.69],['MANILA',14.6,120.98],
+ ['HO CHI MINH',10.82,106.63],['TAIPEI',25.03,121.57],['SHENZHEN',22.54,114.06],['OSAKA',34.69,135.5],
+ ['BUSAN',35.18,129.08],['MELBOURNE',-37.81,144.96],['AUCKLAND',-36.85,174.76],['VLADIVOSTOK',43.12,131.89]];
+CITY4.forEach(([n,la,lo])=>addLabel(n,la,lo,4));
+CITY5.forEach(([n,la,lo])=>addLabel(n,la,lo,5));
+/* 도시 점 — 옅게 (지리 참조; 관측 노드의 밝은 점과 구분) */
+{const geo=new THREE.SphereGeometry(.0042,8,8);
+ const all=[...CITY4,...CITY5];
+ const im=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({color:0x8fa6b8,transparent:true,opacity:.8}),all.length);
+ const d3=new THREE.Object3D();
+ all.forEach((c2,i)=>{d3.position.copy(toV3(c2[1],c2[2],R*1.0025));d3.updateMatrix();im.setMatrixAt(i,d3.matrix);});
+ im.instanceMatrix.needsUpdate=true;earth.add(im);}
 function updateLabels(){
   const camDir=camera.position.clone().normalize();
   const dist=camera.position.length();
   labelObjs.forEach(o=>{
     const facing=o.normal.dot(camDir);              /* 1=정면 · 0=림 · 음수=뒷면 */
-    const tierOn=o.tier===1||(o.tier===2&&dist<2.5)||(o.tier===3&&dist<1.85)||(o.tier===4&&dist<1.95);
+    const tierOn=o.tier===1||(o.tier===2&&dist<2.5)||(o.tier===3&&dist<1.85)
+      ||(o.tier===4&&dist<1.95)||(o.tier===5&&dist<1.6);
     const fade=THREE.MathUtils.smoothstep(facing,.12,.35); /* 수평선 페이드 */
     o.s.material.opacity=tierOn?fade*.95:0;});}
+window.__dbg={labelObjs,camera};
 
-/* ── 색 = 데이터 ── */
+/* ── 색 = 데이터 ──
+   (샘플 계열 아크 4개는 제거 — 본 시공에서 실데이터 간선으로 복귀 예정) */
 const NODES={SEL:[37.5,127],TYO:[35.7,139.7],NY:[40.7,-74],LDN:[51.5,-.1],SHA:[31.2,121.5],RYD:[24.7,46.7],SIN:[1.35,103.8]};
-function arc(a,b,h,color,op){
-  const A=toV3(a[0],a[1],R),B=toV3(b[0],b[1],R);
-  const M=A.clone().add(B).multiplyScalar(.5).normalize().multiplyScalar(R*(1+h));
-  const curve=new THREE.QuadraticBezierCurve3(A.clone().multiplyScalar(1.003),M,B.clone().multiplyScalar(1.003));
-  earth.add(new THREE.Mesh(new THREE.TubeGeometry(curve,56,.0035,6,false),
-    new THREE.MeshBasicMaterial({color,transparent:true,opacity:op??.85})));}
-arc(NODES.NY,NODES.SEL,.20,0xFF5D6E);
-arc(NODES.SEL,NODES.NY,.38,0x5FD8E8);
-arc(NODES.RYD,NODES.SHA,.025,0xD9A441);
-arc(NODES.TYO,NODES.LDN,.28,0xA79BFF,.6);
 
+/* 관측 노드 점 — 밝게 (데이터가 연결된 도시) */
 {const geo=new THREE.SphereGeometry(.0075,10,10);
  const extra=[[22.3,114.2],[19,72.8],[50.1,8.7],[-23.5,-46.6],[-33.9,151.2],[41.9,-87.6],[48.9,2.35]];
  const all=[...Object.values(NODES),...extra];
