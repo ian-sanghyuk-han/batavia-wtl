@@ -60,6 +60,18 @@
   html[data-theme="gundam"] .lf.on{background:#2c52b3;color:#fff}
   html[data-theme="gundam"] #zoomfill{background:#fb2f38}
   html[data-theme="gundam"] .pbtn{color:#2c52b3}
+  html[data-theme="gundam"] #zoompct{color:#2c52b3;font-weight:600}
+  html[data-theme="gundam"] #rgtick,html[data-theme="gundam"] #ltick b{color:#c99700}
+  html[data-theme="gundam"] .rlive{color:#c99700}
+  html[data-theme="gundam"] .sm-h{color:#2c52b3}
+  html[data-theme="gundam"] .lrow .st{color:#8a8b9a}
+  html[data-theme="gundam"] #loginbtn,html[data-theme="gundam"] #setbtn,
+  html[data-theme="gundam"] #fsbtn{color:#2c52b3}
+  html[data-theme="gundam"] .acard .gr{color:#c99700}
+  html[data-theme="gundam"] .more{color:#2c52b3}
+  html[data-theme="gundam"] #ticker{border-top:2px solid #2c52b3}
+  html[data-theme="gundam"] .up{color:#fb2f38}
+  html[data-theme="gundam"] #brand{color:#14283c}
   *{box-sizing:border-box}
   body{margin:0;background:#05070c;color:var(--ink);font-family:'Segoe UI',system-ui,sans-serif;
     overflow:hidden;height:100vh;height:100dvh}
@@ -73,7 +85,10 @@
     padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top))}
   #brand{font:600 13px/1.2 Consolas,monospace;letter-spacing:3px;color:var(--ink);white-space:nowrap}
   #brand small{display:block;font-weight:400;font-size:9px;letter-spacing:5px;color:var(--acc);margin-top:2px}
-  #loginbtn,#setbtn{flex:none;margin-left:10px;padding:8px 13px;font:11px Consolas,monospace;
+  body.cinema #activebar,body.cinema #btnrow,body.cinema #layersbtn,
+  body.cinema #zoombar,body.cinema #loginbtn,body.cinema #startbtn,
+  body.cinema #setbtn,body.cinema #setmenu,body.cinema #modebar{display:none!important}
+  #loginbtn,#setbtn,#fsbtn{flex:none;margin-left:10px;padding:8px 13px;font:11px Consolas,monospace;
     letter-spacing:1px;color:var(--acc);cursor:pointer;text-decoration:none;user-select:none}
   #startbtn{flex:none;margin-left:8px;padding:8px 14px;font:600 11px Consolas,monospace;
     letter-spacing:1px;color:#06121c;background:var(--acc);border-radius:11px;
@@ -92,9 +107,6 @@
     box-shadow:0 0 0 1px var(--edge),0 0 24px rgba(127,216,255,.14)}
   #regimecard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
     border-radius:11px 11px 0 0;background:linear-gradient(90deg,var(--acc),transparent 70%)}
-  #regimecard::after{content:'◈ 고정';position:absolute;top:-7px;right:12px;
-    font:600 8px Consolas,monospace;letter-spacing:1px;color:var(--acc);
-    background:var(--glass2);padding:1px 7px;border-radius:6px;border:1px solid var(--edge)}
   #regimecard .rrow1{font:600 10px Consolas,monospace;letter-spacing:2px;color:var(--dim)}
   #regimecard .rrow1 b{color:var(--acc);margin-left:6px;letter-spacing:3px}
   #regimecard #rgtick{float:right;color:#3FE0A0;font-weight:400}
@@ -308,6 +320,7 @@
   <div id="toast" class="glass"></div>
   <a id="loginbtn" class="glass" href="account.html">로그인</a>
   <a id="startbtn" href="account.html">시작하기</a>
+  <div id="fsbtn" class="glass" title="전체 화면">⛶</div>
   <div id="setbtn" class="glass">⚙</div>
 </div>
 <div id="setmenu" class="glass">
@@ -405,17 +418,17 @@ import * as topojson from 'topojson-client';
 /* 테마: 장면 색 팔레트 — 구조상 N개 확장 가능 */
 const THEMES={
   dark:{bg:0x05070c,ocean:'#0b131c',land:[24,34,44],war:[44,26,30],
-    inner:0xBFD9EA,coast:0x9FC0D6,stars:true,
+    inner:0xBFD9EA,coast:0x9FC0D6,stars:true,obsC:0xEAF9FF,cityC:0x8fa6b8,
     lb:{t1:'rgba(224,238,248,.95)',t2:'rgba(196,216,232,.88)',t4:'rgba(159,199,224,.95)',
         t5:'rgba(143,178,204,.85)',t3:'rgba(158,180,198,.8)',w6:'rgba(120,162,196,.52)',
         w7:'rgba(127,168,200,.55)',w8:'rgba(151,196,224,.75)',halo:'rgba(4,8,13,.85)'}},
   light:{bg:0xdfe7ee,ocean:'#c9d6e2',land:[238,242,246],war:[236,214,212],
-    inner:0x5b7186,coast:0x7a93a6,stars:false,soft:true,
+    inner:0x5b7186,coast:0x7a93a6,stars:false,soft:true,glowBoost:2.1,obsC:0x1c3550,cityC:0x6b8299,
     lb:{t1:'rgba(20,34,48,.95)',t2:'rgba(35,52,70,.88)',t4:'rgba(30,64,96,.95)',
         t5:'rgba(60,88,112,.85)',t3:'rgba(60,80,100,.8)',w6:'rgba(70,110,150,.45)',
         w7:'rgba(70,110,150,.5)',w8:'rgba(40,90,130,.75)',halo:'rgba(255,255,255,.85)'}},
   gundam:{bg:0xe9edf3,ocean:'#c7d2e2',land:[248,250,252],war:[240,206,204],
-    inner:0x2c52b3,coast:0x5a6f96,stars:false,soft:true,
+    inner:0x2c52b3,coast:0x5a6f96,stars:false,soft:true,glowBoost:2.1,obsC:0xF5C518,cityC:0x5a5b6d,
     lb:{t1:'rgba(20,40,60,.95)',t2:'rgba(35,55,80,.88)',t4:'rgba(44,82,179,.95)',
         t5:'rgba(60,90,130,.85)',t3:'rgba(64,86,110,.8)',w6:'rgba(70,110,160,.45)',
         w7:'rgba(70,110,160,.5)',w8:'rgba(44,82,179,.7)',halo:'rgba(255,255,255,.88)'}}};
@@ -983,12 +996,12 @@ function buildStage(){
   /* 도시 점 + 관측 노드 점 */
   {const geo=new THREE.SphereGeometry(.0042,8,8);
    const all=[...CITY4,...CITY5];
-   cityIM=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({color:0x8fa6b8,transparent:true,opacity:.8}),all.length);
+   cityIM=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({color:TH.cityC,transparent:true,opacity:.8}),all.length);
    const d3=new THREE.Object3D();
    all.forEach((c2,i)=>{d3.position.copy(toV3(c2[1],c2[2],R*1.0025));d3.updateMatrix();cityIM.setMatrixAt(i,d3.matrix);});
    cityIM.instanceMatrix.needsUpdate=true;stage.add(cityIM);}
   {const geo=new THREE.SphereGeometry(.0075,10,10);
-   obsIM=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({color:0xEAF9FF}),OBS.length);
+   obsIM=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({color:TH.obsC}),OBS.length);
    const d3=new THREE.Object3D();
    OBS.forEach((c2,i)=>{d3.position.copy(toV3(c2[0],c2[1],R*1.003));d3.updateMatrix();obsIM.setMatrixAt(i,d3.matrix);});
    obsIM.instanceMatrix.needsUpdate=true;stage.add(obsIM);}
@@ -1016,7 +1029,7 @@ function applyVisual(){
   routeMats.forEach(m=>m.opacity=(.16-(.16-.06)*dimK)*layerAlpha);
   shipMats.forEach(m=>m.opacity=dataA);
   if(cityIM)cityIM.material.opacity=.8*dataA;
-  const aa=(VIEW==='3d'?1:0)*(1-dimK)*layerAlpha;
+  const aa=(VIEW==='3d'?1:0)*(1-dimK)*layerAlpha*(TH.glowBoost||1);
   atmMat.uniforms.a.value=aa;rimMat.uniforms.a.value=aa;
   atmMesh.visible=aa>.01;rimMesh.visible=aa>.01;
   if(rippleGroup)rippleGroup.traverse(o=>{
@@ -1326,7 +1339,7 @@ function applyRegime(d){
   const t=REGIMES5.find(r=>v<r.max)||REGIMES5[REGIMES5.length-1];
   document.documentElement.style.setProperty('--acc',t.acc);
   {const ac=new THREE.Color(t.atm);
-   if(TH.soft)ac.lerp(new THREE.Color(0xffffff),.82); /* 밝은 테마: 하얀 테두리 */
+   if(TH.soft)ac.lerp(new THREE.Color(0xffffff),.92); /* 밝은 테마: 하얀 테두리 */
    atmMat.uniforms.c.value.copy(ac);
    rimMat.uniforms.c.value.copy(ac);}
   document.getElementById('rgname').textContent=t.en;
@@ -1731,6 +1744,12 @@ function setTheme(n){
     const m=r.querySelector('.on-mark');if(m)m.textContent=r.dataset.th===n?'✓':'';});}
 document.getElementById('setbtn').addEventListener('click',()=>{
   document.getElementById('setmenu').classList.toggle('on');});
+/* 전체 화면 = 시네마 모드: UI가 물러나고 지구만 돈다 (화면 보호기) */
+document.getElementById('fsbtn').addEventListener('click',()=>{
+  if(document.fullscreenElement)document.exitFullscreen();
+  else document.documentElement.requestFullscreen().catch(()=>{});});
+document.addEventListener('fullscreenchange',()=>{
+  document.body.classList.toggle('cinema',!!document.fullscreenElement);});
 document.querySelectorAll('#setmenu .sm-r[data-th]').forEach(r=>
   r.addEventListener('click',()=>{setTheme(r.dataset.th);}));
 document.querySelectorAll('#setmenu .sm-r[data-th]').forEach(r=>{
