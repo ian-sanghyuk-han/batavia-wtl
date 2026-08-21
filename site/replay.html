@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<!-- STATUS: REPLAY v0 (simple, per owner: show basic version first, more requests follow).
-     Curated historical scripts (2008 GFC / 2020 pandemic) with approximated gauge values —
-     labeled 재구성·추정. Planned: feed from the real git-history data archive. -->
+<!-- STATUS: REPLAY v0.2 — owner feedback round 1: ENGINE-style calc visuals on gauges
+     (formula + substitution + trigger badge + threshold tick), per-event impact chips (재구성·추정),
+     mini rotating globe window with epicenter pulses gliding to the latest fired event,
+     slower base speed. Curated scripts until history/days.jsonl matures. -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>BATAVIA PROJECT — Replay</title>
@@ -13,16 +14,17 @@
   *{box-sizing:border-box}
   body{margin:0;background:#05070c;color:var(--ink);font-family:'Segoe UI',system-ui,sans-serif}
   .glass{background:var(--glass);border:1px solid var(--edge);backdrop-filter:blur(9px);border-radius:11px}
-  header{padding:18px 18px 8px;max-width:980px;margin:0 auto}
+  header{padding:18px 18px 8px;max-width:1020px;margin:0 auto}
   header b{font:600 14px Consolas,monospace;letter-spacing:3px}
   header small{display:block;color:var(--mut);font:10px Consolas,monospace;margin-top:4px}
   header a{color:var(--acc);text-decoration:none;font:10px Consolas,monospace;float:right;margin-top:4px}
-  main{max-width:980px;margin:0 auto;padding:8px 18px 40px}
+  main{max-width:1020px;margin:0 auto;padding:8px 18px 40px}
   #scen{display:flex;gap:8px;margin:6px 0 12px}
   .sc{padding:9px 16px;font:12px Consolas,monospace;letter-spacing:1px;color:var(--dim);cursor:pointer}
   .sc.on{color:#06121c;background:var(--acc);border-color:var(--acc)}
-  /* 조종석 */
-  #deck{padding:14px 16px;margin-bottom:12px}
+  /* 조종석 + 미니 지구본 */
+  #deck{padding:14px 16px;margin-bottom:12px;display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+  #deckL{flex:1;min-width:280px}
   #row1{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
   #date{font:600 22px Consolas,monospace;color:#F4FBFF;letter-spacing:2px;min-width:170px}
   #play{width:40px;height:40px;border-radius:50%;border:1px solid var(--edge);background:rgba(127,216,255,.12);
@@ -30,45 +32,56 @@
   .spd{padding:5px 10px;border-radius:7px;font:10px Consolas,monospace;color:var(--dim);cursor:pointer;
     border:1px solid var(--edge)}
   .spd.on{color:#06121c;background:var(--acc)}
-  #bar{position:relative;height:14px;margin-top:12px;cursor:pointer}
+  #bar{position:relative;height:14px;margin-top:14px;cursor:pointer}
   #track{position:absolute;top:5px;left:0;right:0;height:4px;border-radius:2px;background:rgba(159,199,224,.14)}
   #fill{position:absolute;top:5px;left:0;height:4px;border-radius:2px;background:var(--acc);width:0}
   .tick{position:absolute;top:1px;width:2px;height:12px;border-radius:1px;opacity:.85}
   #deck .lbl{margin-top:8px;font:9px Consolas,monospace;color:var(--mut)}
-  /* 이벤트 흐름 + 계기판 */
+  #gwrap{flex:none;text-align:center}
+  #miniglobe{border-radius:50%;background:#05070c}
+  #gwrap small{display:block;font:8px Consolas,monospace;color:var(--mut);margin-top:3px}
+  /* 이벤트 + 계기판 */
   #cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  @media(max-width:760px){#cols{grid-template-columns:1fr}}
+  @media(max-width:780px){#cols{grid-template-columns:1fr}}
   h3{font:600 10px Consolas,monospace;letter-spacing:2px;color:var(--acc);margin:0 0 8px}
-  #events{padding:12px 14px;min-height:220px}
+  #events,#gauges{padding:12px 14px}
   .ev{border-left-width:3px;border-left-style:solid;background:rgba(159,199,224,.04);
     border-radius:0 8px 8px 0;padding:8px 10px;margin:8px 0;opacity:0;transform:translateY(8px);
-    transition:opacity .5s ease,transform .5s ease}
+    transition:opacity .6s ease,transform .6s ease}
   .ev.on{opacity:1;transform:none}
   .ev b{font-size:12px}
   .ev .d{font:9px Consolas,monospace;color:var(--mut);margin-top:2px}
   .ev .cx{font-size:11px;color:#a9becd;margin-top:3px;line-height:1.55}
+  .ev .imp{display:inline-block;margin-top:5px;font:9.5px Consolas,monospace;color:#c9dcea;
+    background:rgba(159,199,224,.07);border-radius:6px;padding:2px 8px}
   .ev .opp{font-size:10.5px;color:#8fd8c8;margin-top:4px;line-height:1.5}
-  #gauges{padding:12px 14px}
   .gg{border-left:3px solid var(--acc);background:rgba(159,199,224,.04);border-radius:0 8px 8px 0;
-    padding:8px 10px;margin:8px 0}
+    padding:9px 11px;margin:9px 0}
   .gg .h{font:600 11px Consolas,monospace}
   .gg .h .core{float:right;color:var(--mut);font-weight:400;font-size:9px}
-  .gg .big{font:600 19px Consolas,monospace;color:#F4FBFF}
-  .gg .un{font:10px Consolas,monospace;color:var(--mut);margin-left:3px}
-  .gg .tr2{display:block;height:5px;border-radius:3px;background:rgba(159,199,224,.1);margin:6px 0 4px;overflow:hidden}
-  .gg .tr2 i{display:block;height:100%;background:var(--acc);width:0;border-radius:3px;transition:width .2s linear}
-  .gg .nt{font-size:10px;color:#8ba3b5;line-height:1.5}
+  .gg .fx{font:9.5px Consolas,monospace;background:rgba(159,199,224,.06);border-radius:6px;
+    padding:3px 7px;margin:6px 0 4px;color:#b7cede}
+  .gg .sub{font:10.5px Consolas,monospace;color:#9fb8cc;margin:2px 0 4px}
+  .gg .sub b{color:#F4FBFF;font-size:14px}
+  .gg .st{float:right;font:600 9px Consolas,monospace;border-radius:6px;padding:2px 8px;
+    border:1px solid rgba(159,199,224,.25);color:var(--mut)}
+  .gg .st.on{color:#06121c;background:#FF6A6E;border-color:#FF6A6E}
+  .gg .tr2{position:relative;display:block;height:6px;border-radius:3px;background:rgba(159,199,224,.1);
+    margin:6px 0 4px;overflow:visible}
+  .gg .tr2 i{display:block;height:100%;background:var(--acc);width:0;border-radius:3px;transition:width .25s linear}
+  .gg .tr2 em{position:absolute;top:-3px;width:2px;height:12px;background:#FF6A6E;opacity:.8}
+  .gg .nt{font-size:10px;color:#8ba3b5;line-height:1.5;clear:both}
   .gg .vd{display:inline-block;margin-top:5px;font:600 9px Consolas,monospace;color:#3FE0A0;
-    border:1px solid rgba(63,224,160,.4);border-radius:6px;padding:2px 8px;opacity:0;transition:opacity .6s}
+    border:1px solid rgba(63,224,160,.4);border-radius:6px;padding:2px 8px;opacity:0;transition:opacity .8s}
   .gg .vd.on{opacity:1}
-  footer{max-width:980px;margin:0 auto;padding:0 18px 30px;font:9px Consolas,monospace;color:var(--mut)}
+  footer{max-width:1020px;margin:0 auto;padding:0 18px 30px;font:9px Consolas,monospace;color:var(--mut)}
 </style>
 </head>
 <body>
 <header>
   <a href="observatory.html">← OBSERVATORY</a>
   <b>BATAVIA PROJECT</b> · REPLAY — 과거의 그날 재생
-  <small>재구성 리플레이 v0 · 사건은 실제 연표, 계기값은 근사 재현(추정) — 이후 실측 아카이브 재생으로 대체 예정</small>
+  <small>재구성 리플레이 v0.2 · 사건은 실제 연표 — 계기값·파급력은 근사 재현(추정) · 이후 실측 아카이브 재생으로 대체 예정</small>
 </header>
 <main>
   <div id="scen">
@@ -76,48 +89,77 @@
     <span class="sc glass" data-s="R20">2020 팬데믹</span>
   </div>
   <div id="deck" class="glass">
-    <div id="row1">
-      <button id="play">▶</button>
-      <span id="date">—</span>
-      <span class="spd on" data-x="1">1×</span>
-      <span class="spd" data-x="2">2×</span>
-      <span class="spd" data-x="4">4×</span>
+    <div id="deckL">
+      <div id="row1">
+        <button id="play">▶</button>
+        <span id="date">—</span>
+        <span class="spd on" data-x="1">1×</span>
+        <span class="spd" data-x="2">2×</span>
+        <span class="spd" data-x="4">4×</span>
+      </div>
+      <div id="bar"><div id="track"></div><div id="fill"></div><div id="ticks"></div></div>
+      <div class="lbl">진행바 클릭 = 시간 이동 · 눈금 = 사건 · 지구본에 진앙이 찍힙니다</div>
     </div>
-    <div id="bar"><div id="track"></div><div id="fill"></div><div id="ticks"></div></div>
-    <div class="lbl">진행바를 클릭해 시간을 이동할 수 있습니다 · 눈금 = 사건</div>
+    <div id="gwrap"><canvas id="miniglobe" width="210" height="210"></canvas>
+      <small>그날의 진앙 — 드래그 없이 스스로 돕니다</small></div>
   </div>
   <div id="cols">
     <div id="events" class="glass"><h3>사건 — 시간이 닿으면 깨어납니다</h3><div id="evlist"></div></div>
-    <div id="gauges" class="glass"><h3>당시의 계기판 — 원장 카드가 재던 값</h3><div id="gglist"></div></div>
+    <div id="gauges" class="glass"><h3>당시의 계기판 — 수식에 그날의 값을 대입</h3><div id="gglist"></div></div>
   </div>
 </main>
-<footer>리플레이는 관찰의 재생입니다 — 어떤 문장도 행동 지시가 아닙니다 · 판정 배지(✓)는 당시 관찰이 사후 검증된 지점</footer>
+<footer>리플레이는 관찰의 재생입니다 — 어떤 문장도 행동 지시가 아닙니다 · 발동 배지 = 수식이 기준을 넘은 순간 · ✓ = 사후 검증된 관찰</footer>
 <script>
 const R08=[
- {t:0,d:'2008-09-15',name:'리먼 브라더스 파산',c:'#FF5D6E',cx:'지속형 이벤트 개시 — 신용·유동성 붕괴',opp:'크레딧 선행 경보가 D-5부터 점등(코어 2.6) — 방어 전환의 창'},
- {t:3.5,d:'2008-09-16',name:'AIG 구제금융',c:'#D9A441',cx:'시스템 리스크의 정부 인수',opp:'변동성 체제 전환 — 반켈리 축소 구간(코어 6.5)'},
- {t:7,d:'2008-09-29',name:'구제안 하원 부결',c:'#FF5D6E',cx:'정치 리스크 → 2차 폭락',opp:'정치 이벤트 재가격 — 현금 보유 자체가 관찰 대상(코어 1.2)'},
- {t:10.5,d:'2008-10-08',name:'6개 중앙은행 공조 인하',c:'#3FE0A0',cx:'유동성 경로 총동원',opp:'정책 반응함수 가동 — 바닥 탐색 관찰 개시(코어 6.1)'},
- {t:14,d:'2008-10-24',name:'신흥국 통화 급락',c:'#FF5D6E',cx:'달러 경로의 극단 — 상관 수렴 1.0 근접',opp:'쏠림 극단 축적 — 역발상 후보의 씨앗(코어 2.7)'}];
+ {t:0,d:'2008-09-15',name:'리먼 브라더스 파산',c:'#FF5D6E',la:40.7,lo:-74,imp:5,reach:'전 시장',cx:'지속형 이벤트 개시 — 신용·유동성 붕괴',opp:'크레딧 선행 경보가 D-5부터 점등(코어 2.6) — 방어 전환의 창'},
+ {t:3.5,d:'2008-09-16',name:'AIG 구제금융',c:'#D9A441',la:40.7,lo:-74,imp:4,reach:'금융·크레딧',cx:'시스템 리스크의 정부 인수',opp:'변동성 체제 전환 — 반켈리 축소 구간(코어 6.5)'},
+ {t:7,d:'2008-09-29',name:'구제안 하원 부결',c:'#FF5D6E',la:38.9,lo:-77,imp:5,reach:'전 시장',cx:'정치 리스크 → 2차 폭락',opp:'정치 이벤트 재가격 — 현금 보유 자체가 관찰 대상(코어 1.2)'},
+ {t:10.5,d:'2008-10-08',name:'6개 중앙은행 공조 인하',c:'#3FE0A0',la:50.1,lo:8.7,imp:4,reach:'전 시장',cx:'유동성 경로 총동원',opp:'정책 반응함수 가동 — 바닥 탐색 관찰 개시(코어 6.1)'},
+ {t:14,d:'2008-10-24',name:'신흥국 통화 급락',c:'#FF5D6E',la:-23.5,lo:-46.6,imp:4,reach:'신흥국·FX',cx:'달러 경로의 극단 — 상관 수렴 1.0 근접',opp:'쏠림 극단 축적 — 역발상 후보의 씨앗(코어 2.7)'}];
 const R20=[
- {t:0,d:'2020-01-23',name:'우한 봉쇄 — 지속형 이벤트 개시',c:'#D9A441',cx:'공급망 채널 최초 타격',opp:'공급망 선행 — 항공화물·운임 지표 주시(코어 2.8)'},
- {t:3.5,d:'2020-02-24',name:'글로벌 확산 인지 — 급락 개시',c:'#FF5D6E',cx:'위험선호 경로 점화',opp:'수렴도 급등 = 분산 소멸 경보(코어 5.2)'},
- {t:7,d:'2020-03-09',name:'유가 전쟁 — 감산 합의 결렬',c:'#FF5D6E',cx:'죄수의 딜레마 붕괴 — 유가 −24%',opp:'카르텔 게임 붕괴(코어 7.5) — 에너지 변동성 극대(코어 1.4)'},
- {t:10.5,d:'2020-03-16',name:'서킷브레이커 — 현금 외 전부 하락',c:'#FF5D6E',cx:'상관 수렴의 극한 — 금마저 하락',opp:'투매의 시간 = 지평 우위의 시간(코어 1.2)'},
- {t:14,d:'2020-03-23',name:'무제한 QE 선언',c:'#3FE0A0',cx:'유동성 경로 최대 출력 — 대반등의 기점',opp:'유동성 밀물 개시 — 고베타 최전선 순서(코어 3.5)'}];
+ {t:0,d:'2020-01-23',name:'우한 봉쇄 — 지속형 이벤트 개시',c:'#D9A441',la:30.6,lo:114.3,imp:3,reach:'공급망',cx:'공급망 채널 최초 타격',opp:'공급망 선행 — 항공화물·운임 지표 주시(코어 2.8)'},
+ {t:3.5,d:'2020-02-24',name:'글로벌 확산 인지 — 급락 개시',c:'#FF5D6E',la:45.4,lo:9.2,imp:5,reach:'전 시장',cx:'위험선호 경로 점화',opp:'수렴도 급등 = 분산 소멸 경보(코어 5.2)'},
+ {t:7,d:'2020-03-09',name:'유가 전쟁 — 감산 합의 결렬',c:'#FF5D6E',la:24.7,lo:46.7,imp:4,reach:'에너지·크레딧',cx:'죄수의 딜레마 붕괴 — 유가 −24%',opp:'카르텔 게임 붕괴(코어 7.5) — 에너지 변동성 극대(코어 1.4)'},
+ {t:10.5,d:'2020-03-16',name:'서킷브레이커 — 현금 외 전부 하락',c:'#FF5D6E',la:40.7,lo:-74,imp:5,reach:'전 시장',cx:'상관 수렴의 극한 — 금마저 하락',opp:'투매의 시간 = 지평 우위의 시간(코어 1.2)'},
+ {t:14,d:'2020-03-23',name:'무제한 QE 선언',c:'#3FE0A0',la:38.9,lo:-77,imp:5,reach:'전 시장',cx:'유동성 경로 최대 출력 — 대반등의 기점',opp:'유동성 밀물 개시 — 고베타 최전선 순서(코어 3.5)'}];
 const R08OPPS=[
- {name:'크레딧 선행 — HY 스프레드',core:'2.6',unit:'bp',dec:0,max:1000,kf:[[0,180],[3,420],[7,650],[10.5,820],[14,930],[18,860]],note:'리먼 이전부터 경보 점등 — 반 박자 빠른 겁쟁이',verdT:3.2,verd:'선행 적중 ✓'},
- {name:'수렴도 경보 — 평균 |ρ|',core:'5.2',unit:'',dec:2,max:1,kf:[[0,0.42],[3,0.55],[7,0.78],[10.5,0.86],[14,0.93],[18,0.88]],note:'0.55 돌파 = 분산 소멸의 시작',verdT:7.5,verd:'경보 적중 ✓'},
- {name:'달러 스퀴즈 — DXY 강도',core:'3.2',unit:'σ',dec:2,max:3,kf:[[0,0.3],[3,0.9],[7,1.6],[10.5,2.2],[14,2.9],[18,2.4]],note:'달러 경로의 극단 — 신흥국 압박',verdT:14.2,verd:'경로 적중 ✓'},
- {name:'생존 규칙 — 관찰 강도 축소',core:'6.5 반켈리',unit:'×',dec:2,max:.6,kf:[[0,0.50],[3,0.35],[7,0.20],[10.5,0.12],[14,0.10],[18,0.15]],note:'폭풍에서는 크기가 방향보다 중요하다',verdT:10.8,verd:'생존 규칙 가동 ✓'}];
+ {name:'크레딧 선행 — HY 스프레드',core:'2.6',unit:'bp',dec:0,max:1000,th:500,dir:'ge',
+  f:'HY OAS ≥ 500bp → 신용 경보',
+  kf:[[0,180],[3,420],[7,650],[10.5,820],[14,930],[18,860]],
+  note:'리먼 이전부터 경보 점등 — 반 박자 빠른 겁쟁이',verdT:3.2,verd:'선행 적중 ✓'},
+ {name:'수렴도 경보 — 평균 |ρ|',core:'5.2',unit:'',dec:2,max:1,th:.55,dir:'ge',
+  f:'평균 |ρ| ≥ 0.55 → 분산 소멸 경보',
+  kf:[[0,0.42],[3,0.55],[7,0.78],[10.5,0.86],[14,0.93],[18,0.88]],
+  note:'0.55 돌파 = 분산 소멸의 시작',verdT:7.5,verd:'경보 적중 ✓'},
+ {name:'달러 스퀴즈 — DXY 강도',core:'3.2',unit:'σ',dec:2,max:3,th:2,dir:'ge',
+  f:'달러 강도 ≥ 2.0σ → 스퀴즈 경보',
+  kf:[[0,0.3],[3,0.9],[7,1.6],[10.5,2.2],[14,2.9],[18,2.4]],
+  note:'달러 경로의 극단 — 신흥국 압박',verdT:14.2,verd:'경로 적중 ✓'},
+ {name:'생존 규칙 — 관찰 강도',core:'6.5 반켈리',unit:'×',dec:2,max:.6,th:.2,dir:'le',
+  f:'권장 관찰 강도 ≤ 0.20× → 폭풍 프로토콜',
+  kf:[[0,0.50],[3,0.35],[7,0.20],[10.5,0.12],[14,0.10],[18,0.15]],
+  note:'폭풍에서는 크기가 방향보다 중요하다',verdT:10.8,verd:'생존 규칙 가동 ✓'}];
 const R20OPPS=[
- {name:'공급망 선행 — 항공화물·운임',core:'2.8',unit:'z',dec:2,max:3,kf:[[0,0.8],[3.5,1.6],[7,2.1],[10.5,2.6],[14,1.9],[18,1.2]],note:'물리 세계가 재무제표보다 빨랐다',verdT:3.8,verd:'선행 적중 ✓'},
- {name:'수렴도 경보 — 평균 |ρ|',core:'5.2',unit:'',dec:2,max:1,kf:[[0,0.38],[3.5,0.62],[7,0.74],[10.5,0.95],[14,0.80],[18,0.60]],note:'0.95 — 현금 외 전부 하락의 수학적 표기',verdT:10.8,verd:'경보 적중 ✓'},
- {name:'변동성 프리미엄 — IV−RV',core:'1.4',unit:'p',dec:1,max:36,kf:[[0,3],[3.5,9],[7,18],[10.5,34],[14,22],[18,12]],note:'공포의 보험료가 사상 최고가로',verdT:14.5,verd:'구조 관찰 ✓'},
- {name:'유동성 스위치 — 순유동성 Δ',core:'3.5',unit:'σ',dec:2,max:3.4,kf:[[0,-0.2],[3.5,-0.6],[7,-0.9],[10.5,-1.2],[14,2.8],[18,3.2]],note:'무제한 QE — 밀물의 방향 전환 감지',verdT:14.2,verd:'반전 포착 ✓'}];
+ {name:'공급망 선행 — 항공화물·운임',core:'2.8',unit:'z',dec:2,max:3,th:2,dir:'ge',
+  f:'공급망 z ≥ 2.0 → 물리 선행 경보',
+  kf:[[0,0.8],[3.5,1.6],[7,2.1],[10.5,2.6],[14,1.9],[18,1.2]],
+  note:'물리 세계가 재무제표보다 빨랐다',verdT:3.8,verd:'선행 적중 ✓'},
+ {name:'수렴도 경보 — 평균 |ρ|',core:'5.2',unit:'',dec:2,max:1,th:.55,dir:'ge',
+  f:'평균 |ρ| ≥ 0.55 → 분산 소멸 경보',
+  kf:[[0,0.38],[3.5,0.62],[7,0.74],[10.5,0.95],[14,0.80],[18,0.60]],
+  note:'0.95 — 현금 외 전부 하락의 수학적 표기',verdT:10.8,verd:'경보 적중 ✓'},
+ {name:'변동성 프리미엄 — IV−RV',core:'1.4',unit:'p',dec:1,max:36,th:20,dir:'ge',
+  f:'IV−RV ≥ 20p → 공포 프리미엄 극단',
+  kf:[[0,3],[3.5,9],[7,18],[10.5,34],[14,22],[18,12]],
+  note:'공포의 보험료가 사상 최고가로',verdT:14.5,verd:'구조 관찰 ✓'},
+ {name:'유동성 스위치 — 순유동성 Δ',core:'3.5',unit:'σ',dec:2,max:3.4,th:2,dir:'ge',
+  f:'순유동성 Δ ≥ +2σ → 밀물 전환',
+  kf:[[0,-0.2],[3.5,-0.6],[7,-0.9],[10.5,-1.2],[14,2.8],[18,3.2]],
+  note:'무제한 QE — 밀물의 방향 전환 감지',verdT:14.2,verd:'반전 포착 ✓'}];
 const SC={R08:{ev:R08,opps:R08OPPS},R20:{ev:R20,opps:R20OPPS}};
 const T_END=18;
 let cur='R08',t=0,playing=false,speed=1,lastF=null;
+const BASE_RATE=.42; /* 더 느리게 — 1×에서 전체 약 43초 */
 const $=id=>document.getElementById(id);
 function kfv(kf,tt){if(tt<=kf[0][0])return kf[0][1];
   for(let i=1;i<kf.length;i++){if(tt<=kf[i][0]){const a=kf[i-1],b=kf[i];
@@ -131,16 +173,21 @@ function dOf(tt){
     return new Date(P(a.d)+(P(b.d)-P(a.d))*f).toISOString().slice(0,10);}}
   const L=s[s.length-1];
   return new Date(P(L.d)+(tt-L.t)*2*864e5).toISOString().slice(0,10);}
+function impDots(n,c){let h='';for(let i=1;i<=5;i++)h+=`<span style="color:${i<=n?c:'#31414f'}">●</span>`;return h;}
 function build(){
   t=0;
   $('evlist').innerHTML=SC[cur].ev.map((e,i)=>
     `<div class="ev" id="ev${i}" style="border-left-color:${e.c}">`+
     `<b>${e.name}</b><div class="d">${e.d}</div>`+
-    `<div class="cx">${e.cx}</div><div class="opp">☞ ${e.opp}</div></div>`).join('');
+    `<div class="cx">${e.cx}</div>`+
+    `<span class="imp">파급력 ${impDots(e.imp,e.c)} ${e.imp}/5 · ${e.reach} <span style="color:#5b6b7a">(재구성·추정)</span></span>`+
+    `<div class="opp">☞ ${e.opp}</div></div>`).join('');
   $('gglist').innerHTML=SC[cur].opps.map((o,i)=>
     `<div class="gg"><div class="h">${o.name}<span class="core">코어 ${o.core}</span></div>`+
-    `<span class="big" id="gv${i}">—</span><span class="un">${o.unit}</span>`+
-    `<span class="tr2"><i id="gb${i}"></i></span>`+
+    `<div class="fx">${o.f}</div>`+
+    `<div class="sub">지금 <b id="gv${i}">—</b>${o.unit} <span id="gc${i}"></span>`+
+    `<span class="st" id="gs${i}">대기</span></div>`+
+    `<span class="tr2"><i id="gb${i}"></i><em style="left:${Math.min(100,Math.abs(o.th)/o.max*100)}%"></em></span>`+
     `<div class="nt">${o.note}</div><span class="vd" id="vd${i}">${o.verd}</span></div>`).join('');
   $('ticks').innerHTML=SC[cur].ev.map(e=>
     `<span class="tick" style="left:${e.t/T_END*100}%;background:${e.c}"></span>`).join('');
@@ -151,12 +198,16 @@ function paint(){
   SC[cur].ev.forEach((e,i)=>$('ev'+i).classList.toggle('on',t>=e.t));
   SC[cur].opps.forEach((o,i)=>{
     const v=kfv(o.kf,t);
+    const hit=o.dir==='le'?v<=o.th:v>=o.th;
     $('gv'+i).textContent=v.toFixed(o.dec);
+    $('gc'+i).textContent=(o.dir==='le'?'≤':'≥')+' '+o.th+o.unit+' ?';
+    const st=$('gs'+i);st.textContent=hit?'발동':'대기';st.classList.toggle('on',hit);
     $('gb'+i).style.width=Math.min(100,Math.abs(v)/o.max*100)+'%';
-    $('vd'+i).classList.toggle('on',t>=o.verdT);});}
+    $('vd'+i).classList.toggle('on',t>=o.verdT);});
+  window.__rp={t,cur,list:SC[cur].ev};}
 function frame(now){
   if(playing){
-    if(lastF!=null)t=Math.min(T_END,t+(now-lastF)/1000*1.1*speed);
+    if(lastF!=null)t=Math.min(T_END,t+(now-lastF)/1000*BASE_RATE*speed);
     if(t>=T_END){playing=false;$('play').textContent='▶';}
     paint();}
   lastF=now;requestAnimationFrame(frame);}
@@ -176,6 +227,81 @@ $('bar').addEventListener('click',e=>{
   t=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*T_END;
   paint();});
 build();
+</script>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+"topojson-client":"https://cdn.jsdelivr.net/npm/topojson-client@3/+esm"}}
+</script>
+<script type="module">
+/* 미니 지구본: 그날의 진앙이 찍히고, 최신 사건 쪽으로 스스로 돈다 */
+import * as THREE from 'three';
+import * as topojson from 'topojson-client';
+const cv=document.getElementById('miniglobe');
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(38,1,.05,50);
+camera.position.set(0,0,3.0);
+const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
+renderer.setSize(210,210,false);
+renderer.setPixelRatio(Math.min(2,devicePixelRatio));
+const D2R=Math.PI/180;
+const v3=(la,lo,r)=>{const p=(90-la)*D2R,th=(lo+180)*D2R;
+  return new THREE.Vector3(-r*Math.sin(p)*Math.cos(th),r*Math.cos(p),r*Math.sin(p)*Math.sin(th));};
+const globe=new THREE.Group();scene.add(globe);
+globe.add(new THREE.Mesh(new THREE.SphereGeometry(1,48,48),
+  new THREE.MeshBasicMaterial({color:0x0c141d})));
+fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(r=>r.json()).then(topo=>{
+  const coast=topojson.mesh(topo,topo.objects.countries,(a,b)=>a===b);
+  const verts=[];
+  (coast.type==='MultiLineString'?coast.coordinates:[coast.coordinates]).forEach(line=>{
+    for(let i=0;i<line.length-1;i++){
+      if(line[i][1]<-82.8&&line[i+1][1]<-82.8)continue;
+      const a=v3(line[i][1],line[i][0],1.002),b=v3(line[i+1][1],line[i+1][0],1.002);
+      verts.push(a.x,a.y,a.z,b.x,b.y,b.z);}});
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(verts),3));
+  globe.add(new THREE.LineSegments(g,
+    new THREE.LineBasicMaterial({color:0x9FC0D6,transparent:true,opacity:.4})));}).catch(()=>{});
+const marks=new THREE.Group();globe.add(marks);
+let shown=-1,glide=null;
+function refresh(){
+  const rp=window.__rp;if(!rp)return;
+  const fired=rp.list.filter(e=>rp.t>=e.t);
+  if(fired.length!==shown||marks.userData.sc!==rp.cur){
+    shown=fired.length;marks.userData.sc=rp.cur;
+    marks.clear();
+    fired.forEach(e=>{
+      const p=v3(e.la,e.lo,1.01);
+      const core=new THREE.Mesh(new THREE.SphereGeometry(.018,8,8),
+        new THREE.MeshBasicMaterial({color:new THREE.Color(e.c)}));
+      core.position.copy(p);marks.add(core);
+      const ring=new THREE.Mesh(new THREE.RingGeometry(.035,.045,24),
+        new THREE.MeshBasicMaterial({color:new THREE.Color(e.c),transparent:true,side:THREE.DoubleSide}));
+      ring.position.copy(p);ring.lookAt(p.clone().multiplyScalar(2));
+      ring.userData={ph:Math.random()*6.28};
+      marks.add(ring);});
+    if(fired.length){ /* 최신 진앙이 정면에 오도록 활공 */
+      const e=fired[fired.length-1];
+      const target=v3(e.la,e.lo,1).normalize();
+      glide={from:camera.position.clone().normalize(),to:target,t0:performance.now()};}}}
+function loop(now){
+  refresh();
+  if(glide){
+    const u=Math.min(1,(now-glide.t0)/1100);
+    const e2=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
+    camera.position.copy(glide.from.clone().lerp(glide.to,e2).normalize().multiplyScalar(3.0));
+    camera.lookAt(0,0,0);
+    if(u>=1)glide=null;
+  }else{ /* 평시: 카메라가 스스로 공전 — 진앙 좌표계는 고정 */
+    camera.position.applyAxisAngle(new THREE.Vector3(0,1,0),.0016);
+    camera.lookAt(0,0,0);}
+  marks.children.forEach(m=>{
+    if(m.geometry&&m.geometry.type==='RingGeometry'){
+      const s=1+.8*((now/1600+m.userData.ph)%1);
+      m.scale.set(s,s,s);
+      m.material.opacity=Math.max(0,1-((s-1)/.8));}});
+  renderer.render(scene,camera);
+  requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
 </script>
 </body>
 </html>
