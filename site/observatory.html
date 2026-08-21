@@ -1,47 +1,63 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<!-- STATUS: OBSERVATORY ASSEMBLY stage 1 (unlinked page — index.html untouched until owner approves swap).
-     Stage: v4 borders globe + REAL data layers (ships, news pulses, obs nodes) + regime-driven theming
-     + glass panel shell (brand bar, regime chip, market ticker, news list). All figures carry provenance.
-     Next stages: epicenter→card ripple arcs, 3D/2D/logic morph toggle, country-tap lens. -->
+<!-- STATUS: OBSERVATORY ASSEMBLY stage 3 (unlinked page — index.html untouched until owner approves swap).
+     Adds: 3D / flat-map / logic view toggle (mode-aware projection, full stage rebuild with fade),
+     marquee ticker, layers panel, rounded glass + left color stripes (owner design pass),
+     card-click camera glide. All positions derive from (la,lo) so every layer rebuilds per view. -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>BATAVIA PROJECT — Observatory</title>
 <style>
-  :root{--acc:#7FD8FF;--acc-soft:rgba(127,216,255,.22);--ink:#EAF9FF;--dim:#93a7b8;
-    --glass:rgba(7,11,17,.62);--edge:rgba(159,199,224,.20)}
+  :root{--acc:#7FD8FF;--ink:#EAF9FF;--dim:#93a7b8;
+    --glass:rgba(7,11,17,.60);--glass2:rgba(7,11,17,.74);--edge:rgba(159,199,224,.20)}
   *{box-sizing:border-box}
   body{margin:0;background:#05070c;color:var(--ink);font-family:'Segoe UI',system-ui,sans-serif;
     overflow:hidden;height:100vh;height:100dvh}
-  /* ── 유리 패널 공통: 투명 + 발광 테두리 ── */
-  .glass{background:var(--glass);border:1px solid var(--edge);backdrop-filter:blur(8px);
-    -webkit-backdrop-filter:blur(8px);box-shadow:0 0 18px rgba(0,0,0,.35),inset 0 0 22px rgba(127,216,255,.03)}
+  canvas{transition:opacity .35s ease}
+  /* ── 유리 패널: 투명 + 발광 테두리 + 라운딩 ── */
+  .glass{background:var(--glass);border:1px solid var(--edge);backdrop-filter:blur(9px);
+    -webkit-backdrop-filter:blur(9px);border-radius:11px;
+    box-shadow:0 0 18px rgba(0,0,0,.35),inset 0 0 22px rgba(127,216,255,.03)}
   /* 상단 브랜드 바 */
   #topbar{position:fixed;top:0;left:0;right:0;z-index:10;display:flex;align-items:center;gap:10px;
     padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top))}
   #brand{font:600 13px/1.2 Consolas,monospace;letter-spacing:3px;color:var(--ink);white-space:nowrap}
   #brand small{display:block;font-weight:400;font-size:9px;letter-spacing:5px;color:var(--acc);margin-top:2px}
   #regimechip{margin-left:auto;padding:7px 12px;font:11px/1.5 Consolas,monospace;color:var(--dim);
-    border-radius:2px;text-align:right}
+    text-align:right}
   #regimechip b{color:var(--acc);letter-spacing:2px}
   #regimechip .prov{font-size:9px;color:#5b6b7a}
-  /* 하단 티커 */
-  #ticker{position:fixed;left:0;right:0;bottom:0;z-index:10;display:flex;gap:18px;overflow-x:auto;
-    padding:8px 14px;padding-bottom:max(8px,env(safe-area-inset-bottom));font:11px Consolas,monospace;
-    white-space:nowrap;scrollbar-width:none}
-  #ticker::-webkit-scrollbar{display:none}
-  .tk{color:var(--dim)} .tk b{color:var(--ink);font-weight:600}
-  .up{color:#FF6A6E} .dn{color:#5FA8FF} .fl{color:#93a7b8}
-  /* 버튼 행 + 뉴스·카드 패널 */
+  /* 뉴스 토스트 — 더 맑은 유리, 왼쪽 논조 띠 */
+  #toast{position:fixed;top:88px;left:50%;transform:translateX(-50%);z-index:9;
+    max-width:min(560px,calc(100vw - 24px));padding:9px 16px 9px 13px;cursor:pointer;
+    background:rgba(7,11,17,.42);border-left-width:3px;border-left-style:solid;
+    font:12px/1.5 'Segoe UI',sans-serif;color:var(--ink);white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;opacity:0;transition:opacity 1.1s ease;pointer-events:none}
+  #toast.show{opacity:1;pointer-events:auto}
+  #toast small{color:#5b6b7a;font-family:Consolas,monospace;font-size:9px;margin-right:7px}
+  /* 활성 카드 — 상시, 왼쪽 계열색 띠 + 수치 강조 */
+  #activebar{position:fixed;left:12px;top:130px;z-index:9;display:flex;flex-direction:column;gap:8px}
+  .acard{width:min(316px,calc(100vw - 24px));padding:9px 12px 9px 11px;cursor:pointer;
+    background:var(--glass2);border-left-width:4px;border-left-style:solid}
+  .acard .r1{font:600 12px Consolas,monospace;color:#F4FBFF;letter-spacing:1px}
+  .acard .r1 .gr{color:var(--acc);float:right}
+  .acard .calc{margin-top:5px;font:10.5px/1.75 Consolas,monospace;color:#9fb8cc}
+  .acard .calc b{color:#EAF9FF;font-weight:600;font-size:11.5px}
+  .acard .src{margin-top:4px;font:9px Consolas,monospace;color:#5b6b7a}
+  .acard.on{outline:1px solid var(--acc)}
+  /* 버튼 행 + 패널 */
   #btnrow{position:fixed;right:12px;bottom:52px;z-index:11;display:flex;gap:8px}
   .pbtn{padding:8px 14px;font:11px Consolas,monospace;color:var(--acc);cursor:pointer;
-    border-radius:2px;letter-spacing:2px;user-select:none}
-  #news,#cards{position:fixed;right:12px;bottom:92px;z-index:11;width:min(340px,calc(100vw - 24px));
-    max-height:46vh;overflow-y:auto;padding:10px 12px;border-radius:2px;display:none}
+    letter-spacing:2px;user-select:none}
+  #news,#cards{position:fixed;right:12px;bottom:92px;z-index:11;width:min(348px,calc(100vw - 24px));
+    max-height:46vh;overflow-y:auto;padding:10px 12px;display:none}
   #news.on,#cards.on{display:block}
   #news h3,#cards h3{margin:0 0 8px;font:600 10px Consolas,monospace;letter-spacing:2px;color:var(--acc)}
-  #news h3 span{color:#3FE0A0}
+  .nv{display:block;color:var(--ink);font-size:11px;line-height:1.45;margin:5px 0;
+    padding:6px 8px 6px 9px;cursor:pointer;background:rgba(159,199,224,.04);
+    border-left-width:3px;border-left-style:solid;border-radius:0 7px 7px 0}
+  .nv small{display:block;color:#5b6b7a;font-size:9px;font-family:Consolas,monospace;margin-top:2px}
   .cv{font-size:11px;line-height:1.45;padding:8px 0 8px 4px;cursor:pointer;
     border-top:1px solid rgba(159,199,224,.10)}
   .cv:first-of-type{border-top:none}
@@ -49,40 +65,44 @@
   .cv small{display:block;color:#5b6b7a;font-size:9px;font-family:Consolas,monospace;margin-top:2px}
   .cv.on{border-left:2px solid var(--acc);background:rgba(127,216,255,.05)}
   #cardfoot{margin-top:8px;font:9px Consolas,monospace;color:#5b6b7a}
-  /* 뉴스 토스트 — 유리에 떴다가 사라진다 */
-  #toast{position:fixed;top:88px;left:50%;transform:translateX(-50%);z-index:9;
-    max-width:min(560px,calc(100vw - 24px));padding:9px 16px;border-radius:2px;cursor:pointer;
-    font:12px/1.5 'Segoe UI',sans-serif;color:var(--ink);white-space:nowrap;overflow:hidden;
-    text-overflow:ellipsis;opacity:0;transition:opacity 1.1s ease;pointer-events:none}
-  #toast.show{opacity:1;pointer-events:auto}
-  #toast small{color:#5b6b7a;font-family:Consolas,monospace;font-size:9px;margin-right:7px}
-  .tdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;vertical-align:middle}
-  /* 활성 카드 — 상시, 근거·수치 동반 */
-  #activebar{position:fixed;left:12px;top:130px;z-index:9;display:flex;flex-direction:column;gap:8px}
-  .acard{width:min(302px,calc(100vw - 24px));padding:9px 12px;border-radius:2px;cursor:pointer}
-  .acard .r1{font:600 11px Consolas,monospace;color:var(--ink);letter-spacing:1px}
-  .acard .r1 .gr{color:var(--acc);float:right}
-  .acard .calc{margin-top:4px;font:10px/1.6 Consolas,monospace;color:#9fb8cc}
-  .acard .calc b{color:#CFE9F7;font-weight:600}
-  .acard .src{margin-top:3px;font:9px Consolas,monospace;color:#5b6b7a}
-  .acard.on{outline:1px solid var(--acc)}
-  @media(max-width:520px){#toast{top:78px}#activebar{top:118px}
-    .acard{width:min(258px,calc(100vw - 24px))}}
-  .nv{display:block;color:var(--ink);text-decoration:none;font-size:11px;line-height:1.45;
-    padding:7px 0;border-top:1px solid rgba(159,199,224,.10)}
-  .nv:first-of-type{border-top:none}
-  .nv small{display:block;color:#5b6b7a;font-size:9px;font-family:Consolas,monospace;margin-top:2px}
-  .nv .sev{display:inline-block;min-width:8px;height:8px;border-radius:50%;background:#FF5D6E;
-    margin-right:6px;vertical-align:middle}
-  /* 범례 */
-  #legend{position:fixed;left:12px;bottom:52px;z-index:10;padding:7px 11px;font:10px Consolas,monospace;
-    color:var(--dim);border-radius:2px;line-height:1.8}
   .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  /* 뷰 전환 (3D/평면/로직) */
+  #modebar{position:fixed;left:50%;transform:translateX(-50%);bottom:52px;z-index:11;display:flex;
+    padding:4px;gap:4px}
+  .mbtn{padding:6px 14px;font:11px Consolas,monospace;letter-spacing:2px;color:var(--dim);
+    cursor:pointer;border-radius:8px;user-select:none}
+  .mbtn.on{color:#06121c;background:var(--acc)}
+  /* 레이어 섹션 */
+  #layersbtn{position:fixed;left:12px;bottom:52px;z-index:11;padding:8px 14px;
+    font:11px Consolas,monospace;color:var(--acc);cursor:pointer;letter-spacing:2px;user-select:none}
+  #layers{position:fixed;left:12px;bottom:92px;z-index:11;width:214px;padding:10px 12px;display:none}
+  #layers.on{display:block}
+  #layers h3{margin:0 0 7px;font:600 10px Consolas,monospace;letter-spacing:2px;color:var(--acc)}
+  .lrow{display:flex;align-items:center;gap:7px;padding:5px 2px;font:10.5px Consolas,monospace;
+    color:var(--ink);cursor:pointer;border-radius:6px}
+  .lrow:hover{background:rgba(159,199,224,.06)}
+  .lrow.off{opacity:.35}
+  .lrow .sw{display:flex;gap:3px}
+  .lrow .st{margin-left:auto;color:#5b6b7a;font-size:9px}
+  #layers .foot{margin-top:6px;font:9px Consolas,monospace;color:#5b6b7a}
+  /* 전광판 티커 — 계속 흐른다 */
+  #ticker{position:fixed;left:0;right:0;bottom:0;z-index:10;overflow:hidden;white-space:nowrap;
+    padding:8px 0;padding-bottom:max(8px,env(safe-area-inset-bottom));font:11px Consolas,monospace;
+    border-radius:0}
+  #ticker .rail{display:inline-block;padding-left:16px;animation:mq var(--mqd,60s) linear infinite;
+    will-change:transform}
+  #ticker:hover .rail{animation-play-state:paused}
+  @keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  .tk{color:var(--dim);margin-right:26px} .tk b{color:var(--ink);font-weight:600}
+  .up{color:#FF6A6E} .dn{color:#5FA8FF} .fl{color:#93a7b8}
   @media(max-width:520px){
     #brand{font-size:11px;letter-spacing:2px}
-    #legend{display:none}
     #regimechip{max-width:60vw;font-size:9px;padding:5px 9px}
     #regimechip .prov{display:none}
+    #toast{top:78px}
+    #activebar{top:118px}
+    .acard{width:min(262px,calc(100vw - 24px))}
+    #modebar{bottom:94px}
   }
 </style>
 </head>
@@ -92,21 +112,32 @@
   <div id="regimechip" class="glass">국면 <b id="rgname">—</b><br>
     <span id="rgval">—</span><br><span class="prov" id="rgprov"></span></div>
 </div>
-<div id="legend" class="glass">
-  <span class="dot" style="background:#FF9A5A"></span>유조선 <span class="dot" style="background:#5FD8E8"></span>화물선 · AIS<br>
-  뉴스 관찰 <span class="dot" style="background:#3FE0A0"></span>긍정 <span class="dot" style="background:#D9A441"></span>중립 <span class="dot" style="background:#FF5D6E"></span>부정 <span class="dot" style="background:#EAF9FF"></span>관측 노드<br>
-  <span style="opacity:.6">─ 관측 동선(상시·옅음) · ━ 활성 파급</span>
-</div>
 <div id="toast" class="glass"></div>
 <div id="activebar"></div>
+<div id="modebar" class="glass">
+  <span class="mbtn on" data-v="3d">3D</span>
+  <span class="mbtn" data-v="2d">평면</span>
+  <span class="mbtn" data-v="logic">로직</span>
+</div>
+<div id="layersbtn" class="glass">레이어 ▤</div>
+<div id="layers" class="glass">
+  <h3>LAYERS</h3>
+  <div class="lrow" data-l="ships"><span class="sw"><span class="dot" style="background:#FF9A5A"></span><span class="dot" style="background:#5FD8E8"></span></span>선박 · AIS<span class="st">ON</span></div>
+  <div class="lrow" data-l="news"><span class="sw"><span class="dot" style="background:#3FE0A0"></span><span class="dot" style="background:#D9A441"></span><span class="dot" style="background:#FF5D6E"></span></span>뉴스 진앙<span class="st">ON</span></div>
+  <div class="lrow" data-l="routes"><span class="sw"><span class="dot" style="background:#D9A441"></span><span class="dot" style="background:#FF5D6E"></span><span class="dot" style="background:#5FD8E8"></span><span class="dot" style="background:#A79BFF"></span></span>관측 동선<span class="st">ON</span></div>
+  <div class="lrow" data-l="ripples"><span class="sw"><span class="dot" style="background:var(--acc)"></span></span>활성 파급<span class="st">ON</span></div>
+  <div class="lrow" data-l="clabels"><span class="sw"><span class="dot" style="background:#c4d8e8"></span></span>국가 라벨<span class="st">ON</span></div>
+  <div class="lrow" data-l="citylabels"><span class="sw"><span class="dot" style="background:#8fa6b8"></span></span>도시 라벨<span class="st">ON</span></div>
+  <div class="foot">뉴스 색 = 관찰 3상태(긍정·중립·부정)<br>─ 동선(상시·옅음) · ━ 파급(활성·밝음)</div>
+</div>
 <div id="btnrow">
   <div id="cardsbtn" class="pbtn glass">활성 카드 —</div>
-  <div id="newsbtn" class="pbtn glass">뉴스 ⊕</div>
+  <div id="newsbtn" class="pbtn glass">NEWS LOG</div>
 </div>
 <div id="cards" class="glass"><h3>활성 카드 — 파급 경로</h3><div id="cardlist">판정 중…</div>
   <div id="cardfoot"></div></div>
 <div id="news" class="glass"><h3>NEWS LOG<span id="newsupd" style="color:#5b6b7a"></span></h3><div id="newslist">로드 중…</div></div>
-<div id="ticker" class="glass"></div>
+<div id="ticker" class="glass"><div class="rail" id="tickrail"></div></div>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
 "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
@@ -128,22 +159,27 @@ document.body.appendChild(renderer.domElement);
 const controls=new OrbitControls(camera,renderer.domElement);
 controls.enableDamping=true;controls.dampingFactor=.06;
 controls.minDistance=1.4;controls.maxDistance=5.5;controls.enablePan=false;
-controls.autoRotate=!matchMedia('(prefers-reduced-motion: reduce)').matches;
+const AUTOROT=!matchMedia('(prefers-reduced-motion: reduce)').matches;
+controls.autoRotate=AUTOROT;
 controls.autoRotateSpeed=.22;
-/* 세로(폰) 화면: 지구본이 폭에 맞게 들어오도록 카메라 거리 자동 계산 */
+
+/* ══ 뷰 상태: '3d' 투영 | '2d' 평면 투영 · logicOn = 로직 감쇠 ══ */
+const R=1,D2R=Math.PI/180;
+const W2=4,H2=2; /* 평면 지도의 폭·높이 */
+let VIEW='3d',logicOn=false,MODE='3d';
+function sphV3(la,lo,r){const phi=(90-la)*D2R,th=(lo+180)*D2R;
+  return new THREE.Vector3(-r*Math.sin(phi)*Math.cos(th),r*Math.cos(phi),r*Math.sin(phi)*Math.sin(th));}
+function toV3(la,lo,r){
+  if(VIEW==='2d')return new THREE.Vector3(lo/180*(W2/2),la/90*(H2/2),(r-R)*2.2);
+  return sphV3(la,lo,r);}
 function fitCamera(){
+  if(VIEW!=='3d')return;
   const fovY=camera.fov*Math.PI/180;
   const fovX=2*Math.atan(Math.tan(fovY/2)*camera.aspect);
   const half=Math.min(fovY,fovX)/2;
   const d=Math.max(2.9,1.18/Math.sin(half));
   controls.maxDistance=Math.max(5.5,d+.4);
   if(camera.position.length()<d)camera.position.setLength(d);}
-fitCamera();
-
-const R=1;
-const D2R=Math.PI/180;
-function toV3(la,lo,r){const phi=(90-la)*D2R,th=(lo+180)*D2R;
-  return new THREE.Vector3(-r*Math.sin(phi)*Math.cos(th),r*Math.cos(phi),r*Math.sin(phi)*Math.sin(th));}
 
 /* 별 */
 {const g=new THREE.BufferGeometry();const p=new Float32Array(900*3);
@@ -151,44 +187,48 @@ function toV3(la,lo,r){const phi=(90-la)*D2R,th=(lo+180)*D2R;
  g.setAttribute('position',new THREE.BufferAttribute(p,3));
  scene.add(new THREE.Points(g,new THREE.PointsMaterial({color:0x6d8296,size:.05,transparent:true,opacity:.5})));}
 
-/* ── 바탕 구 + 국가 채움 텍스처 ── */
-const earthMat=new THREE.MeshBasicMaterial({color:0x0c141d});
-const earth=new THREE.Mesh(new THREE.SphereGeometry(R,96,96),earthMat);
-scene.add(earth);
-
-/* 대기 글로우 — 바깥 헤일로(배경과의 경계) + 안쪽 림(지구 가장자리 은은한 밝힘), 둘 다 약하게 */
+/* 대기 글로우 (3D 전용) */
 const atmMat=new THREE.ShaderMaterial({
   transparent:true,side:THREE.BackSide,depthWrite:false,
   uniforms:{c:{value:new THREE.Color(0x9fc7e0)}},
   vertexShader:'varying vec3 vN;void main(){vN=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
   fragmentShader:'uniform vec3 c;varying vec3 vN;void main(){float i=pow(.58-dot(vN,vec3(0.,0.,1.)),2.2);gl_FragColor=vec4(c,1.)*i*1.15;}'});
-scene.add(new THREE.Mesh(new THREE.SphereGeometry(R*1.09,64,64),atmMat));
+const atmMesh=new THREE.Mesh(new THREE.SphereGeometry(R*1.09,64,64),atmMat);scene.add(atmMesh);
 const rimMat=new THREE.ShaderMaterial({
   transparent:true,side:THREE.FrontSide,depthWrite:false,blending:THREE.AdditiveBlending,
   uniforms:{c:{value:new THREE.Color(0x9fc7e0)}},
   vertexShader:'varying vec3 vN;void main(){vN=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
   fragmentShader:'uniform vec3 c;varying vec3 vN;void main(){float i=pow(1.-abs(dot(vN,vec3(0.,0.,1.))),3.5);gl_FragColor=vec4(c,1.)*i*.32;}'});
-scene.add(new THREE.Mesh(new THREE.SphereGeometry(R*1.002,96,96),rimMat));
+const rimMesh=new THREE.Mesh(new THREE.SphereGeometry(R*1.002,96,96),rimMat);scene.add(rimMesh);
 
-const COUNTRIES='https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
-fetch(COUNTRIES).then(r=>r.json()).then(topo=>{
-  const feats=topojson.feature(topo,topo.objects.countries).features;
+/* ══ 데이터 캐시 (뷰 재조립의 재료) ══ */
+let topoCache=null,fillTex=null,ledCache=null,shipsCache=[],activesCache=[];
+const newsLog=[],newsSeen=new Set();
+const NEWS_LOG_MAX=30;
+const L={ships:true,news:true,routes:true,ripples:true,clabels:true,citylabels:true};
+
+/* ══ 무대(stage) — 뷰가 바뀌면 전부 재조립 ══ */
+let stage=null,baseMesh=null,innerL=null,coastL=null,cityIM=null,obsIM=null;
+let routesGroup=null,shipsGroup=null,newsLayer=null,rippleGroup=null;
+const labelObjs=[];
+const pulses=[],flows=[];
+let hlIdx=null;
+
+function fillCanvasTexture(){ /* 등장방형 채움 — 구·평면 공용 */
+  const feats=topojson.feature(topoCache,topoCache.objects.countries).features;
   const c=document.createElement('canvas');c.width=4096;c.height=2048;
   const x=c.getContext('2d');
-  x.fillStyle='#0b131c';x.fillRect(0,0,4096,2048); /* 바다 */
-  const px=(lo)=> (lo+180)/360*4096, py=(la)=> (90-la)/180*2048;
+  x.fillStyle='#0b131c';x.fillRect(0,0,4096,2048);
+  const px=(lo)=>(lo+180)/360*4096,py=(la)=>(90-la)/180*2048;
   feats.forEach((f,fi)=>{
-    const shade=0.85+((fi*2654435761)%1000)/1000*0.3; /* 나라별 결정적 음영 */
-    const g0=Math.round(24*shade),g1=Math.round(34*shade),g2=Math.round(44*shade);
-    x.fillStyle=`rgb(${g0},${g1},${g2})`;
+    const shade=0.85+((fi*2654435761)%1000)/1000*0.3;
+    x.fillStyle=`rgb(${Math.round(24*shade)},${Math.round(34*shade)},${Math.round(44*shade)})`;
     const polys=f.geometry.type==='Polygon'?[f.geometry.coordinates]:f.geometry.coordinates;
-    /* 날짜변경선: 경도 언랩 + ±폭 오프셋 3회 (전폭 띠 누출 방지) · 남극은 원본(극관 정당 채움) */
     if((f.properties.name||'').toLowerCase()==='antarctica'){
-      polys.forEach(poly=>{
-        x.beginPath();
+      polys.forEach(poly=>{x.beginPath();
         poly.forEach(ring=>{ring.forEach((p,i)=>{i?x.lineTo(px(p[0]),py(p[1])):x.moveTo(px(p[0]),py(p[1]));});x.closePath();});
         x.fill('evenodd');});
-      x.fillRect(0,py(-82.8),4096,2048-py(-82.8)); /* 데이터 공백 극관 채움 */
+      x.fillRect(0,py(-82.8),4096,2048-py(-82.8));
       return;}
     polys.forEach(poly=>{
       [-4096,0,4096].forEach(off=>{
@@ -205,56 +245,43 @@ fetch(COUNTRIES).then(r=>r.json()).then(topo=>{
         x.fill('evenodd');});});});
   const t=new THREE.CanvasTexture(c);
   t.colorSpace=THREE.SRGBColorSpace;
-  t.generateMipmaps=false;t.minFilter=THREE.LinearFilter; /* 극지 밴딩 방지 */
+  t.generateMipmaps=false;t.minFilter=THREE.LinearFilter;
   t.anisotropy=renderer.capabilities.getMaxAnisotropy();
-  earth.material=new THREE.MeshBasicMaterial({map:t});
-  /* 벡터 경계 */
-  function meshToSegs(mesh,r){
-    const verts=[];
-    const lines=mesh.type==='MultiLineString'?mesh.coordinates:[mesh.coordinates];
-    lines.forEach(line=>{for(let i=0;i<line.length-1;i++){
-      if(line[i][1]<-82.8&&line[i+1][1]<-82.8)continue; /* 남극 절단선 제외 */
-      const a=toV3(line[i][1],line[i][0],r),b=toV3(line[i+1][1],line[i+1][0],r);
-      verts.push(a.x,a.y,a.z,b.x,b.y,b.z);}});
-    const g=new THREE.BufferGeometry();
-    g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(verts),3));
-    return g;}
-  const inner=topojson.mesh(topo,topo.objects.countries,(a,b)=>a!==b);
-  earth.add(new THREE.LineSegments(meshToSegs(inner,R*1.0018),
-    new THREE.LineBasicMaterial({color:0xBFD9EA,transparent:true,opacity:.55})));
-  const coast=topojson.mesh(topo,topo.objects.countries,(a,b)=>a===b);
-  earth.add(new THREE.LineSegments(meshToSegs(coast,R*1.0015),
-    new THREE.LineBasicMaterial({color:0x9FC0D6,transparent:true,opacity:.38})));
-  /* 전국 라벨 자동 생성 (경제 티어) */
-  const T1=new Set(['united states of america','china','japan','germany','india',
-    'united kingdom','france','brazil','russia','canada','south korea','australia',
-    'mexico','saudi arabia','indonesia','italy']);
-  const T2=new Set(['spain','netherlands','turkey','switzerland','poland','argentina',
-    'sweden','belgium','ireland','norway','austria','israel','united arab emirates',
-    'thailand','egypt','denmark','malaysia','vietnam','philippines','bangladesh',
-    'south africa','nigeria','colombia','chile','finland','romania','czechia',
-    'portugal','new zealand','peru','greece','iraq','qatar','kazakhstan','hungary',
-    'kuwait','morocco','ukraine','iran','pakistan','algeria','ethiopia','venezuela',
-    'antarctica','greenland']);
-  function centroidOf(f){
-    const polys=f.geometry.type==='Polygon'?[f.geometry.coordinates]:f.geometry.coordinates;
-    let ring=polys[0][0];
-    polys.forEach(p=>{if(p[0].length>ring.length)ring=p[0];});
-    const v=new THREE.Vector3();
-    ring.forEach(([lo,la])=>v.add(toV3(la,lo,1)));
-    v.normalize();
-    const la=Math.asin(v.y)/D2R;
-    const lo=Math.atan2(v.z,-v.x)/D2R-180;
-    return [la,((lo+540)%360)-180];}
-  feats.forEach(f=>{
-    const nm=f.properties&&f.properties.name;if(!nm)return;
-    const key=nm.toLowerCase();
-    const tier=T1.has(key)?1:T2.has(key)?2:3;
-    const cc=centroidOf(f);
-    addLabel(nm.toUpperCase(),cc[0],cc[1],tier);});
-}).catch(()=>{});
+  return t;}
 
-/* ── 라벨: 티어 + 줌 게이팅 + 크기 위계 ── */
+function meshToSegs(mesh,r){
+  const verts=[];
+  const lines=mesh.type==='MultiLineString'?mesh.coordinates:[mesh.coordinates];
+  lines.forEach(line=>{for(let i=0;i<line.length-1;i++){
+    if(line[i][1]<-82.8&&line[i+1][1]<-82.8)continue;
+    if(VIEW==='2d'&&Math.abs(line[i][0]-line[i+1][0])>180)continue; /* 평면: 날짜변경선 관통 선 제거 */
+    const a=toV3(line[i][1],line[i][0],r),b=toV3(line[i+1][1],line[i+1][0],r);
+    verts.push(a.x,a.y,a.z,b.x,b.y,b.z);}});
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(verts),3));
+  return g;}
+
+const T1=new Set(['united states of america','china','japan','germany','india',
+  'united kingdom','france','brazil','russia','canada','south korea','australia',
+  'mexico','saudi arabia','indonesia','italy']);
+const T2=new Set(['spain','netherlands','turkey','switzerland','poland','argentina',
+  'sweden','belgium','ireland','norway','austria','israel','united arab emirates',
+  'thailand','egypt','denmark','malaysia','vietnam','philippines','bangladesh',
+  'south africa','nigeria','colombia','chile','finland','romania','czechia',
+  'portugal','new zealand','peru','greece','iraq','qatar','kazakhstan','hungary',
+  'kuwait','morocco','ukraine','iran','pakistan','algeria','ethiopia','venezuela',
+  'antarctica','greenland']);
+function centroidOf(f){ /* 구면 단위벡터 평균 — 뷰와 무관하게 항상 구면 기준 */
+  const polys=f.geometry.type==='Polygon'?[f.geometry.coordinates]:f.geometry.coordinates;
+  let ring=polys[0][0];
+  polys.forEach(p=>{if(p[0].length>ring.length)ring=p[0];});
+  const v=new THREE.Vector3();
+  ring.forEach(([lo,la])=>v.add(sphV3(la,lo,1)));
+  v.normalize();
+  const la=Math.asin(v.y)/D2R;
+  const lo=Math.atan2(v.z,-v.x)/D2R-180;
+  return [la,((lo+540)%360)-180];}
+
 function labelSprite(txt,tier){
   const c=document.createElement('canvas');c.width=640;c.height=96;
   const x=c.getContext('2d');
@@ -270,12 +297,12 @@ function labelSprite(txt,tier){
   s.renderOrder=20;
   const k=tier===1?.34:tier===2?.26:tier===4?.22:tier===5?.18:.20;
   s.scale.set(k,k*96/640,1);return s;}
-const labelObjs=[];
 function addLabel(txt,la,lo,tier){
   const s=labelSprite(txt,tier);
   s.position.copy(toV3(la,lo,R*1.012));
-  labelObjs.push({s,tier,normal:s.position.clone().normalize()});
-  earth.add(s);}
+  labelObjs.push({s,tier,normal:VIEW==='2d'?new THREE.Vector3(0,0,1):s.position.clone().normalize()});
+  stage.add(s);}
+
 const CITY4=[['SEOUL',37.5,127],['TOKYO',35.7,139.7],['NEW YORK',40.7,-74],['LONDON',51.5,-.1],
  ['SHANGHAI',31.2,121.5],['RIYADH',24.7,46.7],['SINGAPORE',1.35,103.8],
  ['HONG KONG',22.3,114.2],['MUMBAI',19,72.8],['FRANKFURT',50.1,8.7],
@@ -293,58 +320,53 @@ const CITY5=[['SAN FRANCISCO',37.77,-122.42],['HOUSTON',29.76,-95.37],['MIAMI',2
  ['DHAKA',23.81,90.41],['BANGKOK',13.76,100.5],['KUALA LUMPUR',3.14,101.69],['MANILA',14.6,120.98],
  ['HO CHI MINH',10.82,106.63],['TAIPEI',25.03,121.57],['SHENZHEN',22.54,114.06],['OSAKA',34.69,135.5],
  ['BUSAN',35.18,129.08],['MELBOURNE',-37.81,144.96],['AUCKLAND',-36.85,174.76],['VLADIVOSTOK',43.12,131.89]];
-CITY4.forEach(([n,la,lo])=>addLabel(n,la,lo,4));
-CITY5.forEach(([n,la,lo])=>addLabel(n,la,lo,5));
-{const geo=new THREE.SphereGeometry(.0042,8,8);
- const all=[...CITY4,...CITY5];
- const im=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({color:0x8fa6b8,transparent:true,opacity:.8}),all.length);
- const d3=new THREE.Object3D();
- all.forEach((c2,i)=>{d3.position.copy(toV3(c2[1],c2[2],R*1.0025));d3.updateMatrix();im.setMatrixAt(i,d3.matrix);});
- im.instanceMatrix.needsUpdate=true;earth.add(im);}
-function updateLabels(){
-  const camDir=camera.position.clone().normalize();
-  const dist=camera.position.length();
-  labelObjs.forEach(o=>{
-    const facing=o.normal.dot(camDir);
-    const tierOn=o.tier===1||(o.tier===2&&dist<2.5)||(o.tier===3&&dist<1.85)
-      ||(o.tier===4&&dist<1.95)||(o.tier===5&&dist<1.6);
-    const fade=THREE.MathUtils.smoothstep(facing,.12,.35);
-    o.s.material.opacity=tierOn?fade*.95:0;});}
-window.__dbg={labelObjs,camera};
+const OBS=[[37.5,127],[35.7,139.7],[40.7,-74],[51.5,-.1],[31.2,121.5],[24.7,46.7],[1.35,103.8],
+  [22.3,114.2],[19,72.8],[50.1,8.7],[-23.5,-46.6],[-33.9,151.2],[41.9,-87.6],[48.9,2.35]];
 
-/* ══ 실데이터 레이어 ══ */
+/* 호 곡선 — 3D: 대권+고도 ∝ 거리 · 평면: 베지어 리프트 */
+function arcCurve(a,b){
+  if(VIEW==='2d'){
+    const A=toV3(a[0],a[1],R*1.004),B=toV3(b[0],b[1],R*1.004);
+    const d=A.distanceTo(B);
+    const M=A.clone().add(B).multiplyScalar(.5);M.z+=.06+.1*Math.min(1,d/2);
+    return new THREE.QuadraticBezierCurve3(A,M,B);}
+  const A=sphV3(a[0],a[1],1),B=sphV3(b[0],b[1],1);
+  const ang=A.angleTo(B);
+  const h=.05+.16*(ang/Math.PI);
+  const pts=[];
+  for(let i=0;i<=32;i++){
+    const t=i/32;
+    const s=Math.sin((1-t)*ang)/Math.sin(ang),c=Math.sin(t*ang)/Math.sin(ang);
+    const p=A.clone().multiplyScalar(s).add(B.clone().multiplyScalar(c)).normalize();
+    p.multiplyScalar(R*(1.004+h*Math.sin(Math.PI*t)));
+    pts.push(p);}
+  return new THREE.CatmullRomCurve3(pts);}
+function surfaceArc(a,b){
+  if(VIEW==='2d'){
+    const A=toV3(a[0],a[1],R*1.002),B=toV3(b[0],b[1],R*1.002);
+    const M=A.clone().add(B).multiplyScalar(.5);M.z+=.015;
+    return new THREE.QuadraticBezierCurve3(A,M,B);}
+  const A=sphV3(a[0],a[1],1),B=sphV3(b[0],b[1],1);
+  const ang=A.angleTo(B);
+  const pts=[];
+  for(let i=0;i<=32;i++){
+    const t=i/32;
+    const s=Math.sin((1-t)*ang)/Math.sin(ang),c=Math.sin(t*ang)/Math.sin(ang);
+    const p=A.clone().multiplyScalar(s).add(B.clone().multiplyScalar(c)).normalize();
+    p.multiplyScalar(R*(1.0035+.012*Math.sin(Math.PI*t)));
+    pts.push(p);}
+  return new THREE.CatmullRomCurve3(pts);}
+function orient(o,p){ /* 표면 요소의 방향: 3D 법선 / 평면 +z */
+  if(VIEW==='2d')o.lookAt(p.x,p.y,p.z+1);
+  else o.lookAt(p.clone().multiplyScalar(2));}
 
-/* 관측 노드 — 밝은 점 (데이터가 연결된 도시) */
-{const geo=new THREE.SphereGeometry(.0075,10,10);
- const obs=[[37.5,127],[35.7,139.7],[40.7,-74],[51.5,-.1],[31.2,121.5],[24.7,46.7],[1.35,103.8],
-   [22.3,114.2],[19,72.8],[50.1,8.7],[-23.5,-46.6],[-33.9,151.2],[41.9,-87.6],[48.9,2.35]];
- const im=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({color:0xEAF9FF}),obs.length);
- const d3=new THREE.Object3D();
- obs.forEach((c2,i)=>{d3.position.copy(toV3(c2[0],c2[1],R*1.003));d3.updateMatrix();im.setMatrixAt(i,d3.matrix);});
- im.instanceMatrix.needsUpdate=true;earth.add(im);}
+function havKm(a,b){
+  const p1=a[0]*D2R,p2=b[0]*D2R,dp=(b[0]-a[0])*D2R,dl=(b[1]-a[1])*D2R;
+  const s=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;
+  return 6371*2*Math.atan2(Math.sqrt(s),Math.sqrt(1-s));}
 
-/* 실함대 (AIS 실측) */
-const hull=new THREE.ConeGeometry(.0055,.018,4);hull.rotateX(Math.PI/2);
-fetch('data/ships.json').then(r=>r.json()).then(d=>{
-  const fleet=(d&&d.fleet)||[];
-  [['tanker',0xFF9A5A],['cargo',0x5FD8E8],['unknown',0x8fa3b3]].forEach(([tt,col])=>{
-    const ships=fleet.filter(s=>s.t===tt);if(!ships.length)return;
-    const im=new THREE.InstancedMesh(hull,new THREE.MeshBasicMaterial({color:col}),ships.length);
-    const d3=new THREE.Object3D();
-    ships.forEach((s,i)=>{const p=toV3(s.la,s.lo,R*1.004);
-      d3.position.copy(p);d3.lookAt(p.clone().multiplyScalar(2));
-      if(s.cog!=null)d3.rotateZ(-s.cog*D2R);
-      d3.updateMatrix();im.setMatrixAt(i,d3.matrix);});
-    im.instanceMatrix.needsUpdate=true;earth.add(im);});
-}).catch(()=>{});
-
-/* ══ 뉴스 레이어 — 논조 3색 관찰(긍정·중립·부정), 토스트, NEWS LOG(최대 30), 클릭=진앙 회전 ══ */
-const pulses=[];
-const newsLayer=new THREE.Group();earth.add(newsLayer);
-const NEWS_LOG_MAX=30;
-const newsLog=[],newsSeen=new Set();
 function toneColor(e){return e.tone<=-3?'#FF5D6E':e.tone>=2?'#3FE0A0':'#D9A441';}
-function relKo(ts){ /* 발행 시각 → "몇 분/시간/일 전" */
+function relKo(ts){
   if(!ts)return '';
   let t;
   if(/^\d{14}$/.test(ts))t=Date.UTC(+ts.slice(0,4),+ts.slice(4,6)-1,+ts.slice(6,8),
@@ -352,69 +374,209 @@ function relKo(ts){ /* 발행 시각 → "몇 분/시간/일 전" */
   else{const d=new Date(ts);if(isNaN(d))return '';t=d.getTime();}
   const m=Math.max(0,Math.round((Date.now()-t)/60000));
   return m<1?'방금':m<60?m+'분 전':m<1440?Math.round(m/60)+'시간 전':Math.round(m/1440)+'일 전';}
-/* 진앙 회전: 카메라를 그 지점 상공으로 부드럽게 */
-let camAnim=null,autoT=null;
-function rotateTo(la,lo){
-  const from=camera.position.clone().normalize();
-  const to=toV3(la,lo,1).normalize();
-  if(from.dot(to)<-0.999)to.x+=.01;
-  camAnim={from,to,dist:camera.position.length(),t0:performance.now()};
-  const was=controls.autoRotate;controls.autoRotate=false;
-  clearTimeout(autoT);autoT=setTimeout(()=>{controls.autoRotate=was;},15000);}
-function renderNews(d){
-  const evs=(d&&d.events)||[];
-  /* 로그 축적 (세션 내, 새 것 위로, 최대 30) */
-  evs.forEach(e=>{if(!newsSeen.has(e.id)){newsSeen.add(e.id);newsLog.unshift(e);}});
-  if(newsLog.length>NEWS_LOG_MAX)newsLog.length=NEWS_LOG_MAX;
-  /* 진앙 펄스 — 논조색 */
+
+/* ── 레이어 렌더러 (현재 뷰 기준으로 그린다) ── */
+function renderShips(){
+  if(!shipsGroup)return;
+  shipsGroup.clear();
+  const hull=new THREE.ConeGeometry(.0055,.018,4);hull.rotateX(Math.PI/2);
+  [['tanker',0xFF9A5A],['cargo',0x5FD8E8],['unknown',0x8fa3b3]].forEach(([tt,col])=>{
+    const ships=shipsCache.filter(s=>s.t===tt);if(!ships.length)return;
+    const im=new THREE.InstancedMesh(hull,new THREE.MeshBasicMaterial({color:col}),ships.length);
+    const d3=new THREE.Object3D();
+    ships.forEach((s,i)=>{const p=toV3(s.la,s.lo,R*1.004);
+      d3.position.copy(p);orient(d3,p);
+      if(s.cog!=null)d3.rotateZ(-s.cog*D2R);
+      d3.updateMatrix();im.setMatrixAt(i,d3.matrix);});
+    im.instanceMatrix.needsUpdate=true;shipsGroup.add(im);});}
+function renderNewsPulses(){
+  if(!newsLayer)return;
   newsLayer.clear();pulses.length=0;
   newsLog.slice(0,12).forEach(e=>{
     const p=toV3(e.la,e.lo,R*1.008);
     const sz=.008+.002*(e.sev||3);
     const ring=new THREE.Mesh(new THREE.RingGeometry(sz,sz*1.35,32),
       new THREE.MeshBasicMaterial({color:new THREE.Color(toneColor(e)),transparent:true,side:THREE.DoubleSide}));
-    ring.position.copy(p);ring.lookAt(p.clone().multiplyScalar(2));
+    ring.position.copy(p);orient(ring,p);
     ring.userData={ph:Math.random()*6.28};
-    newsLayer.add(ring);pulses.push(ring);});
-  /* NEWS LOG 패널 — 행 탭 = 진앙 회전 · ↗ = 기사 */
-  const list=document.getElementById('newslist');
-  list.innerHTML=newsLog.map((e,i)=>
-    `<div class="nv" data-i="${i}" style="cursor:pointer">`+
-    `<span class="sev" style="background:${toneColor(e)}"></span>${e.name}`+
-    ` <a href="${e.url}" target="_blank" rel="noopener" style="color:#5b6b7a;text-decoration:none">↗</a>`+
-    `<small>${e.src||''} · ${relKo(e.ts_pub||e.ts)} · 심각도 ${e.sev}/5 · 논조 ${e.tone>0?'+':''}${e.tone}</small></div>`).join('')
-    ||'뉴스 없음';
-  list.querySelectorAll('.nv').forEach(dv=>dv.addEventListener('click',ev2=>{
-    if(ev2.target.tagName==='A')return;
-    const e=newsLog[+dv.dataset.i];if(e)rotateTo(e.la,e.lo);}));
-  document.getElementById('newsbtn').textContent=`NEWS LOG ${newsLog.length}`;
-  if(d&&d.updated_utc){
-    const k=new Date(new Date(d.updated_utc).getTime()+9*3600e3);
-    document.getElementById('newsupd').textContent=
-      ` · 수집 ${String(k.getUTCHours()).padStart(2,'0')}:${String(k.getUTCMinutes()).padStart(2,'0')} KST`;}
-  startToast();}
-/* 토스트: 유리에 떠올랐다 사라진다 — 10초 주기(표시 7.5초, 소멸 1.1초) */
-let toastTimer=null,toastIdx=0;
-function startToast(){
-  if(toastTimer)return;
-  const tEl=document.getElementById('toast');
-  const cycle=()=>{
-    const items=newsLog.slice(0,8);
-    if(!items.length){tEl.classList.remove('show');return;}
-    const e=items[toastIdx%items.length];toastIdx++;
-    tEl.innerHTML=`<span class="tdot" style="background:${toneColor(e)}"></span>`+
-      `<small>${e.src||''} · ${relKo(e.ts_pub||e.ts)}</small>${e.name}`;
-    tEl.dataset.la=e.la;tEl.dataset.lo=e.lo;
-    tEl.classList.add('show');
-    setTimeout(()=>tEl.classList.remove('show'),7500);};
-  cycle();toastTimer=setInterval(cycle,10000);}
-document.getElementById('toast').addEventListener('click',()=>{
-  const t=document.getElementById('toast');
-  rotateTo(+t.dataset.la,+t.dataset.lo);
-  document.getElementById('news').classList.add('on');
-  document.getElementById('cards').classList.remove('on');});
+    newsLayer.add(ring);pulses.push(ring);});}
+function drawRoutes(){
+  if(!routesGroup||!ledCache)return;
+  routesGroup.clear();
+  (ledCache.routes||[]).forEach(rt=>{
+    routesGroup.add(new THREE.Mesh(new THREE.TubeGeometry(surfaceArc(rt.a,rt.b),40,.0016,5,false),
+      new THREE.MeshBasicMaterial({color:new THREE.Color(rt.c),transparent:true,opacity:.16})));});}
+function drawFlow(active,idx){
+  const col=new THREE.Color(active.card.color);
+  let gens=(active.card.spread||[]).map(g=>g.slice());
+  if(active.anchor)gens=[[active.anchor],...gens];
+  if(gens.length<2)return;
+  const group=new THREE.Group();
+  const arcs=[];
+  for(let g=0;g<gens.length-1;g++){
+    gens[g].forEach(from=>{gens[g+1].forEach(to=>{
+      const cv=arcCurve(from,to);
+      arcs.push({curve:cv,gen:g});
+      group.add(new THREE.Mesh(new THREE.TubeGeometry(cv,48,.0026,6,false),
+        new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.45})));});});}
+  const ps=arcs.map(a=>{
+    const m=new THREE.Mesh(new THREE.SphereGeometry(.0065,8,8),
+      new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.95}));
+    m.visible=false;group.add(m);
+    return {m,arc:a};});
+  rippleGroup.add(group);
+  flows.push({pulses:ps,nGen:gens.length-1,ph:idx*.37,group});
+  active.flow=group;}
+function drawRipples(){
+  if(!rippleGroup)return;
+  rippleGroup.clear();flows.length=0;
+  activesCache.forEach((a,i)=>drawFlow(a,i));
+  applyHighlight();}
+function applyHighlight(){
+  activesCache.forEach((a,i)=>{
+    if(!a.flow)return;
+    const dim=hlIdx!==null&&hlIdx!==i;
+    a.flow.traverse(o=>{if(!o.material)return;
+      const isPulse=o.geometry&&o.geometry.type==='SphereGeometry';
+      o.material.opacity=isPulse?(dim?.1:.95):(dim?.08:.45);});});}
 
-/* ══ 국면 자동 테마 (실측 conv → 무대 조명·글로우) ══ */
+/* ── 무대 조립 ── */
+function buildStage(){
+  if(stage){scene.remove(stage);
+    stage.traverse(o=>{if(o.geometry&&o.geometry.dispose)o.geometry.dispose();});}
+  labelObjs.length=0;
+  stage=new THREE.Group();scene.add(stage);
+  /* 바탕 */
+  const mat=fillTex?new THREE.MeshBasicMaterial({map:fillTex,transparent:true})
+                   :new THREE.MeshBasicMaterial({color:0x0c141d,transparent:true});
+  baseMesh=VIEW==='2d'?new THREE.Mesh(new THREE.PlaneGeometry(W2,H2),mat)
+                      :new THREE.Mesh(new THREE.SphereGeometry(R,96,96),mat);
+  stage.add(baseMesh);
+  /* 경계 + 라벨 */
+  innerL=coastL=null;
+  if(topoCache){
+    const inner=topojson.mesh(topoCache,topoCache.objects.countries,(a,b)=>a!==b);
+    innerL=new THREE.LineSegments(meshToSegs(inner,R*1.0018),
+      new THREE.LineBasicMaterial({color:0xBFD9EA,transparent:true,opacity:.55}));
+    stage.add(innerL);
+    const coast=topojson.mesh(topoCache,topoCache.objects.countries,(a,b)=>a===b);
+    coastL=new THREE.LineSegments(meshToSegs(coast,R*1.0015),
+      new THREE.LineBasicMaterial({color:0x9FC0D6,transparent:true,opacity:.38}));
+    stage.add(coastL);
+    topojson.feature(topoCache,topoCache.objects.countries).features.forEach(f=>{
+      const nm=f.properties&&f.properties.name;if(!nm)return;
+      const key=nm.toLowerCase();
+      const tier=T1.has(key)?1:T2.has(key)?2:3;
+      const cc=centroidOf(f);
+      addLabel(nm.toUpperCase(),cc[0],cc[1],tier);});}
+  CITY4.forEach(([n,la,lo])=>addLabel(n,la,lo,4));
+  CITY5.forEach(([n,la,lo])=>addLabel(n,la,lo,5));
+  /* 도시 점 + 관측 노드 점 */
+  {const geo=new THREE.SphereGeometry(.0042,8,8);
+   const all=[...CITY4,...CITY5];
+   cityIM=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({color:0x8fa6b8,transparent:true,opacity:.8}),all.length);
+   const d3=new THREE.Object3D();
+   all.forEach((c2,i)=>{d3.position.copy(toV3(c2[1],c2[2],R*1.0025));d3.updateMatrix();cityIM.setMatrixAt(i,d3.matrix);});
+   cityIM.instanceMatrix.needsUpdate=true;stage.add(cityIM);}
+  {const geo=new THREE.SphereGeometry(.0075,10,10);
+   obsIM=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({color:0xEAF9FF}),OBS.length);
+   const d3=new THREE.Object3D();
+   OBS.forEach((c2,i)=>{d3.position.copy(toV3(c2[0],c2[1],R*1.003));d3.updateMatrix();obsIM.setMatrixAt(i,d3.matrix);});
+   obsIM.instanceMatrix.needsUpdate=true;stage.add(obsIM);}
+  /* 데이터 레이어 */
+  routesGroup=new THREE.Group();stage.add(routesGroup);drawRoutes();
+  shipsGroup=new THREE.Group();stage.add(shipsGroup);renderShips();
+  newsLayer=new THREE.Group();stage.add(newsLayer);renderNewsPulses();
+  rippleGroup=new THREE.Group();stage.add(rippleGroup);drawRipples();
+  applyLayers();applyLogic();}
+
+/* ── 레이어 on/off + 로직 감쇠 ── */
+function applyLayers(){
+  if(shipsGroup)shipsGroup.visible=L.ships&&!logicOn;
+  if(newsLayer)newsLayer.visible=L.news&&!logicOn;
+  if(routesGroup)routesGroup.visible=L.routes;
+  if(rippleGroup)rippleGroup.visible=L.ripples;}
+function applyLogic(){
+  if(baseMesh)baseMesh.material.opacity=logicOn?.14:1;
+  if(innerL)innerL.material.opacity=logicOn?.08:.55;
+  if(coastL)coastL.material.opacity=logicOn?.05:.38;
+  if(routesGroup)routesGroup.children.forEach(m=>m.material.opacity=logicOn?.06:.16);
+  if(cityIM)cityIM.visible=!logicOn;
+  /* 로직 모드: 반투명 구를 통해 대기광이 비치면 발광구가 되므로 글로우 차단 */
+  atmMesh.visible=VIEW==='3d'&&!logicOn;
+  rimMesh.visible=VIEW==='3d'&&!logicOn;
+  applyLayers();}
+
+function updateLabels(){
+  const camDir=camera.position.clone().normalize();
+  const dist=VIEW==='2d'?camera.position.z+1.2:camera.position.length();
+  labelObjs.forEach(o=>{
+    if(logicOn){o.s.material.opacity=0;return;}
+    if(o.tier<=3&&!L.clabels){o.s.material.opacity=0;return;}
+    if(o.tier>=4&&!L.citylabels){o.s.material.opacity=0;return;}
+    const facing=VIEW==='2d'?1:o.normal.dot(camDir);
+    const tierOn=o.tier===1||(o.tier===2&&dist<2.5)||(o.tier===3&&dist<1.85)
+      ||(o.tier===4&&dist<1.95)||(o.tier===5&&dist<1.6);
+    const fade=VIEW==='2d'?1:THREE.MathUtils.smoothstep(facing,.12,.35);
+    o.s.material.opacity=tierOn?fade*.95:0;});}
+
+/* ── 카메라: 뷰별 조작 + 활공 ── */
+let camAnim=null,autoT=null;
+function rotateTo(la,lo){
+  if(VIEW==='2d'){
+    const p=toV3(la,lo,R);
+    camAnim={mode:'pan',fx:camera.position.x,fy:camera.position.y,tx:p.x,ty:p.y,t0:performance.now()};
+    return;}
+  const from=camera.position.clone().normalize();
+  const to=sphV3(la,lo,1).normalize();
+  if(from.dot(to)<-0.999)to.x+=.01;
+  camAnim={mode:'orbit',from,to,dist:camera.position.length(),t0:performance.now()};
+  const was=controls.autoRotate;controls.autoRotate=false;
+  clearTimeout(autoT);autoT=setTimeout(()=>{if(MODE==='3d')controls.autoRotate=was;},15000);}
+function configCamera(){
+  if(VIEW==='2d'){
+    controls.enableRotate=false;controls.enablePan=true;controls.screenSpacePanning=true;
+    controls.autoRotate=false;
+    controls.minDistance=.6;controls.maxDistance=4;
+    controls.target.set(0,0,0);
+    camera.position.set(0,0,2.4);camera.lookAt(0,0,0);
+  }else{
+    controls.enableRotate=true;controls.enablePan=false;
+    controls.autoRotate=MODE==='3d'&&AUTOROT;
+    controls.minDistance=1.4;controls.maxDistance=5.5;
+    controls.target.set(0,0,0);
+    if(Math.abs(camera.position.z-2.4)<.01&&Math.abs(camera.position.x)<2.1&&Math.abs(camera.position.y)<1.1)
+      camera.position.set(0,.5,2.9);
+    fitCamera();}}
+
+/* ── 뷰 전환: 스르륵(페이드) → 재조립 ── */
+function setView(v){
+  if(v===MODE)return;
+  MODE=v;
+  document.querySelectorAll('#modebar .mbtn').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  const cv=renderer.domElement;
+  cv.style.opacity=0;
+  setTimeout(()=>{
+    logicOn=v==='logic';
+    const want=(v==='2d')?'2d':'3d';
+    if(VIEW!==want){VIEW=want;buildStage();}
+    else applyLogic();
+    configCamera();
+    cv.style.opacity=1;
+  },370);}
+document.querySelectorAll('#modebar .mbtn').forEach(b=>
+  b.addEventListener('click',()=>setView(b.dataset.v)));
+
+/* ── 레이어 패널 ── */
+document.getElementById('layersbtn').addEventListener('click',()=>{
+  document.getElementById('layers').classList.toggle('on');});
+document.querySelectorAll('.lrow').forEach(rw=>rw.addEventListener('click',()=>{
+  const k=rw.dataset.l;L[k]=!L[k];
+  rw.classList.toggle('off',!L[k]);
+  rw.querySelector('.st').textContent=L[k]?'ON':'OFF';
+  applyLayers();}));
+
+/* ── 국면 자동 테마 ── */
 const REGIMES={
   steady:{en:'STEADY',name:'평온',acc:'#7FD8FF',atm:0x9fc7e0},
   tension:{en:'TENSION',name:'긴장',acc:'#E8A33D',atm:0xE8A33D},
@@ -431,92 +593,66 @@ function applyRegime(d){
   document.getElementById('rgval').textContent=`동조도 ${v.toFixed(3)} (긴장 ${th.tension} · 경보 ${th.alert})`;
   document.getElementById('rgprov').textContent=d.conv.provenance||'';}
 
-/* ══ 시장 티커 (실측) — 한국 관례: 상승 적색 · 하락 청색 ══ */
+/* ── 전광판 티커 ── */
 function renderTicker(d){
-  const el=document.getElementById('ticker');
   const s=(d&&d.series)||{};
-  /* 경제 위계 순서(T1 대국 → 글로벌 공통 → 지역 렌즈) — 한국이 중심이 아님 */
   const ORDER=['spx','shanghai','nikkei','dax','sensex','ftse','kospi',
     'us2y','us10y','dxy','vix','wti','copper','gold','btc'];
   const keys=[...ORDER.filter(k=>s[k]),...Object.keys(s).filter(k=>!ORDER.includes(k))];
-  el.innerHTML=keys.map(k=>s[k]).map(v=>{
+  const html=keys.map(k=>s[k]).map(v=>{
     let chg,txt;
     if(v.delta_kind==='pct'){chg=v.prev?(v.value/v.prev-1)*100:0;txt=`${chg>=0?'+':''}${chg.toFixed(2)}%`;}
     else{chg=v.value-(v.prev??v.value);txt=`${chg>=0?'+':''}${chg.toFixed(2)}%p`;}
     const cls=chg>0.0001?'up':chg<-0.0001?'dn':'fl';
     const arrow=chg>0.0001?'▲':chg<-0.0001?'▼':'—';
     return `<span class="tk">${v.label} <b>${v.value}</b> <span class="${cls}">${arrow} ${txt}</span></span>`;
-  }).join('');}
+  }).join('');
+  const rail=document.getElementById('tickrail');
+  rail.innerHTML=html+html; /* 이어붙여 무한 순환 */
+  rail.style.setProperty('--mqd',`${Math.max(30,keys.length*5)}s`);}
 
-/* ══ 파급 엔진 (원장 v0): 진앙 → 발동 카드 → 관측 노드 ══
-   판정 재료는 전부 실측 피드(뉴스·시장·국면·등록 이벤트) — 연결 규칙은 v0 추정으로 명시 */
-const rippleGroup=new THREE.Group();earth.add(rippleGroup);
-const flows=[]; /* {arcs,pulses,gens,ph,group} */
-/* 대권(great-circle) 호: 구면을 따라가며 고도를 사인 곡선으로 — 장거리도 지구를 관통하지 않음.
-   고도는 거리에 비례 (긴 호일수록 높이 난다). */
-function arcCurve(a,b){
-  const A=toV3(a[0],a[1],1),B=toV3(b[0],b[1],1);
-  const ang=A.angleTo(B);
-  const h=.05+.16*(ang/Math.PI);
-  const pts=[];
-  for(let i=0;i<=32;i++){
-    const t=i/32;
-    const s=Math.sin((1-t)*ang)/Math.sin(ang),c=Math.sin(t*ang)/Math.sin(ang);
-    const p=A.clone().multiplyScalar(s).add(B.clone().multiplyScalar(c)).normalize();
-    p.multiplyScalar(R*(1.004+h*Math.sin(Math.PI*t)));
-    pts.push(p);}
-  return new THREE.CatmullRomCurve3(pts);}
-function havKm(a,b){
-  const p1=a[0]*D2R,p2=b[0]*D2R,dp=(b[0]-a[0])*D2R,dl=(b[1]-a[1])*D2R;
-  const s=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;
-  return 6371*2*Math.atan2(Math.sqrt(s),Math.sqrt(1-s));}
-/* 방사형 파급: spread = 세대 목록 — g세대의 모든 노드가 g+1세대의 모든 노드로 동시에 퍼진다.
-   종점 없음, 특정 시장이 주인공이 되지 않음. 맥동은 세대 순서로 캐스케이드. */
-function drawFlow(active,idx){
-  const col=new THREE.Color(active.card.color);
-  let gens=(active.card.spread||[]).map(g=>g.slice());
-  if(active.anchor)gens=[[active.anchor],...gens];
-  if(gens.length<2)return;
-  const group=new THREE.Group();
-  const arcs=[]; /* {curve,gen} */
-  for(let g=0;g<gens.length-1;g++){
-    gens[g].forEach(from=>{gens[g+1].forEach(to=>{
-      const cv=arcCurve(from,to);
-      arcs.push({curve:cv,gen:g});
-      group.add(new THREE.Mesh(new THREE.TubeGeometry(cv,48,.0026,6,false),
-        new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.45})));});});}
-  const pulses=arcs.map(a=>{
-    const m=new THREE.Mesh(new THREE.SphereGeometry(.0065,8,8),
-      new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.95}));
-    m.visible=false;group.add(m);
-    return {m,arc:a};});
-  rippleGroup.add(group);
-  flows.push({pulses,nGen:gens.length-1,ph:idx*.37,group});
-  active.flow=group;}
-/* 상시 관측 동선 — 원장이 늘 지켜보는 통로(옅게, 지면 가까이). 활성 파급(밝음)과 구분 */
-function surfaceArc(a,b){
-  const A=toV3(a[0],a[1],1),B=toV3(b[0],b[1],1);
-  const ang=A.angleTo(B);
-  const pts=[];
-  for(let i=0;i<=32;i++){
-    const t=i/32;
-    const s=Math.sin((1-t)*ang)/Math.sin(ang),c2=Math.sin(t*ang)/Math.sin(ang);
-    const p=A.clone().multiplyScalar(s).add(B.clone().multiplyScalar(c2)).normalize();
-    p.multiplyScalar(R*(1.0035+.012*Math.sin(Math.PI*t)));
-    pts.push(p);}
-  return new THREE.CatmullRomCurve3(pts);}
-function drawRoutes(led){
-  (led.routes||[]).forEach(rt=>{
-    earth.add(new THREE.Mesh(new THREE.TubeGeometry(surfaceArc(rt.a,rt.b),40,.0016,5,false),
-      new THREE.MeshBasicMaterial({color:new THREE.Color(rt.c),transparent:true,opacity:.16})));});}
-let hlIdx=null;
-function applyHighlight(actives){
-  actives.forEach((a,i)=>{
-    if(!a.flow)return;
-    const dim=hlIdx!==null&&hlIdx!==i;
-    a.flow.traverse(o=>{if(!o.material)return;
-      const isPulse=o.geometry&&o.geometry.type==='SphereGeometry';
-      o.material.opacity=isPulse?(dim?.1:.95):(dim?.08:.45);});});}
+/* ── 뉴스: 로그·토스트·패널 ── */
+let headTimer=null,toastIdx=0;
+function renderNews(d){
+  const evs=(d&&d.events)||[];
+  evs.forEach(e=>{if(!newsSeen.has(e.id)){newsSeen.add(e.id);newsLog.unshift(e);}});
+  if(newsLog.length>NEWS_LOG_MAX)newsLog.length=NEWS_LOG_MAX;
+  renderNewsPulses();
+  const list=document.getElementById('newslist');
+  list.innerHTML=newsLog.map((e,i)=>
+    `<div class="nv" data-i="${i}" style="border-left-color:${toneColor(e)}">${e.name}`+
+    ` <a href="${e.url}" target="_blank" rel="noopener" style="color:#5b6b7a;text-decoration:none">↗</a>`+
+    `<small>${e.src||''} · ${relKo(e.ts_pub||e.ts)} · 심각도 ${e.sev}/5 · 논조 ${e.tone>0?'+':''}${e.tone}</small></div>`).join('')
+    ||'뉴스 없음';
+  list.querySelectorAll('.nv').forEach(dv=>dv.addEventListener('click',ev2=>{
+    if(ev2.target.tagName==='A')return;
+    const e=newsLog[+dv.dataset.i];if(e)rotateTo(e.la,e.lo);}));
+  document.getElementById('newsbtn').textContent=`NEWS LOG ${newsLog.length}`;
+  if(d&&d.updated_utc){
+    const k=new Date(new Date(d.updated_utc).getTime()+9*3600e3);
+    document.getElementById('newsupd').textContent=
+      ` · 수집 ${String(k.getUTCHours()).padStart(2,'0')}:${String(k.getUTCMinutes()).padStart(2,'0')} KST`;}
+  startToast();}
+function startToast(){
+  if(headTimer)return;
+  const tEl=document.getElementById('toast');
+  const cycle=()=>{
+    const items=newsLog.slice(0,8);
+    if(!items.length){tEl.classList.remove('show');return;}
+    const e=items[toastIdx%items.length];toastIdx++;
+    tEl.style.borderLeftColor=toneColor(e);
+    tEl.innerHTML=`<small>${e.src||''} · ${relKo(e.ts_pub||e.ts)}</small>${e.name}`;
+    tEl.dataset.la=e.la;tEl.dataset.lo=e.lo;
+    tEl.classList.add('show');
+    setTimeout(()=>tEl.classList.remove('show'),7500);};
+  cycle();headTimer=setInterval(cycle,10000);}
+document.getElementById('toast').addEventListener('click',()=>{
+  const t=document.getElementById('toast');
+  rotateTo(+t.dataset.la,+t.dataset.lo);
+  document.getElementById('news').classList.add('on');
+  document.getElementById('cards').classList.remove('on');});
+
+/* ══ 파급 엔진 — 5분마다 실측 피드 재판독 ══ */
 function runEngine(){
 Promise.all([
   fetch('logic/ledger.json').then(r=>r.json()),
@@ -525,11 +661,12 @@ Promise.all([
   fetch('data/regime.json').then(r=>r.json()).catch(()=>null),
   fetch('data/event_card.json').then(r=>r.json()).catch(()=>null)
 ]).then(([led,news,mkt,rg,ev])=>{
+  ledCache=led;
   applyRegime(rg);renderTicker(mkt);renderNews(news);
-  /* 파급 재계산 (5분 주기 갱신 대비 초기화) */
-  rippleGroup.clear();flows.length=0;hlIdx=null;
+  drawRoutes();
+  hlIdx=null;
   const actives=[];
-  const seen=new Set(); /* 카드당 최대 1건 (가장 먼저 잡힌 근거) */
+  const seen=new Set();
   const push=(a)=>{if(seen.has(a.card.id))return;seen.add(a.card.id);actives.push(a);};
   led.cards.forEach(card=>{
     const tr=card.trigger||{};
@@ -576,9 +713,9 @@ Promise.all([
             reason:`정치 불확실성 관찰`,label:'뉴스',
             calc:[`심각도 <b>${e.sev}/5</b> ≥ ${tr.sev_min} · 논조 ${e.tone>0?'+':''}${e.tone}`]});}});}
   });
-  if(!runEngine.routesDrawn){runEngine.routesDrawn=true;drawRoutes(led);}
-  actives.forEach((a,i)=>drawFlow(a,i));
-  /* 패널 + 상시 활성 카드 칩 */
+  activesCache=actives;
+  drawRipples();
+  /* 패널 + 상시 카드 */
   document.getElementById('cardsbtn').textContent=`활성 카드 ${actives.length}`;
   const el=document.getElementById('cardlist');
   const bar=document.getElementById('activebar');
@@ -593,23 +730,37 @@ Promise.all([
       `<small>발동 근거: ${a.reason}</small>`+
       `<small>${a.card.core} · ${a.card.path_note||''} · ${a.label}</small></div>`).join('');
     bar.innerHTML=actives.map((a,i)=>
-      `<div class="acard glass" data-i="${i}">`+
-      `<div class="r1"><span class="dot" style="background:${a.card.color}"></span>`+
-      `${a.card.id} ${a.card.name}<span class="gr">${a.card.grade}</span></div>`+
+      `<div class="acard" data-i="${i}" style="border-left-color:${a.card.color}">`+
+      `<div class="r1">${a.card.id} ${a.card.name}<span class="gr">${a.card.grade}</span></div>`+
       `<div class="calc">${(a.calc&&a.calc.length?a.calc:[a.reason]).join('<br>')}</div>`+
       `<div class="src">${a.reason} · ${a.card.core} · ${a.label}</div></div>`).join('');
     const sync=()=>{
       el.querySelectorAll('.cv').forEach((x,xi)=>x.classList.toggle('on',hlIdx===xi));
       bar.querySelectorAll('.acard').forEach((x,xi)=>x.classList.toggle('on',hlIdx===xi));};
-    const toggleHl=i=>{hlIdx=(hlIdx===i)?null:i;sync();applyHighlight(actives);};
+    const focusOf=a=>a.anchor||(a.card.spread&&a.card.spread[0]&&a.card.spread[0][0])||null;
+    const toggleHl=i=>{
+      hlIdx=(hlIdx===i)?null:i;sync();applyHighlight();
+      if(hlIdx!==null){const f=focusOf(actives[hlIdx]);if(f)rotateTo(f[0],f[1]);}};
     el.querySelectorAll('.cv').forEach(d=>d.addEventListener('click',()=>toggleHl(+d.dataset.i)));
     bar.querySelectorAll('.acard').forEach(ch=>ch.addEventListener('click',()=>toggleHl(+ch.dataset.i)));}
   document.getElementById('cardfoot').textContent=led.label||'';
 }).catch(()=>{document.getElementById('cardlist').textContent='원장 로드 실패';});}
-runEngine();
-setInterval(runEngine,5*60*1000); /* 5분마다 실측 피드 재판독 (뉴스 파이프라인은 15분 주기 수집) */
 
-/* 패널 토글 (하나 열면 다른 하나 닫힘) */
+/* ── 초기 로드: 지형 + 함대 → 무대 조립 → 엔진 ── */
+const COUNTRIES='https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
+buildStage(); /* 지형 로드 전 임시 무대 */
+fitCamera();  /* 세로(폰) 화면 초기 맞춤 */
+Promise.all([
+  fetch(COUNTRIES).then(r=>r.json()).catch(()=>null),
+  fetch('data/ships.json').then(r=>r.json()).catch(()=>null)
+]).then(([topo,sh])=>{
+  if(topo){topoCache=topo;fillTex=fillCanvasTexture();}
+  if(sh&&sh.fleet)shipsCache=sh.fleet;
+  buildStage();
+  runEngine();
+  setInterval(runEngine,5*60*1000);});
+
+/* 패널 토글 */
 const newsEl=document.getElementById('news');
 const cardsEl=document.getElementById('cards');
 document.getElementById('newsbtn').addEventListener('click',()=>{
@@ -617,20 +768,24 @@ document.getElementById('newsbtn').addEventListener('click',()=>{
 document.getElementById('cardsbtn').addEventListener('click',()=>{
   cardsEl.classList.toggle('on');newsEl.classList.remove('on');});
 
-let frames=0,fpsT=performance.now();
+window.__dbg={get labelObjs(){return labelObjs;},camera,setView,get L(){return L;}};
+
 function loop(now){
   controls.update();
-  /* 뉴스 클릭 → 진앙 상공으로 카메라 활공 */
   if(camAnim){
     const u=Math.min(1,(now-camAnim.t0)/900);
     const e2=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
-    camera.position.copy(camAnim.from.clone().lerp(camAnim.to,e2).normalize().multiplyScalar(camAnim.dist));
-    camera.lookAt(0,0,0);
+    if(camAnim.mode==='pan'){
+      const x=camAnim.fx+(camAnim.tx-camAnim.fx)*e2,y=camAnim.fy+(camAnim.ty-camAnim.fy)*e2;
+      camera.position.x=x;camera.position.y=y;
+      controls.target.set(x,y,0);
+    }else{
+      camera.position.copy(camAnim.from.clone().lerp(camAnim.to,e2).normalize().multiplyScalar(camAnim.dist));
+      camera.lookAt(0,0,0);}
     if(u>=1)camAnim=null;}
   updateLabels();
   pulses.forEach(rg=>{const s=1+.9*((now/1400+rg.userData.ph)%1);
     rg.scale.set(s,s,s);rg.material.opacity=Math.max(0,1.15-s*.55);});
-  /* 파급 맥동: 세대 캐스케이드 — 진앙 세대가 먼저, 다음 세대가 이어서 동시 방사 */
   flows.forEach(f=>{
     const U=((now/3000)+f.ph)%1;
     f.pulses.forEach(p=>{
