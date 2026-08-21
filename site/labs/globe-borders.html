@@ -78,18 +78,42 @@ fetch(COUNTRIES).then(r=>r.json()).then(topo=>{
     const g0=Math.round(24*shade),g1=Math.round(34*shade),g2=Math.round(44*shade);
     x.fillStyle=`rgb(${g0},${g1},${g2})`;
     const polys=f.geometry.type==='Polygon'?[f.geometry.coordinates]:f.geometry.coordinates;
+    /* 날짜변경선 처리: 경도 언랩(±360 연속화) 후 ±폭 오프셋 3회 드로잉 —
+       러시아·피지 등 ±180° 걸침 나라가 전폭 띠(극 도넛)로 새는 것을 방지.
+       예외: 남극은 하단 전폭 변이 극관을 정당하게 채우므로 원본 그대로 */
+    if((f.properties.name||'').toLowerCase()==='antarctica'){
+      polys.forEach(poly=>{
+        x.beginPath();
+        poly.forEach(ring=>{ring.forEach((p,i)=>{i?x.lineTo(px(p[0]),py(p[1])):x.moveTo(px(p[0]),py(p[1]));});x.closePath();});
+        x.fill('evenodd');});
+      /* 데이터가 남위 ~83° 이남을 안 갖고 있어 극점에 바다색 원반이 남음 — 극관 마저 채움 */
+      x.fillRect(0,py(-82.8),4096,2048-py(-82.8));
+      return;}
     polys.forEach(poly=>{
-      x.beginPath();
-      poly.forEach(ring=>{ring.forEach((p,i)=>{i?x.lineTo(px(p[0]),py(p[1])):x.moveTo(px(p[0]),py(p[1]));});x.closePath();});
-      x.fill('evenodd');});});
+      [-4096,0,4096].forEach(off=>{
+        x.beginPath();
+        poly.forEach(ring=>{
+          let prev=null;
+          ring.forEach((p,i)=>{
+            let lo=p[0];
+            if(prev!==null){while(lo-prev>180)lo-=360;while(lo-prev<-180)lo+=360;}
+            prev=lo;
+            const X=(lo+180)/360*4096+off;
+            i?x.lineTo(X,py(p[1])):x.moveTo(X,py(p[1]));});
+          x.closePath();});
+        x.fill('evenodd');});});});
   const t=new THREE.CanvasTexture(c);
-  t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;
+  t.colorSpace=THREE.SRGBColorSpace;
+  /* 극지 도넛 밴딩 제거: 채움 텍스처는 평탄색뿐이라 밉맵 불필요 — 끄면 위도 띠가 사라짐 */
+  t.generateMipmaps=false;t.minFilter=THREE.LinearFilter;
+  t.anisotropy=renderer.capabilities.getMaxAnisotropy();
   earth.material=new THREE.MeshBasicMaterial({map:t});
   /* ── 벡터 경계: 내부 국경(밝게) + 해안선(은은) — 각 1드로콜 ── */
   function meshToSegs(mesh,r){
     const verts=[];
     const lines=mesh.type==='MultiLineString'?mesh.coordinates:[mesh.coordinates];
     lines.forEach(line=>{for(let i=0;i<line.length-1;i++){
+      if(line[i][1]<-82.8&&line[i+1][1]<-82.8)continue; /* 남극 데이터 절단선(인공 원) 제외 */
       const a=toV3(line[i][1],line[i][0],r),b=toV3(line[i+1][1],line[i+1][0],r);
       verts.push(a.x,a.y,a.z,b.x,b.y,b.z);}});
     const g=new THREE.BufferGeometry();
