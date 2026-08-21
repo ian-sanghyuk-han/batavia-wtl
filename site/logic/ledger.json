@@ -1,0 +1,71 @@
+{
+  "version": "v0",
+  "note": "Machine-readable subset of docs/BATAVIA-LOGIC-LEDGER-v1.md — only cards whose activation can be judged from live feeds today. Trigger rules are v0 heuristics (label: 추정) until graded. Paths are causal display routes through observation nodes, not instructions.",
+  "label": "연결 규칙 v0 · 추정 (실측 채점 전)",
+  "chokepoints": {
+    "hormuz":   {"name": "호르무즈", "la": 26.6,  "lo": 56.5},
+    "malacca":  {"name": "말라카",   "la": 1.7,   "lo": 101.0},
+    "suez":     {"name": "수에즈",   "la": 30.0,  "lo": 32.5},
+    "babelmandeb": {"name": "바브엘만데브", "la": 12.6, "lo": 43.3},
+    "panama":   {"name": "파나마",   "la": 9.0,   "lo": -79.5},
+    "bosporus": {"name": "보스포루스", "la": 41.1, "lo": 29.0}
+  },
+  "cards": [
+    {
+      "id": "L-INF-001",
+      "name": "CPI 서프라이즈의 하루",
+      "family": "자본·금리",
+      "color": "#FF5D6E",
+      "core": "코어 2.3·7.1",
+      "grade": "B+",
+      "trigger": {"type": "event_upcoming"},
+      "path": [[38.9, -77.04], [40.7, -74.0], [51.5, -0.1], [35.7, 139.7], [37.5, 127.0]],
+      "path_note": "워싱턴(발표) → 뉴욕 → 런던 → 도쿄 → 서울"
+    },
+    {
+      "id": "L-PHY-004",
+      "name": "관문 봉쇄",
+      "family": "해상",
+      "color": "#D9A441",
+      "core": "코어 3.7·9.9",
+      "grade": "B+",
+      "trigger": {"type": "news_cameo_near", "codes": ["18", "19", "20"], "sev_min": 4, "radius_km": 700},
+      "path": [[31.2, 121.5], [37.5, 127.0], [35.7, 139.7]],
+      "path_note": "관문 → 상하이 → 서울 → 도쿄 (에너지 수입 동선)"
+    },
+    {
+      "id": "L-INF-004",
+      "name": "유가의 2차 점화",
+      "family": "자본·금리",
+      "color": "#FF5D6E",
+      "core": "코어 3.4",
+      "grade": "B+",
+      "trigger": {"type": "market_move", "series": "wti", "abs_pct_min": 3.0},
+      "anchor": [24.7, 46.7],
+      "path": [[40.7, -74.0], [51.5, -0.1]],
+      "path_note": "리야드(유가) → 뉴욕(금리) → 런던"
+    },
+    {
+      "id": "L-MKT-001",
+      "name": "수렴도 경보",
+      "family": "정보",
+      "color": "#A79BFF",
+      "core": "코어 5.2",
+      "grade": "B+",
+      "trigger": {"type": "regime_conv", "min": 0.55},
+      "path": [],
+      "path_note": "상태 카드 — 무대 전체 조명(경보 테마)으로 표현"
+    },
+    {
+      "id": "L-EVT-004",
+      "name": "선거의 불확실성 곡선",
+      "family": "정보",
+      "color": "#A79BFF",
+      "core": "코어 7장",
+      "grade": "C+",
+      "trigger": {"type": "news_cameo", "codes": ["13", "14"], "sev_min": 4},
+      "path": [[40.7, -74.0]],
+      "path_note": "정치 불확실성 진앙 → 뉴욕(위험 프리미엄)"
+    }
+  ]
+}
