@@ -88,7 +88,11 @@
   body.cinema #activebar,body.cinema #btnrow,body.cinema #layersbtn,
   body.cinema #zoombar,body.cinema #loginbtn,body.cinema #startbtn,
   body.cinema #setbtn,body.cinema #setmenu,body.cinema #modebar{display:none!important}
-  #loginbtn,#setbtn,#fsbtn{flex:none;margin-left:10px;padding:8px 13px;font:11px Consolas,monospace;
+  #fsbtn{position:fixed;right:14px;top:calc(50% + 96px);z-index:9;width:26px;height:26px;
+    display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--acc);
+    cursor:pointer;user-select:none}
+  body.cinema #fsbtn{top:auto;bottom:14px}
+  #loginbtn,#setbtn{flex:none;margin-left:10px;padding:8px 13px;font:11px Consolas,monospace;
     letter-spacing:1px;color:var(--acc);cursor:pointer;text-decoration:none;user-select:none}
   #startbtn{flex:none;margin-left:8px;padding:8px 14px;font:600 11px Consolas,monospace;
     letter-spacing:1px;color:#06121c;background:var(--acc);border-radius:11px;
@@ -320,7 +324,6 @@
   <div id="toast" class="glass"></div>
   <a id="loginbtn" class="glass" href="account.html">로그인</a>
   <a id="startbtn" href="account.html">시작하기</a>
-  <div id="fsbtn" class="glass" title="전체 화면">⛶</div>
   <div id="setbtn" class="glass">⚙</div>
 </div>
 <div id="setmenu" class="glass">
@@ -328,6 +331,11 @@
   <div class="sm-r" data-th="dark">● 다크 <span class="on-mark">✓</span></div>
   <div class="sm-r" data-th="light">○ 라이트 <span class="beta">β</span><span class="on-mark"></span></div>
   <div class="sm-r" data-th="gundam">◈ 건담 <span class="beta">β</span><span class="on-mark"></span></div>
+  <div class="sm-h" style="margin-top:8px">지역</div>
+  <div class="sm-r" style="cursor:default">🌐 Global <span class="on-mark">✓</span></div>
+  <div class="sm-h" style="margin-top:8px">언어</div>
+  <div class="sm-r" style="cursor:default">한국어 <span class="on-mark">✓</span></div>
+  <div class="sm-r" style="cursor:default;opacity:.5">English <span class="beta">준비 중</span></div>
   <div class="sm-h" style="margin-top:8px">바로가기</div>
   <a class="sm-r" href="ledger.html">원장 열람</a>
   <a class="sm-r" href="replay.html">REPLAY</a>
@@ -372,6 +380,7 @@
   <div id="lensfoot"></div><div id="lenscards"></div></div>
 <div id="zoombar" class="glass" title="드래그로 크기 조절"><div id="zoomtrack"><div id="zoomfill"></div></div>
   <div id="zoompct">—</div></div>
+<div id="fsbtn" class="glass" title="전체 화면 — 지구만 남습니다">⛶</div>
 <div id="btnrow">
   <a class="pbtn glass" href="replay.html" style="text-decoration:none">REPLAY</a>
   <div id="newsbtn" class="pbtn glass">NEWS LOG</div>
@@ -486,7 +495,7 @@ function fitCamera(){
 
 /* 대기 글로우 (3D 전용) */
 const atmMat=new THREE.ShaderMaterial({
-  transparent:true,side:THREE.BackSide,depthWrite:false,
+  transparent:true,side:THREE.BackSide,depthWrite:false,blending:THREE.AdditiveBlending,
   uniforms:{c:{value:new THREE.Color(0x9fc7e0)},a:{value:1}},
   vertexShader:'varying vec3 vN;void main(){vN=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
   fragmentShader:'uniform vec3 c;uniform float a;varying vec3 vN;void main(){float i=pow(.58-dot(vN,vec3(0.,0.,1.)),2.2);gl_FragColor=vec4(c,1.)*i*1.15*a;}'});
@@ -1723,9 +1732,10 @@ controls.addEventListener('end',()=>{drift2dPause=performance.now()+12000;});
  const setFromY=e=>{
    if(MODE!=='3d')return;
    const r=track.getBoundingClientRect();
-   const pct=1-Math.max(0,Math.min(1,(e.clientY-r.top)/r.height));
+   const t=1-Math.max(0,Math.min(1,(e.clientY-r.top)/r.height));
    const mn=controls.minDistance,mx=controls.maxDistance;
-   camera.position.setLength(mx-pct*(mx-mn));};
+   const mnPct=200*mn/mx;                    /* 채움 막대와 같은 겉보기-크기 척도 */
+   camera.position.setLength(200*mn/(mnPct+t*(200-mnPct)));};
  zb.addEventListener('pointerdown',e=>{zdrag=true;setFromY(e);e.preventDefault();});
  addEventListener('pointermove',e=>{if(zdrag)setFromY(e);});
  addEventListener('pointerup',()=>{zdrag=false;});}
@@ -1835,9 +1845,12 @@ function loop(now){
     zb.classList.toggle('on',show);
     if(show){
       const mn=controls.minDistance,mx=controls.maxDistance;
-      const pc=Math.round(Math.max(0,Math.min(1,(mx-camera.position.length())/(mx-mn)))*100);
-      document.getElementById('zoomfill').style.height=pc+'%';
-      document.getElementById('zoompct').textContent=(pc*2)+'%';}}
+      const d=Math.max(mn,Math.min(mx,camera.position.length()));
+      const pct=Math.round(200*mn/d);          /* 격보기 크기 ∝ 1/거리: 최근접 200% */
+      const mnPct=200*mn/mx;                    /* 최원거리 ≈ 51% — 0%는 없다 */
+      const fill=Math.max(0,Math.min(1,(pct-mnPct)/(200-mnPct)))*100;
+      document.getElementById('zoomfill').style.height=fill+'%';
+      document.getElementById('zoompct').textContent=pct+'%';}}
   pulses.forEach(rg=>{const s=1+.9*((now/1400+rg.userData.ph)%1);
     rg.scale.set(s,s,s);
     rg.material.opacity=Math.max(0,1.15-s*.55)*layerAlpha*(1-dimK);});
