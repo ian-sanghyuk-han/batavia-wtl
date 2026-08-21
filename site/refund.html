@@ -6,6 +6,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>BATAVIA PROJECT — Refund Policy</title>
+<script>{const t=localStorage.getItem('bp-theme')||'dark';document.documentElement.dataset.theme=(t==='gundam'||t==='light')?'gundam':'dark';}</script>
 <style>
   :root{--acc:#7FD8FF;--ink:#EAF9FF;--dim:#93a7b8;--mut:#5b6b7a;
     --glass:rgba(7,11,17,.60);--edge:rgba(159,199,224,.20)}
@@ -21,6 +22,13 @@
   h2{margin:0 0 8px;font:600 12px Consolas,monospace;letter-spacing:2px;color:var(--acc)}
   p,li{font-size:13px;line-height:1.85;color:#c5d7e4;margin:6px 0}
   ol{margin:6px 0;padding-left:20px}
+
+  /* 테마 연동: 관측소의 bp-theme(라이트=건담)를 따른다 */
+  html[data-theme="gundam"]{--acc:#2c52b3;--ink:#14283c;--dim:#3f5a7a;--mut:#5a708a;
+    --glass:rgba(252,253,255,.82);--edge:rgba(44,82,179,.28)}
+  html[data-theme="gundam"] body{background:#e9edf3;color:var(--ink)}
+  html[data-theme="gundam"] .glass{box-shadow:0 2px 12px rgba(44,82,179,.10)}
+  html[data-theme="gundam"] p,html[data-theme="gundam"] li{color:#2c4258}
 </style>
 </head>
 <body>

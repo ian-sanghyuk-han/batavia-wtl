@@ -7,6 +7,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>BATAVIA PROJECT — Policy</title>
+<script>{const t=localStorage.getItem('bp-theme')||'dark';document.documentElement.dataset.theme=(t==='gundam'||t==='light')?'gundam':'dark';}</script>
 <style>
   :root{--acc:#7FD8FF;--ink:#EAF9FF;--dim:#93a7b8;--mut:#5b6b7a;
     --glass:rgba(7,11,17,.60);--edge:rgba(159,199,224,.20)}
@@ -31,6 +32,14 @@
   .tag{display:inline-block;font:9px Consolas,monospace;border-radius:5px;padding:1px 7px;
     margin-right:4px;border:1px solid var(--edge);color:var(--dim)}
   .hl{color:#F4FBFF}
+
+  /* 테마 연동: 관측소의 bp-theme(라이트=건담)를 따른다 */
+  html[data-theme="gundam"]{--acc:#2c52b3;--ink:#14283c;--dim:#3f5a7a;--mut:#5a708a;
+    --glass:rgba(252,253,255,.82);--edge:rgba(44,82,179,.28)}
+  html[data-theme="gundam"] body{background:#e9edf3;color:var(--ink)}
+  html[data-theme="gundam"] .glass{box-shadow:0 2px 12px rgba(44,82,179,.10)}
+  html[data-theme="gundam"] p,html[data-theme="gundam"] li,html[data-theme="gundam"] td{color:#2c4258}
+  html[data-theme="gundam"] td b,html[data-theme="gundam"] .hl{color:#14283c}
 </style>
 </head>
 <body>

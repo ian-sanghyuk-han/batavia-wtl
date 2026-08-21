@@ -7,6 +7,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>BATAVIA PROJECT — Logic Ledger</title>
+<script>{const t=localStorage.getItem('bp-theme')||'dark';document.documentElement.dataset.theme=(t==='gundam'||t==='light')?'gundam':'dark';}</script>
 <style>
   :root{--acc:#7FD8FF;--ink:#EAF9FF;--dim:#93a7b8;--mut:#5b6b7a;
     --glass:rgba(7,11,17,.60);--edge:rgba(159,199,224,.20)}
@@ -37,6 +38,18 @@
   .cd .fx{font:10px Consolas,monospace;background:rgba(159,199,224,.06);border-radius:6px;
     padding:4px 7px;margin-top:5px;color:#b7cede}
   footer{max-width:1060px;margin:0 auto;padding:0 18px 30px;font:9px Consolas,monospace;color:var(--mut)}
+
+  /* 테마 연동: 관측소의 bp-theme(라이트=건담)를 따른다 */
+  html[data-theme="gundam"]{--acc:#2c52b3;--ink:#14283c;--dim:#3f5a7a;--mut:#5a708a;
+    --glass:rgba(252,253,255,.82);--edge:rgba(44,82,179,.28)}
+  html[data-theme="gundam"] body{background:#e9edf3;color:var(--ink)}
+  html[data-theme="gundam"] .glass{box-shadow:0 2px 12px rgba(44,82,179,.10)}
+  html[data-theme="gundam"] .cd .r1{color:#14283c}
+  html[data-theme="gundam"] .cd .ds{color:#37536e}
+  html[data-theme="gundam"] .cd .fx{color:#2e4b66;background:rgba(44,82,179,.06)}
+  html[data-theme="gundam"] .fchip.on{color:#fff}
+  html[data-theme="gundam"] .cd .r1 .live{color:#1f9d63}
+  html[data-theme="gundam"] #q{background:rgba(255,255,255,.7);color:var(--ink)}
 </style>
 </head>
 <body>

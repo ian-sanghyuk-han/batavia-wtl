@@ -8,6 +8,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>BATAVIA PROJECT — Replay</title>
+<script>{const t=localStorage.getItem('bp-theme')||'dark';document.documentElement.dataset.theme=(t==='gundam'||t==='light')?'gundam':'dark';}</script>
 <style>
   :root{--acc:#7FD8FF;--ink:#EAF9FF;--dim:#93a7b8;--mut:#5b6b7a;
     --glass:rgba(7,11,17,.60);--edge:rgba(159,199,224,.20)}
@@ -75,6 +76,27 @@
     border:1px solid rgba(63,224,160,.4);border-radius:6px;padding:2px 8px;opacity:0;transition:opacity .8s}
   .gg .vd.on{opacity:1}
   footer{max-width:1020px;margin:0 auto;padding:0 18px 30px;font:9px Consolas,monospace;color:var(--mut)}
+
+  /* 테마 연동: 관측소의 bp-theme(라이트=건담)를 따른다 */
+  html[data-theme="gundam"]{--acc:#2c52b3;--ink:#14283c;--dim:#3f5a7a;--mut:#5a708a;
+    --glass:rgba(252,253,255,.82);--edge:rgba(44,82,179,.28)}
+  html[data-theme="gundam"] body{background:#e9edf3;color:var(--ink)}
+  html[data-theme="gundam"] .glass{box-shadow:0 2px 12px rgba(44,82,179,.10)}
+  html[data-theme="gundam"] .sc.on,html[data-theme="gundam"] .spd.on{color:#fff;background:var(--acc)}
+  html[data-theme="gundam"] #date{color:#14283c}
+  html[data-theme="gundam"] .ev{background:rgba(44,82,179,.05)}
+  html[data-theme="gundam"] .ev .cx{color:#37536e}
+  html[data-theme="gundam"] .ev .imp{color:#2e4b66;background:rgba(44,82,179,.07)}
+  html[data-theme="gundam"] .ev .opp{color:#0e7a5e}
+  html[data-theme="gundam"] .gg{background:rgba(44,82,179,.05)}
+  html[data-theme="gundam"] .gg .fx{color:#2e4b66;background:rgba(44,82,179,.07)}
+  html[data-theme="gundam"] .gg .sub{color:#37536e}
+  html[data-theme="gundam"] .gg .sub b{color:#14283c}
+  html[data-theme="gundam"] .gg .nt{color:#5a708a}
+  html[data-theme="gundam"] .gg .vd{color:#1f9d63;border-color:rgba(31,157,99,.5)}
+  html[data-theme="gundam"] .gg .st.on{background:#fb2f38;border-color:#fb2f38;color:#fff}
+  html[data-theme="gundam"] #miniglobe{background:#dfe6f0}
+  html[data-theme="gundam"] #play{background:rgba(44,82,179,.10)}
 </style>
 </head>
 <body>
