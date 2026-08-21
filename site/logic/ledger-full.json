@@ -1,0 +1,594 @@
+{
+ "version": "v1",
+ "source": "docs/BATAVIA-LOGIC-LEDGER-v1.md (자동 추출)",
+ "label": "원장 전량 기계화 v1 · 등급·확률은 실측 채점 전 추정",
+ "judgeable": [
+  "L-INF-001",
+  "L-INF-004",
+  "L-MKT-001",
+  "L-PHY-004",
+  "L-EVT-004"
+ ],
+ "counts": {
+  "base": 48,
+  "interaction": 12,
+  "gates": 3,
+  "total": 63
+ },
+ "cards": [
+  {
+   "id": "L-GRO-001",
+   "family": "성장",
+   "color": "#4FD8C0",
+   "name": "구리의 동행",
+   "core": "코어 3.3",
+   "grade": "B+",
+   "note": null,
+   "desc": "- IF 중국 PMI SDS > +1σ → LAG 구리 0~2일, 수출주 2~10일 → THEN 구리·AUD·한국 수출주 상방 편향 - 공식 F1 · SIZE 구리 5일 +1.1%(기저 +0.1) · P 56%±5 · n≈140 - WITH LME 재고 저수위 ↑ / UNLESS 발표일 구리 역행 마감"
+  },
+  {
+   "id": "L-GRO-002",
+   "family": "성장",
+   "color": "#4FD8C0",
+   "name": "ISM 신규주문−재고",
+   "core": "코어 2.1",
+   "grade": "B+",
+   "note": null,
+   "desc": "- IF (신규주문 − 재고) > +8p → LAG 1~3개월 → THEN 산업생산·경기민감주 상방 편향 - 공식 확산지수 스프레드 · SIZE 3개월 +2.4%(+0.8) · P 57%±5 · n≈110 - UNLESS 재고 급감이 공급망 왜곡(2021형)일 때"
+  },
+  {
+   "id": "L-GRO-003",
+   "family": "성장",
+   "color": "#4FD8C0",
+   "name": "PMI 50선 돌파",
+   "core": "코어 2.1",
+   "grade": "B",
+   "note": null,
+   "desc": "- IF 제조업 PMI가 50을 상향/하향 돌파 → LAG 0~1개월 → THEN 경기민감 vs 방어 상대 편향 전환 - 공식 경계값 규칙 · SIZE 상대 3개월 ±1.8% · P 55%±5 · n≈70 - DECAY 헤드라인화로 당일 선반영 증가"
+  },
+  {
+   "id": "L-GRO-004",
+   "family": "성장",
+   "color": "#4FD8C0",
+   "name": "경기선행지수 6개월 변화",
+   "core": "코어 2.1",
+   "grade": "B",
+   "note": null,
+   "desc": "- IF LEI 6M 변화율 < −3% → LAG 3~9개월 → THEN 침체 확률 상향, 주식 장기 편향 하향 - 공식 6M ROC · P 침체 신호 적중 ~70% · n=9(침체) — 소표본 경고"
+  },
+  {
+   "id": "L-GRO-005",
+   "family": "성장",
+   "color": "#4FD8C0",
+   "name": "소매판매 서프라이즈",
+   "core": "코어 2.1",
+   "grade": "B−",
+   "note": null,
+   "desc": "- IF 근원 소매 SDS > +1σ → LAG 당일~3일 → THEN 소비재·금리 동반 상방(성장 서프라이즈형) - 공식 F1 · P 54%±6 · n≈120 · UNLESS 물가 급등기엔 \"나쁜 호조\"로 반전 해석"
+  },
+  {
+   "id": "L-GRO-006",
+   "family": "성장",
+   "color": "#4FD8C0",
+   "name": "GDP 나우캐스트 갭",
+   "core": "코어 2.9",
+   "grade": "B−",
+   "note": null,
+   "desc": "- IF 나우캐스트 − 컨센서스 > +0.8%p → LAG 발표까지 잔존 → THEN 발표 서프라이즈 방향 사전 편향 - 공식 갭 규칙 · P 58%±7 · n≈60"
+  },
+  {
+   "id": "L-EMP-001",
+   "family": "고용",
+   "color": "#7FD8FF",
+   "name": "삼의 법칙",
+   "core": "코어 2.2",
+   "grade": "A−",
+   "note": "v0 견본과 동일 (침체 판정, n=12 겸손)",
+   "desc": null
+  },
+  {
+   "id": "L-EMP-002",
+   "family": "고용",
+   "color": "#7FD8FF",
+   "name": "NFP 서프라이즈",
+   "core": "코어 2.2",
+   "grade": "B",
+   "note": null,
+   "desc": "- IF NFP SDS > +1σ → LAG 당일 → THEN 금리 ↑·달러 ↑, 주식은 국면 의존(호경기=악재 가능) - 공식 F1 · P 금리 방향 64%±5, 주식 52% · n≈150 · WITH 물가 국면이면 주식 역반응 ↑"
+  },
+  {
+   "id": "L-EMP-003",
+   "family": "고용",
+   "color": "#7FD8FF",
+   "name": "신규 실업수당 4주 이평 전환",
+   "core": "코어 2.2",
+   "grade": "B+",
+   "note": null,
+   "desc": "- IF 4주 MA가 저점 대비 +10% 상회 → LAG 1~3개월 → THEN 고용 둔화 국면 — 장기채 상대 우위 - 공식 4주 MA 전환 규칙 · P 61%±6 · n≈45"
+  },
+  {
+   "id": "L-EMP-004",
+   "family": "고용",
+   "color": "#7FD8FF",
+   "name": "임금−생산성 갭",
+   "core": "코어 2.2",
+   "grade": "C+",
+   "note": null,
+   "desc": "- IF 임금상승률 − 생산성 > +2%p 지속 → LAG 2~4분기 → THEN 마진 압축 — 기업이익 하향 편향 - P 56%±8 · n≈30 — 저빈도"
+  },
+  {
+   "id": "L-INF-001",
+   "family": "물가",
+   "color": "#FF5D6E",
+   "name": "CPI 서프라이즈의 하루",
+   "core": "코어 2.3",
+   "grade": "B+",
+   "note": "v0 견본과 동일 (분 단위 카드, 유통기한 1~3일)",
+   "desc": null
+  },
+  {
+   "id": "L-INF-002",
+   "family": "물가",
+   "color": "#FF5D6E",
+   "name": "PPI→CPI 파이프라인",
+   "core": "코어 2.3",
+   "grade": "B",
+   "note": null,
+   "desc": "- IF 근원 PPI 3개월 연율 > CPI +1.5%p → LAG 1~3개월 → THEN CPI 상방 압력 — 금리 상방 편향 - 공식 F14 · P 59%±6 · n≈80"
+  },
+  {
+   "id": "L-INF-003",
+   "family": "물가",
+   "color": "#FF5D6E",
+   "name": "BEI 급변",
+   "core": "코어 2.3",
+   "grade": "B",
+   "note": null,
+   "desc": "- IF 10Y BEI 20일 변화 > +20bp → LAG 0~2주 → THEN 금 혼조(명목↑ 상쇄)·에너지 상방·성장주 압박 - 공식 F4 · P 57%±6 · n≈90"
+  },
+  {
+   "id": "L-INF-004",
+   "family": "물가",
+   "color": "#FF5D6E",
+   "name": "유가의 2차 점화",
+   "core": "코어 3.4",
+   "grade": "B+",
+   "note": null,
+   "desc": "- IF 유가 60일 +25% 이상 → LAG 1~2개월 → THEN 헤드라인 CPI 상방 → 금리 재가격 편향 - 공식 전가율 규칙 · SIZE CPI 기여 +0.3~0.5%p · P 전가 방향 74% · n≈40"
+  },
+  {
+   "id": "L-INF-005",
+   "family": "물가",
+   "color": "#FF5D6E",
+   "name": "기대인플레 앵커 이탈",
+   "core": "코어 6장",
+   "grade": "B−",
+   "note": null,
+   "desc": "- IF 미시간 5Y 기대 > 3.2% 돌파 → LAG 즉시~1개월 → THEN 연준 매파 재가격 — 단기금리 상방 편향 - P 60%±8 · n≈25 — 저빈도·강신호형"
+  },
+  {
+   "id": "L-RAT-001",
+   "family": "금리",
+   "color": "#FF8A93",
+   "name": "2s10s 역전",
+   "core": "코어 2.5",
+   "grade": "A−",
+   "note": null,
+   "desc": "- IF 2s10s < 0 진입 → LAG 침체까지 6~24개월(중앙값 ~15) → THEN 침체 확률 대폭 상향 — 장기 방어 편향 - 공식 커브 스프레드 · P 침체 선행 8/9회 · **n=9 — 시차 분산이 넓다는 것이 이 카드의 본문** - UNLESS QE 왜곡기의 커브는 신호 순도 하락"
+  },
+  {
+   "id": "L-RAT-002",
+   "family": "금리",
+   "color": "#FF8A93",
+   "name": "실질금리와 금",
+   "core": "코어 9.3",
+   "grade": "A−",
+   "note": null,
+   "desc": "- IF 10Y 실질금리 20일 −30bp → LAG 0~2주 → THEN 금 상방 편향 - 공식 F4 · SIZE 금 4주 +2.6%(+0.4) · P 63%±5 · n≈130 · WITH 달러 약세 동반 시 ↑"
+  },
+  {
+   "id": "L-RAT-003",
+   "family": "금리",
+   "color": "#FF8A93",
+   "name": "금리 '속도' 규칙",
+   "core": "코어 3.1",
+   "grade": "B+",
+   "note": null,
+   "desc": "- IF 10Y 금리 20일 +50bp 이상(속도!) → LAG 0~2주 → THEN 성장주·리츠 하방 편향 (수준보다 속도가 문제) - 공식 F3 확장(ΔY 속도) · P 61%±6 · n≈55"
+  },
+  {
+   "id": "L-RAT-004",
+   "family": "금리",
+   "color": "#FF8A93",
+   "name": "점도표 vs 시장 갭",
+   "core": "코어 6.1",
+   "grade": "B",
+   "note": null,
+   "desc": "- IF 연말 점도표 중앙값 − 선물 내재 > ±50bp → LAG 다음 회의까지 → THEN 갭 축소 방향으로 단기금리 편향 - P 58%±7 · n≈35"
+  },
+  {
+   "id": "L-RAT-005",
+   "family": "금리",
+   "color": "#FF8A93",
+   "name": "인하 사이클의 두 얼굴",
+   "core": "코어 6.1",
+   "grade": "B+",
+   "note": null,
+   "desc": "- IF 첫 인하 발생 → THEN 분기: 실업률 안정 속 인하(보험성)=주식 상방 / 실업률 급등 속 인하(침체성)=하방 - 공식 조건 분기 규칙 · P 분기 정확 시 12개월 방향 ~70% · n=10 사이클 — 소표본 - **이 카드가 원장의 철학: 같은 사건도 '왜'에 따라 반대 카드가 된다**"
+  },
+  {
+   "id": "L-RAT-006",
+   "family": "금리",
+   "color": "#FF8A93",
+   "name": "테일러 갭",
+   "core": "코어 6.1",
+   "grade": "C+",
+   "note": null,
+   "desc": "- IF 테일러 준칙 금리 − 실제 정책금리 > +1.5%p 지속 → LAG 2~4분기 → THEN 긴축 압력 누적 — 장기금리 상방 편향 - P 방향 55%±8 — 준칙 자체가 논쟁적임을 병기"
+  },
+  {
+   "id": "L-LIQ-001",
+   "family": "유동성",
+   "color": "#5B8DEF",
+   "name": "순유동성의 밀물",
+   "core": "코어 2.4",
+   "grade": "B+",
+   "note": "v0 견본과 동일 (고베타 최전선 순서)",
+   "desc": null
+  },
+  {
+   "id": "L-LIQ-002",
+   "family": "유동성",
+   "color": "#5B8DEF",
+   "name": "RRP 급감",
+   "core": "코어 2.4",
+   "grade": "B",
+   "note": null,
+   "desc": "- IF RRP 4주 −15% 이상 → LAG 1~4주 → THEN 위험자산 완충 유동성 유입 — 상방 편향 - P 59%±7 · n≈40 · UNLESS TGA 급증이 동시 흡수 시 상쇄"
+  },
+  {
+   "id": "L-LIQ-003",
+   "family": "유동성",
+   "color": "#5B8DEF",
+   "name": "SOFR 스파이크",
+   "core": "코어 2.4",
+   "grade": "B+",
+   "note": null,
+   "desc": "- IF SOFR − IORB > +10bp → LAG 즉시~1주 → THEN 자금시장 경색 경보 — 위험자산 하방 감시(2019.9형) - P 경보 적중 65%±9 · n≈15 — 희귀·강신호"
+  },
+  {
+   "id": "L-LIQ-004",
+   "family": "유동성",
+   "color": "#5B8DEF",
+   "name": "QRA 듀레이션 서프라이즈",
+   "core": "코어 2.4",
+   "grade": "B−",
+   "note": null,
+   "desc": "- IF 재무부 발행이 예상보다 단기물 편중 → LAG 발표 후 1~4주 → THEN 장기금리 하방 압력 — \"연준 밖의 금리 결정자\" - P 57%±8 · n≈20"
+  },
+  {
+   "id": "L-LIQ-005",
+   "family": "유동성",
+   "color": "#5B8DEF",
+   "name": "글로벌 M2 임펄스",
+   "core": "코어 2.4",
+   "grade": "B−",
+   "note": null,
+   "desc": "- IF 글로벌 M2(달러 환산) 6M 변화 부호 전환 → LAG 2~6개월 → THEN 위험자산 장기 편향 동조 - P 58%±7 · n≈35"
+  },
+  {
+   "id": "L-POS-001",
+   "family": "포지셔닝",
+   "color": "#C79BFF",
+   "name": "만원 버스(COT)",
+   "core": "코어 2.7",
+   "grade": "B",
+   "note": "v0 견본과 동일 (낮은 적중·큰 보상)",
+   "desc": null
+  },
+  {
+   "id": "L-POS-002",
+   "family": "포지셔닝",
+   "color": "#C79BFF",
+   "name": "펀딩비 극단",
+   "core": "코어 2.7",
+   "grade": "B",
+   "note": null,
+   "desc": "- IF 무기한 선물 펀딩비 연율 > +50% (or < −20%) → LAG 3일~3주 → THEN 크립토 역발상 편향 - P 56%±6 · n≈90"
+  },
+  {
+   "id": "L-POS-003",
+   "family": "포지셔닝",
+   "color": "#C79BFF",
+   "name": "풋콜·스큐 극단",
+   "core": "코어 2.7",
+   "grade": "B−",
+   "note": null,
+   "desc": "- IF 풋콜 비율 z < −2 (콜 광풍) → LAG 1~4주 → THEN 지수 상승 지속확률 저하 - P 54%±6 · n≈60"
+  },
+  {
+   "id": "L-POS-004",
+   "family": "포지셔닝",
+   "color": "#C79BFF",
+   "name": "자금 플로우 극단",
+   "core": "코어 2.7",
+   "grade": "B−",
+   "note": null,
+   "desc": "- IF 주식형 펀드 4주 유입 z > +2 → LAG 4~12주 → THEN 중기 수익률 하향 편향 (열광의 뒷면) - P 55%±7 · n≈40"
+  },
+  {
+   "id": "L-PHY-001",
+   "family": "물리",
+   "color": "#D9A441",
+   "name": "한파와 배출권",
+   "core": "코어 9.10",
+   "grade": "B−",
+   "note": "v0 견본과 동일 (물리→시장 2단 사슬)",
+   "desc": null
+  },
+  {
+   "id": "L-PHY-002",
+   "family": "물리",
+   "color": "#D9A441",
+   "name": "BDI의 원자재 맥박",
+   "core": "코어 2.8",
+   "grade": "B",
+   "note": null,
+   "desc": "- IF BDI 20일 +30% → LAG 2~6주 → THEN 산업 원자재·조선 상방 편향 - P 57%±6 · n≈50 · UNLESS 선복 공급 이벤트(신조 인도 러시)면 수요 신호 아님"
+  },
+  {
+   "id": "L-PHY-003",
+   "family": "물리",
+   "color": "#D9A441",
+   "name": "항공화물의 하이테크 예보",
+   "core": "코어 2.8",
+   "grade": "B",
+   "note": null,
+   "desc": "- IF 아시아발 항공화물 물동량 3개월 연속 증가 → LAG 1~2분기 → THEN 반도체·IT 사이클 상방 편향 - P 60%±7 · n≈28"
+  },
+  {
+   "id": "L-PHY-004",
+   "family": "물리",
+   "color": "#D9A441",
+   "name": "관문 봉쇄",
+   "core": "코어 3.7",
+   "grade": "B+",
+   "note": null,
+   "desc": "- IF 초크포인트 통과량 −20% (호르무즈·수에즈·파나마) → LAG 즉시~4주 → THEN 운임·해당 원자재 상방, 실효 공급 하락 - SIZE 2021 수에즈: SCFI 경로 확인 · P 방향 72%±9 · n=14 — 희귀·강신호"
+  },
+  {
+   "id": "L-PHY-005",
+   "family": "물리",
+   "color": "#D9A441",
+   "name": "재고의 바닥",
+   "core": "코어 2.8",
+   "grade": "B",
+   "note": null,
+   "desc": "- IF EIA 원유 재고 5년 밴드 하단 이탈 → LAG 0~4주 → THEN 유가 백워데이션 심화 — 상방 편향 - 공식 재고-기간구조 규칙 · P 58%±6 · n≈65"
+  },
+  {
+   "id": "L-PHY-006",
+   "family": "물리",
+   "color": "#D9A441",
+   "name": "엘니뇨와 소프트",
+   "core": "코어 2.8",
+   "grade": "C+",
+   "note": null,
+   "desc": "- IF ENSO 지수 > +1.0 (엘니뇨 확정) → LAG 1~3분기 → THEN 설탕·코코아·팜유 상방 편향 (산지별 상이) - P 품목별 55~65% · n=8 사이클 — 소표본·품목 분산 필수"
+  },
+  {
+   "id": "L-MKT-001",
+   "family": "시장구조",
+   "color": "#A79BFF",
+   "name": "수렴도 경보",
+   "core": "코어 5.2",
+   "grade": "B+",
+   "note": "v0 견본과 동일 (상태 예보·전 카드의 배율 조정자)",
+   "desc": null
+  },
+  {
+   "id": "L-MKT-002",
+   "family": "시장구조",
+   "color": "#A79BFF",
+   "name": "크레딧 선행",
+   "core": "코어 2.6",
+   "grade": "A−",
+   "note": "v0 견본(L-CRD-001)과 동일 · 리그 1위 후보",
+   "desc": null
+  },
+  {
+   "id": "L-MKT-003",
+   "family": "시장구조",
+   "color": "#A79BFF",
+   "name": "VIX 기간구조 역전",
+   "core": "코어 1.4",
+   "grade": "B+",
+   "note": null,
+   "desc": "- IF VIX 현물 > 3개월 선물 (백워데이션 진입) → LAG 0~2주 → THEN 폭풍 국면 확인 — 반등 시도는 짧게 실패하는 경향 - P 국면 판정 66%±7 · n≈30"
+  },
+  {
+   "id": "L-MKT-004",
+   "family": "시장구조",
+   "color": "#A79BFF",
+   "name": "신고가−신저가 폭",
+   "core": "코어 2.6",
+   "grade": "B",
+   "note": null,
+   "desc": "- IF 지수 신고가인데 신고가 종목 수 감소(다이버전스) → LAG 2~8주 → THEN 상승 질 악화 — 하방 감시 - P 56%±6 · n≈45"
+  },
+  {
+   "id": "L-MKT-005",
+   "family": "시장구조",
+   "color": "#A79BFF",
+   "name": "허스트 스위치",
+   "core": "코어 5.9→8.2",
+   "grade": "B+",
+   "note": "v0 레이더 카드와 동일",
+   "desc": "- IF H(120일) > 0.55 → THEN 모멘텀 계열 카드 신뢰 ↑ / H < 0.45 → 평균회귀 계열 ↑ (게이트 성격 겸업) - P 계절 판정 56%±3 · n≈760"
+  },
+  {
+   "id": "L-MKT-006",
+   "family": "시장구조",
+   "color": "#A79BFF",
+   "name": "모멘텀 12−1",
+   "core": "코어 5.5",
+   "grade": "A",
+   "note": null,
+   "desc": "- IF 12개월 수익률(최근 1개월 제외) 상위 → LAG 보유 1~3개월 → THEN 지속 편향 — 최고 표본의 카드 - 공식 크로스섹션 순위 · P 55%±2 · n≈1,900 · UNLESS 모멘텀 크래시(급반등 국면, 2009.3형)"
+  },
+  {
+   "id": "L-MKT-007",
+   "family": "시장구조",
+   "color": "#A79BFF",
+   "name": "변동성 프리미엄",
+   "core": "코어 1.4",
+   "grade": "A−",
+   "note": null,
+   "desc": "- IF IV − RV > +4p → 상시 구조 → THEN 보험료 수확 구조 존재 (좌측 꼬리 상존 — F7 절반 이하 원칙) - P 66%±3 · n≈640 · MDD 역사 −34% 병기 의무"
+  },
+  {
+   "id": "L-EVT-001",
+   "family": "이벤트",
+   "color": "#E8A33D",
+   "name": "FOMC 사전 드리프트",
+   "core": "코어 7.2",
+   "grade": "C+↓",
+   "note": "v0 견본과 동일 (부패 전시물)",
+   "desc": null
+  },
+  {
+   "id": "L-EVT-002",
+   "family": "이벤트",
+   "color": "#E8A33D",
+   "name": "PEAD 실적 표류",
+   "core": "코어 9.11",
+   "grade": "A",
+   "note": null,
+   "desc": "- IF 실적 서프라이즈 SDS 상위 10% + 발표일 갭 동반 → LAG 표류 최대 60일 → THEN 서프라이즈 방향 지속 편향 - 공식 F1·F11 · P 56%±2 · n≈3,100 · UNLESS 대형주는 효과 절반, 금리 급등기 약화(2022)"
+  },
+  {
+   "id": "L-EVT-003",
+   "family": "이벤트",
+   "color": "#E8A33D",
+   "name": "OPEC 죄수의 딜레마",
+   "core": "코어 7.5",
+   "grade": "B−",
+   "note": null,
+   "desc": "- IF 감산 합의 결렬/이탈 뉴스 → LAG 즉시 → THEN 유가 급락 편향, 합의 복원 시 반전 (게임 구조 카드) - P 방향 68%±9 · n=22"
+  },
+  {
+   "id": "L-EVT-004",
+   "family": "이벤트",
+   "color": "#E8A33D",
+   "name": "선거의 불확실성 곡선",
+   "core": "코어 7장",
+   "grade": "C+",
+   "note": null,
+   "desc": "- IF 대선 D−60~D-day → THEN 변동성 상방 편향, 결과 확정 후 해소 랠리 경향 - P 패턴 61%±9 · n=11 — 소표본, 나라별 상이"
+  },
+  {
+   "id": "L-EVT-005",
+   "family": "이벤트",
+   "color": "#E8A33D",
+   "name": "지수 리밸런싱 플로우",
+   "core": "코어 7장",
+   "grade": "B−",
+   "note": null,
+   "desc": "- IF 대형 지수 편입 발표 → LAG 발표~편입일 → THEN 대상 종목 수급 상방, 편입 후 되돌림 경향 - P 62%±7 · n≈80 · DECAY 선반영 가속 관찰 — 유통기한 짧아지는 중"
+  }
+ ],
+ "interactions": [
+  {
+   "id": "X-001",
+   "name": "폭풍의 이중 확인",
+   "formula": "L-MKT-002 ∧ L-MKT-001 (크레딧 확대 AND 수렴도>0.55)",
+   "color": "#EAF9FF"
+  },
+  {
+   "id": "X-002",
+   "name": "쏠림 이중 극단",
+   "formula": "L-POS-001 ∧ L-POS-002 → 역발상 신뢰 ↑ · P 61%±8 · n≈30",
+   "color": "#EAF9FF"
+  },
+  {
+   "id": "X-003",
+   "name": "침체 이중 열쇠",
+   "formula": "L-EMP-001 ∧ L-RAT-001(역전 후 재가팔림) → 침체 판정 확도 ↑ · 소표본 명시",
+   "color": "#EAF9FF"
+  },
+  {
+   "id": "X-004",
+   "name": "밀물과 발행의 합",
+   "formula": "L-LIQ-001 ∧ L-LIQ-004 → 고베타 상방 P 64% · n≈25",
+   "color": "#EAF9FF"
+  },
+  {
+   "id": "X-005",
+   "name": "구리의 진짜 신호",
+   "formula": "L-GRO-001 ∧ LME 재고 저수위 → P 62% (수요발 확인) · n≈45",
+   "color": "#EAF9FF"
+  },
+  {
+   "id": "X-006",
+   "name": "2차 점화 확인",
+   "formula": "L-INF-004 ∧ L-INF-003(BEI 동반) → 금리 상방 P 66% · n≈25",
+   "color": "#EAF9FF"
+  },
+  {
+   "id": "X-007",
+   "name": "되감기의 방아쇠",
+   "formula": "L-FX-003 ∧ L-FX-002 위반(캐리 과밀) → 엔 급등·위험 하방 P 67% · n≈18 (2024.8형)",
+   "color": "#EAF9FF"
+  },
+  {
+   "id": "X-008",
+   "name": "질 나쁜 신고가",
+   "formula": "L-MKT-004 ∧ L-MKT-002 → 고점 경계 P 63% · n≈22",
+   "color": "#EAF9FF"
+  },
+  {
+   "id": "X-009",
+   "name": "겨울의 삼단",
+   "formula": "L-PHY-001 ∧ 가스 재고 하위 20% → EUA P 76% · n=19 — 소표본 경고 유지",
+   "color": "#EAF9FF"
+  },
+  {
+   "id": "X-010",
+   "name": "표류의 연료",
+   "formula": "L-EVT-002 ∧ 거래량 서프라이즈 → PEAD 강화 P 59% · n≈600",
+   "color": "#EAF9FF"
+  },
+  {
+   "id": "X-011",
+   "name": "달러와 신흥국 스프레드",
+   "formula": "L-FX-001 ∧ EM 스프레드 확대 → EM 하방 P 66% · n≈30",
+   "color": "#EAF9FF"
+  },
+  {
+   "id": "X-012",
+   "name": "좋은 인하/나쁜 인하 판별기",
+   "formula": "L-RAT-005 ∧ L-EMP-003 → 인하의 성격 분기 정확도 ↑ (철학 카드의 실전판)",
+   "color": "#EAF9FF"
+  }
+ ],
+ "gates": [
+  {
+   "id": "G1",
+   "name": "국면 w",
+   "desc": "모든 카드에: 반응 크기 ×(1+1.4w) · 위험 카드 P 보정: 순추세 카드 −, 위기 채널 카드(크레딧·엔·수렴도) +",
+   "color": "#93a7b8"
+  },
+  {
+   "id": "G2",
+   "name": "수렴도 C",
+   "desc": "C>0.55 시: 분산 카드 무력화 선언, 헤지 카드(금·엔·변동성)만 P 유지, 나머지 \"한 몸\" 처리",
+   "color": "#93a7b8"
+  },
+  {
+   "id": "G3",
+   "name": "허스트 H",
+   "desc": "H>0.55: 모멘텀 계열(L-MKT-006, PEAD) P +2~3%p / H<0.45: 역발상 계열(L-POS-*) P +2~3%p",
+   "color": "#93a7b8"
+  }
+ ]
+}

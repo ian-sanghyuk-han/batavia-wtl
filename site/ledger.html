@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<!-- STATUS: LOGIC LEDGER VIEWER v1 — read-only browse of the full machine-readable ledger
+     (site/logic/ledger-full.json, auto-extracted from docs/BATAVIA-LOGIC-LEDGER-v1.md).
+     Grades/probabilities carry the 추정 label until machine grading. -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>BATAVIA PROJECT — Logic Ledger</title>
+<style>
+  :root{--acc:#7FD8FF;--ink:#EAF9FF;--dim:#93a7b8;--mut:#5b6b7a;
+    --glass:rgba(7,11,17,.60);--edge:rgba(159,199,224,.20)}
+  *{box-sizing:border-box}
+  body{margin:0;background:#05070c;color:var(--ink);font-family:'Segoe UI',system-ui,sans-serif}
+  .glass{background:var(--glass);border:1px solid var(--edge);backdrop-filter:blur(9px);border-radius:11px}
+  header{padding:18px 18px 10px;max-width:1060px;margin:0 auto}
+  header b{font:600 14px Consolas,monospace;letter-spacing:3px}
+  header small{display:block;color:var(--mut);font:10px Consolas,monospace;margin-top:4px}
+  header a{color:var(--acc);text-decoration:none;font:10px Consolas,monospace;float:right;margin-top:4px}
+  #bar{max-width:1060px;margin:8px auto;padding:0 18px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  #q{flex:1;min-width:180px;background:rgba(7,11,17,.6);border:1px solid var(--edge);border-radius:9px;
+    color:var(--ink);font:12px 'Segoe UI';padding:8px 12px;outline:none}
+  .fchip{padding:5px 11px;border-radius:8px;font:10px Consolas,monospace;color:var(--dim);
+    cursor:pointer;border:1px solid var(--edge);letter-spacing:1px;user-select:none}
+  .fchip.on{color:#06121c;background:var(--acc);border-color:var(--acc)}
+  main{max-width:1060px;margin:0 auto;padding:6px 18px 40px}
+  h2{font:600 11px Consolas,monospace;letter-spacing:2px;color:var(--acc);margin:22px 0 10px}
+  h2 span{color:var(--mut)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px}
+  .cd{padding:10px 12px 10px 11px;border-left-width:4px;border-left-style:solid}
+  .cd .r1{font:600 11.5px Consolas,monospace;letter-spacing:1px;color:#F4FBFF}
+  .cd .r1 .gr{color:var(--acc);float:right}
+  .cd .r1 .live{float:right;margin-right:8px;font-size:9px;color:#3FE0A0;letter-spacing:1px}
+  .cd .meta{font:9px Consolas,monospace;color:var(--mut);margin-top:3px}
+  .cd .ds{font-size:11px;line-height:1.6;color:#a9becd;margin-top:5px;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .cd .fx{font:10px Consolas,monospace;background:rgba(159,199,224,.06);border-radius:6px;
+    padding:4px 7px;margin-top:5px;color:#b7cede}
+  footer{max-width:1060px;margin:0 auto;padding:0 18px 30px;font:9px Consolas,monospace;color:var(--mut)}
+</style>
+</head>
+<body>
+<header>
+  <a href="observatory.html">← OBSERVATORY</a>
+  <b>BATAVIA PROJECT</b> · LOGIC LEDGER — 원장 열람
+  <small id="cnt">로드 중…</small>
+</header>
+<div id="bar">
+  <input id="q" placeholder="검색 — 이름·ID·설명 (예: 구리, CPI, 관문)">
+  <span class="fchip on" data-f="">전체</span>
+</div>
+<main>
+  <h2>기본 카드 <span id="nbase"></span></h2><div class="grid" id="base"></div>
+  <h2>상호작용 카드 <span id="ninter"></span> — 두 카드가 겹칠 때</h2><div class="grid" id="inter"></div>
+  <h2>게이트 <span id="ngate"></span> — 전 카드의 배율 조정자</h2><div class="grid" id="gate"></div>
+</main>
+<footer id="foot"></footer>
+<script>
+const $=id=>document.getElementById(id);
+let D=null,FQ='',FF='';
+fetch('logic/ledger-full.json').then(r=>r.json()).then(d=>{
+  D=d;
+  $('cnt').textContent=`기본 ${d.counts.base} · 상호작용 ${d.counts.interaction} · 게이트 ${d.counts.gates} — 총 ${d.counts.total}장 · ${d.label}`;
+  $('foot').textContent=`출처: ${d.source} · 판정 가동(실시간 발동 판정이 연결된 카드): ${d.judgeable.join(', ')} — 나머지는 데이터 피드 연결 시 가동됩니다`;
+  const fams=[...new Set(d.cards.map(c=>c.family))];
+  const bar=$('bar');
+  fams.forEach(f=>{
+    const ch=document.createElement('span');
+    ch.className='fchip';ch.dataset.f=f;ch.textContent=f;
+    bar.appendChild(ch);});
+  bar.addEventListener('click',e=>{
+    if(!e.target.classList.contains('fchip'))return;
+    FF=e.target.dataset.f;
+    bar.querySelectorAll('.fchip').forEach(x=>x.classList.toggle('on',x===e.target));
+    render();});
+  $('q').addEventListener('input',()=>{FQ=$('q').value.trim().toLowerCase();render();});
+  render();});
+function match(c){
+  if(FF&&c.family!==FF)return false;
+  if(!FQ)return true;
+  return (c.id+' '+(c.name||'')+' '+(c.desc||'')+' '+(c.formula||'')+' '+(c.family||'')).toLowerCase().includes(FQ);}
+function render(){
+  const jd=new Set(D.judgeable);
+  const B=D.cards.filter(match);
+  $('nbase').textContent=`${B.length}/${D.cards.length}`;
+  $('base').innerHTML=B.map(c=>
+    `<div class="cd glass" style="border-left-color:${c.color}">`+
+    `<div class="r1">${c.id} ${c.name}<span class="gr">${c.grade||''}</span>`+
+    `${jd.has(c.id)?'<span class="live">● 판정 가동</span>':''}</div>`+
+    `<div class="meta">${c.family} · ${c.core}${c.note?' · '+c.note:''}</div>`+
+    (c.desc?`<div class="ds">${c.desc}</div>`:'')+`</div>`).join('')||'<div style="color:#5b6b7a;font-size:11px">검색 결과 없음</div>';
+  const I=FF?[]:D.interactions.filter(match);
+  $('ninter').textContent=`${I.length}/${D.interactions.length}`;
+  $('inter').innerHTML=I.map(c=>
+    `<div class="cd glass" style="border-left-color:#EAF9FF">`+
+    `<div class="r1">${c.id} ${c.name}</div>`+
+    `<div class="fx">${c.formula}</div></div>`).join('')||(FF?'<div style="color:#5b6b7a;font-size:11px">계열 필터 중 — 전체에서 표시됩니다</div>':'');
+  const G=FF?[]:D.gates.filter(match);
+  $('ngate').textContent=`${G.length}/${D.gates.length}`;
+  $('gate').innerHTML=G.map(c=>
+    `<div class="cd glass" style="border-left-color:#93a7b8">`+
+    `<div class="r1">${c.id} ${c.name}</div>`+
+    `<div class="ds">${c.desc}</div></div>`).join('')||(FF?'<div style="color:#5b6b7a;font-size:11px">계열 필터 중 — 전체에서 표시됩니다</div>':'');}
+</script>
+</body>
+</html>

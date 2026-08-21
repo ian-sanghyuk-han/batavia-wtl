@@ -24,8 +24,9 @@
     padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top))}
   #brand{font:600 13px/1.2 Consolas,monospace;letter-spacing:3px;color:var(--ink);white-space:nowrap}
   #brand small{display:block;font-weight:400;font-size:9px;letter-spacing:5px;color:var(--acc);margin-top:2px}
-  #regimechip{margin-left:auto;padding:7px 12px;font:11px/1.5 Consolas,monospace;color:var(--dim);
+  #regimechip{margin-left:auto;padding:8px 12px 9px;font:11px/1.5 Consolas,monospace;color:var(--dim);
     text-align:right;flex:none}
+  #rgspark{display:block;margin:5px 0 0 auto}
   #regimechip b{color:var(--acc);letter-spacing:2px}
   #regimechip .prov{font-size:9px;color:#5b6b7a}
   /* 뉴스 토스트 — 최상단(브랜드 옆) 상시 영역, 맑은 유리, 왼쪽 논조 띠 */
@@ -194,7 +195,8 @@
   <div id="brand">BATAVIA PROJECT<small>OBSERVATORY</small></div>
   <div id="toast" class="glass"></div>
   <div id="regimechip" class="glass">국면 <b id="rgname">—</b><br>
-    <span id="rgval">—</span><br><span class="prov" id="rgprov"></span></div>
+    <span id="rgval">—</span><br><span class="prov" id="rgprov"></span>
+    <canvas id="rgspark" width="176" height="44"></canvas></div>
 </div>
 <div id="activebar"></div>
 <div id="modebar" class="glass">
@@ -209,6 +211,7 @@
   <div class="lrow" data-l="news"><span class="sw"><span class="dot" style="background:#3FE0A0"></span><span class="dot" style="background:#D9A441"></span><span class="dot" style="background:#FF5D6E"></span></span>뉴스 진앙<span class="st">ON</span></div>
   <div class="lrow" data-l="routes"><span class="sw"><span class="dot" style="background:#D9A441"></span><span class="dot" style="background:#FF5D6E"></span><span class="dot" style="background:#5FD8E8"></span><span class="dot" style="background:#A79BFF"></span></span>관측 동선<span class="st">ON</span></div>
   <div class="lrow" data-l="ripples"><span class="sw"><span class="dot" style="background:var(--acc)"></span></span>활성 파급<span class="st">ON</span></div>
+  <div class="lrow" data-l="conflicts"><span class="sw"><span class="dot" style="background:#C0392B"></span></span>분쟁 지역 <small style="color:#5b6b7a">(수동 v0)</small><span class="st">ON</span></div>
   <div class="lrow" data-l="clabels"><span class="sw"><span class="dot" style="background:#c4d8e8"></span></span>국가 라벨<span class="st">ON</span></div>
   <div class="lrow" data-l="citylabels"><span class="sw"><span class="dot" style="background:#8fa6b8"></span></span>도시 라벨<span class="st">ON</span></div>
   <div class="foot">뉴스 색 = 관찰 3상태(긍정·중립·부정)<br>─ 동선(상시·옅음) · ━ 파급(활성·밝음)</div>
@@ -218,11 +221,8 @@
   <canvas id="lensspark" width="236" height="54"></canvas>
   <div id="lensfoot"></div></div>
 <div id="btnrow">
-  <div id="cardsbtn" class="pbtn glass">활성 카드 —</div>
   <div id="newsbtn" class="pbtn glass">NEWS LOG</div>
 </div>
-<div id="cards" class="glass"><h3>활성 카드 — 파급 경로</h3><div id="cardlist">판정 중…</div>
-  <div id="cardfoot"></div></div>
 <div id="news" class="glass"><h3>NEWS LOG<span id="newsupd" style="color:#5b6b7a"></span></h3><div id="newslist">로드 중…</div></div>
 <div id="logicview"><div id="lwrap" class="glass">
   <div id="lhead">ENGINE — 기관실 · 원장의 수식이 실시간으로 판정됩니다<span id="lfilter"><span class="lf on" data-f="all">전체</span><span class="lf" data-f="act">활성만</span></span></div>
@@ -248,7 +248,7 @@
     </div>
   </div>
   <svg id="lwires"></svg>
-  <div id="lfoot">대기 카드도 "왜 아직인지"가 수치로 보입니다 · 카드 클릭 = 완전한 이야기(고유 주소 #카드ID) · 원장 52장 전체 열람은 별도 페이지로 준비</div>
+  <div id="lfoot">대기 카드도 "왜 아직인지"가 수치로 보입니다 · 카드 클릭 = 완전한 이야기(고유 주소 #카드ID) · <a href="ledger.html" style="color:var(--acc);text-decoration:none">원장 전체 열람(63장) →</a></div>
 </div></div>
 <div id="pop"><div id="popin" class="glass"><span id="popclose">✕ 닫기</span><div id="popbody"></div></div></div>
 <div id="ticker" class="glass"><div class="rail" id="tickrail"></div></div>
@@ -328,11 +328,11 @@ const shipMats=[],routeMats=[];
 
 /* ══ 데이터 캐시 (뷰 재조립의 재료) ══ */
 let topoCache=null,fillTex=null,ledCache=null,shipsCache=[],activesCache=[];
-let CTX=null,CONDS=null;
+let CTX=null,CONDS=null,CONFL=null;
 const logicPulses=[];
 const newsLog=[],newsSeen=new Set();
 const NEWS_LOG_MAX=30;
-const L={ships:true,news:true,routes:true,ripples:true,clabels:true,citylabels:true};
+const L={ships:true,news:true,routes:true,ripples:true,clabels:true,citylabels:true,conflicts:true};
 
 /* ══ 무대(stage) — 뷰가 바뀌면 전부 재조립 ══ */
 let stage=null,baseMesh=null,innerL=null,coastL=null,cityIM=null,obsIM=null;
@@ -347,9 +347,13 @@ function fillCanvasTexture(){ /* 등장방형 채움 — 구·평면 공용 */
   const x=c.getContext('2d');
   x.fillStyle='#0b131c';x.fillRect(0,0,4096,2048);
   const px=(lo)=>(lo+180)/360*4096,py=(la)=>(90-la)/180*2048;
+  const warSet=new Set(((CONFL&&CONFL.conflicts)||[]).map(c=>c.country));
   feats.forEach((f,fi)=>{
     const shade=0.85+((fi*2654435761)%1000)/1000*0.3;
-    x.fillStyle=`rgb(${Math.round(24*shade)},${Math.round(34*shade)},${Math.round(44*shade)})`;
+    const nm2=(f.properties.name||'').toLowerCase();
+    x.fillStyle=warSet.has(nm2)
+      ?`rgb(${Math.round(52*shade)},${Math.round(24*shade)},${Math.round(27*shade)})` /* 분쟁국: 어두운 적갈 */
+      :`rgb(${Math.round(24*shade)},${Math.round(34*shade)},${Math.round(44*shade)})`;
     const polys=f.geometry.type==='Polygon'?[f.geometry.coordinates]:f.geometry.coordinates;
     if((f.properties.name||'').toLowerCase()==='antarctica'){
       polys.forEach(poly=>{x.beginPath();
@@ -508,6 +512,24 @@ function relKo(ts){
   return m<1?'방금':m<60?m+'분 전':m<1440?Math.round(m/60)+'시간 전':Math.round(m/1440)+'일 전';}
 
 /* ── 레이어 렌더러 (현재 뷰 기준으로 그린다) ── */
+let conflictLayer=null;
+const confPulses=[];
+function renderConflicts(){
+  if(!conflictLayer)return;
+  conflictLayer.clear();confPulses.length=0;
+  ((CONFL&&CONFL.conflicts)||[]).forEach(c=>{
+    if(!c.hot)return;
+    const p=toV3(c.hot[0],c.hot[1],R*1.007);
+    /* 상시 분쟁 마커: 짙은 진홍 이중 고리 — 뉴스 펄스(논조색)와 구분되는 느린 맥동 */
+    const core=new THREE.Mesh(new THREE.SphereGeometry(.004,8,8),
+      new THREE.MeshBasicMaterial({color:0xC0392B}));
+    core.position.copy(p);conflictLayer.add(core);
+    const ring=new THREE.Mesh(new THREE.RingGeometry(.010,.0125,28),
+      new THREE.MeshBasicMaterial({color:0xC0392B,transparent:true,side:THREE.DoubleSide,opacity:.7}));
+    ring.position.copy(p);orient(ring,p);
+    ring.userData={ph:Math.random()*6.28};
+    conflictLayer.add(ring);confPulses.push(ring);});
+  conflictLayer.visible=L.conflicts;}
 function renderShips(){
   if(!shipsGroup)return;
   shipsGroup.clear();shipMats.length=0;
@@ -635,6 +657,7 @@ function buildStage(){
   routesGroup=new THREE.Group();stage.add(routesGroup);drawRoutes();
   shipsGroup=new THREE.Group();stage.add(shipsGroup);renderShips();
   newsLayer=new THREE.Group();stage.add(newsLayer);renderNewsPulses();
+  conflictLayer=new THREE.Group();stage.add(conflictLayer);renderConflicts();
   rippleGroup=new THREE.Group();stage.add(rippleGroup);drawRipples();
   applyLayers();}
 
@@ -643,7 +666,8 @@ function applyLayers(){
   if(shipsGroup)shipsGroup.visible=L.ships;
   if(newsLayer)newsLayer.visible=L.news;
   if(routesGroup)routesGroup.visible=L.routes;
-  if(rippleGroup)rippleGroup.visible=L.ripples;}
+  if(rippleGroup)rippleGroup.visible=L.ripples;
+  if(conflictLayer)conflictLayer.visible=L.conflicts;}
 /* 매 프레임: 전환 알파(layerAlpha)와 로직 물들기(dimK)를 재질에 반영 — 모든 전환이 연속적 */
 function applyVisual(){
   const dataA=layerAlpha*(1-dimK);
@@ -931,7 +955,34 @@ function applyRegime(d){
   rimMat.uniforms.c.value.set(t.atm);
   document.getElementById('rgname').textContent=t.en+' · '+t.name;
   document.getElementById('rgval').textContent=`동조도 ${v.toFixed(3)} (긴장 ${th.tension} · 경보 ${th.alert})`;
-  document.getElementById('rgprov').textContent=d.conv.provenance||'';}
+  document.getElementById('rgprov').textContent=d.conv.provenance||'';
+  drawRegimeSpark(t.acc,th);}
+let CONVH=[];
+function drawRegimeSpark(acc,th){
+  const cv=document.getElementById('rgspark');if(!cv)return;
+  const g=cv.getContext('2d');g.clearRect(0,0,cv.width,cv.height);
+  const W=cv.width,H=cv.height,pad=4;
+  const ymax=Math.max(.6,...CONVH.map(r=>r.v))+.05;
+  const Y=v=>H-pad-(v/ymax)*(H-pad*2);
+  /* 기준선: 긴장·경보 */
+  [[th.tension,'#E8A33D'],[th.alert,'#FF6A6E']].forEach(([v,c])=>{
+    g.strokeStyle=c;g.globalAlpha=.45;g.setLineDash([3,3]);
+    g.beginPath();g.moveTo(pad,Y(v));g.lineTo(W-pad,Y(v));g.stroke();g.setLineDash([]);g.globalAlpha=1;});
+  if(CONVH.length>1){
+    g.strokeStyle=acc;g.lineWidth=1.6;g.beginPath();
+    CONVH.forEach((r,i)=>{
+      const x=pad+i/(CONVH.length-1)*(W-pad*2);
+      i?g.lineTo(x,Y(r.v)):g.moveTo(x,Y(r.v));});
+    g.stroke();}
+  CONVH.forEach((r,i)=>{
+    const x=CONVH.length>1?pad+i/(CONVH.length-1)*(W-pad*2):W/2;
+    g.fillStyle=acc;g.beginPath();g.arc(x,Y(r.v),1.8,0,6.29);g.fill();});
+  if(CONVH.length){
+    const last=CONVH[CONVH.length-1];
+    g.fillStyle='#EAF9FF';g.font='600 9px Consolas';
+    g.textAlign='right';g.fillText(last.v.toFixed(3),W-pad-2,Y(last.v)-5);}
+  g.fillStyle='rgba(147,167,184,.55)';g.font='8px Consolas';g.textAlign='left';
+  g.fillText('동조도 '+CONVH.length+'일',pad+1,9);}
 
 /* ── 전광판 티커 ── */
 function renderTicker(d){
@@ -989,8 +1040,7 @@ function startToast(){
 document.getElementById('toast').addEventListener('click',()=>{
   const t=document.getElementById('toast');
   rotateTo(+t.dataset.la,+t.dataset.lo);
-  document.getElementById('news').classList.add('on');
-  document.getElementById('cards').classList.remove('on');});
+  document.getElementById('news').classList.add('on');});
 
 /* ══ 파급 엔진 — 5분마다 실측 피드 재판독 ══ */
 function runEngine(){
@@ -1000,9 +1050,11 @@ Promise.all([
   fetch('data/market.json').then(r=>r.json()).catch(()=>({series:{}})),
   fetch('data/regime.json').then(r=>r.json()).catch(()=>null),
   fetch('data/event_card.json').then(r=>r.json()).catch(()=>null),
-  fetch('data/lens.json').then(r=>r.json()).catch(()=>null)
-]).then(([led,news,mkt,rg,ev,ln])=>{
+  fetch('data/lens.json').then(r=>r.json()).catch(()=>null),
+  fetch('data/history/conv.csv').then(r=>r.text()).catch(()=>'')
+]).then(([led,news,mkt,rg,ev,ln,cvh])=>{
   if(ln)LENSD=ln;
+  CONVH=cvh.trim()?cvh.trim().split(/\r?\n/).map(l=>{const p=l.split(',');return {d:p[0],v:+p[1]};}).filter(r=>!isNaN(r.v)).slice(-60):[];
   ledCache=led;
   applyRegime(rg);renderTicker(mkt);renderNews(news);
   drawRoutes();
@@ -1101,20 +1153,13 @@ Promise.all([
    if(!runEngine.hashDone){runEngine.hashDone=true;
      const h=decodeURIComponent(location.hash.slice(1));
      if(/^L-[A-Z]{3}-\d{3}$/.test(h))openPop(h);}}
-  /* 패널 + 상시 카드 */
-  document.getElementById('cardsbtn').textContent=`활성 카드 ${actives.length}`;
-  const el=document.getElementById('cardlist');
+  /* 상시 카드 (좌측 미니 인포그래픽이 유일한 활성 카드 표면) */
   const bar=document.getElementById('activebar');
   if(!actives.length){
-    el.innerHTML='<div class="cv" style="cursor:default">지금 파급 관측 없음 — 무소식도 기록됩니다 (관측 유지)</div>';
-    bar.innerHTML='';
+    bar.innerHTML='<div class="acard" style="border-left-color:#3a4a58;cursor:default">'+
+      '<div class="r1">활성 카드 없음</div>'+
+      '<div class="easy">지금 파급 관측 없음 — 무소식도 기록됩니다 (관측 유지)</div></div>';
   }else{
-    el.innerHTML=actives.map((a,i)=>
-      `<div class="cv" data-i="${i}">`+
-      `<span class="dot" style="background:${a.card.color}"></span>`+
-      `<b>${a.card.id}</b> ${a.card.name} · ${a.card.grade}`+
-      `<small>발동 근거: ${a.reason}</small>`+
-      `<small>${a.card.core} · ${a.card.path_note||''} · ${a.label}</small></div>`).join('');
     const acardViz=a=>{ /* 미니 인포그래픽: 문외한도 "아하" */
       if(a.card.id==='L-INF-001'&&CTX&&CTX.a2&&CTX.a2.cur!=null){
         const z=CTX.a2,r=z.hist_median?(z.cur/z.hist_median).toFixed(1):'—';
@@ -1133,16 +1178,13 @@ Promise.all([
     bar.querySelectorAll('.more').forEach(m=>m.addEventListener('click',e=>{
       e.stopPropagation();openPop(m.dataset.pop);}));
     const sync=()=>{
-      el.querySelectorAll('.cv').forEach((x,xi)=>x.classList.toggle('on',hlIdx===xi));
       bar.querySelectorAll('.acard').forEach((x,xi)=>x.classList.toggle('on',hlIdx===xi));};
     const focusOf=a=>a.anchor||(a.card.spread&&a.card.spread[0]&&a.card.spread[0][0])||null;
     const toggleHl=i=>{
       hlIdx=(hlIdx===i)?null:i;sync();applyHighlight();
       if(hlIdx!==null){const f=focusOf(actives[hlIdx]);if(f)rotateTo(f[0],f[1]);}};
-    el.querySelectorAll('.cv').forEach(d=>d.addEventListener('click',()=>toggleHl(+d.dataset.i)));
     bar.querySelectorAll('.acard').forEach(ch=>ch.addEventListener('click',()=>toggleHl(+ch.dataset.i)));}
-  document.getElementById('cardfoot').textContent=led.label||'';
-}).catch(()=>{document.getElementById('cardlist').textContent='원장 로드 실패';});}
+}).catch(()=>{});}
 
 /* ── 초기 로드: 지형 + 함대 → 무대 조립 → 엔진 ── */
 const COUNTRIES='https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
@@ -1150,8 +1192,10 @@ buildStage(); /* 지형 로드 전 임시 무대 */
 fitCamera();  /* 세로(폰) 화면 초기 맞춤 */
 Promise.all([
   fetch(COUNTRIES).then(r=>r.json()).catch(()=>null),
-  fetch('data/ships.json').then(r=>r.json()).catch(()=>null)
-]).then(([topo,sh])=>{
+  fetch('data/ships.json').then(r=>r.json()).catch(()=>null),
+  fetch('logic/conflicts.json').then(r=>r.json()).catch(()=>null)
+]).then(([topo,sh,cf])=>{
+  if(cf)CONFL=cf;
   if(topo){topoCache=topo;fillTex=fillCanvasTexture();}
   if(sh&&sh.fleet)shipsCache=sh.fleet;
   buildStage();
@@ -1224,11 +1268,8 @@ controls.addEventListener('end',()=>{drift2dPause=performance.now()+12000;});
 
 /* 패널 토글 */
 const newsEl=document.getElementById('news');
-const cardsEl=document.getElementById('cards');
 document.getElementById('newsbtn').addEventListener('click',()=>{
-  newsEl.classList.toggle('on');cardsEl.classList.remove('on');});
-document.getElementById('cardsbtn').addEventListener('click',()=>{
-  cardsEl.classList.toggle('on');newsEl.classList.remove('on');});
+  newsEl.classList.toggle('on');});
 document.querySelectorAll('#lfilter .lf').forEach(f=>f.addEventListener('click',()=>{
   LFILTER=f.dataset.f;
   document.querySelectorAll('#lfilter .lf').forEach(x=>x.classList.toggle('on',x===f));
@@ -1283,6 +1324,9 @@ function loop(now){
   pulses.forEach(rg=>{const s=1+.9*((now/1400+rg.userData.ph)%1);
     rg.scale.set(s,s,s);
     rg.material.opacity=Math.max(0,1.15-s*.55)*layerAlpha*(1-dimK);});
+  confPulses.forEach(rg=>{const s=1+.6*((now/3500+rg.userData.ph)%1);
+    rg.scale.set(s,s,s);
+    rg.material.opacity=Math.max(0,.85-(s-1)*1.1)*layerAlpha*(1-dimK);});
   flows.forEach(f=>{
     const U=((now/3000)+f.ph)%1;
     f.pulses.forEach(p=>{

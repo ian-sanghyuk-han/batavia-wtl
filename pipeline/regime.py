@@ -77,4 +77,19 @@ out = {
 }
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 json.dump(out, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+
+# Accumulate conv history (one row per asof date) — feeds the regime chip sparkline.
+hist_path = os.path.join(os.path.dirname(OUT), "history", "conv.csv")
+os.makedirs(os.path.dirname(hist_path), exist_ok=True)
+rows = {}
+if os.path.exists(hist_path):
+    for ln in open(hist_path, encoding="utf-8"):
+        parts = ln.strip().split(",")
+        if len(parts) == 2:
+            rows[parts[0]] = parts[1]
+rows[conv_asof] = f"{conv:.3f}"
+with open(hist_path, "w", encoding="utf-8") as fp:
+    for d_ in sorted(rows):
+        fp.write(f"{d_},{rows[d_]}\n")
+
 print(f"regime.json written: conv={conv:.3f} ({conv_asof}), w={w:.3f} [{method}]")
