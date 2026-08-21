@@ -354,6 +354,7 @@
   <a class="sm-r" href="replay.html">REPLAY</a>
   <a class="sm-r" href="pricing.html">구독 안내</a>
   <a class="sm-r" href="policy.html">데이터와 원칙</a>
+  <div class="sm-cap" style="margin-top:6px;opacity:.6">build 2026-08-22a</div>
 </div>
 <div id="activebar">
   <div id="regimecard" class="glass">
@@ -460,17 +461,28 @@ document.documentElement.lang=LANG;
 let ALERTFX=localStorage.getItem('bp-alertfx')!=='0';
 let REGIX=1,LASTRG=null;
 let UPC='#FF6A6E',DNC='#5FA8FF';
-/* 카드 계열색 -> 건담(라이트) 팔레트 사상: 색상환 구간별 5색 배치 */
+/* 카드 계열색 -> 건담(라이트) 팔레트 사상.
+   핵심 계열색은 명시 고정(호박=골드 보장); 그 외는 sRGB 색상각 직접 계산 —
+   THREE.Color.getHSL은 선형 색공간 기준이라 호박(39°)이 29.8°로 밀려 빨강 판정 나는 함정 */
+const FAMC_MAP={'#D9A441':'#c99700','#FF5D6E':'#fb2f38','#A79BFF':'#2c52b3',
+  '#5FD8E8':'#0e8ba8','#3FE0A0':'#1f9d63'};
 function famC(c){
   if(!TH.soft)return c;
-  try{const h={};new THREE.Color(c).getHSL(h);const d=h.h*360;
-    if(h.s<.15)return '#5a5b6d';
-    if(d<30||d>=330)return '#fb2f38';
-    if(d<75)return '#c99700';
-    if(d<170)return '#1f9d63';
-    if(d<210)return '#0e8ba8';
-    return '#2c52b3';
-  }catch(e){return c;}}
+  const m=/^#?([0-9a-fA-F]{6})$/.exec(String(c));if(!m)return c;
+  const k='#'+m[1].toUpperCase();
+  if(FAMC_MAP[k])return FAMC_MAP[k];
+  const n=parseInt(m[1],16),r=(n>>16&255)/255,g=(n>>8&255)/255,b=(n&255)/255;
+  const mx=Math.max(r,g,b),mn=Math.min(r,g,b),dl=mx-mn;
+  if(dl<.001||dl/mx<.15)return '#5a5b6d';
+  let h;
+  if(mx===r)h=(((g-b)/dl)+6)%6*60;
+  else if(mx===g)h=(((b-r)/dl)+2)*60;
+  else h=(((r-g)/dl)+4)*60;
+  if(h<30||h>=330)return '#fb2f38';
+  if(h<75)return '#c99700';
+  if(h<170)return '#1f9d63';
+  if(h<210)return '#0e8ba8';
+  return '#2c52b3';}
 let THN=localStorage.getItem('bp-theme')||'dark';
 if(THN==='light')THN='gundam'; /* 구 라이트는 보존만 — 선택지에서 제외, 건담이 라이트 */
 if(THN!=='dark'&&THN!=='gundam')THN='dark';
