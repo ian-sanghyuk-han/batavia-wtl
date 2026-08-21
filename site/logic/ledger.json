@@ -3,22 +3,134 @@
   "note": "Machine-readable subset of docs/BATAVIA-LOGIC-LEDGER-v1.md — only cards whose activation can be judged from live feeds today. Trigger rules are v0 heuristics (label: 추정) until graded. 'spread' is a list of generations: every node in generation g radiates to every node in generation g+1 — ripples fan out, no single terminus, no market is the protagonist. Display routes are observations, not instructions.",
   "label": "연결 규칙 v0 · 추정 (실측 채점 전)",
   "routes": [
-    {"c": "#D9A441", "a": [24.7, 46.7],  "b": [26.6, 56.5],   "note": "해상: 리야드-호르무즈"},
-    {"c": "#D9A441", "a": [26.6, 56.5],  "b": [1.7, 101.0],   "note": "해상: 호르무즈-말라카"},
-    {"c": "#D9A441", "a": [1.7, 101.0],  "b": [31.2, 121.5],  "note": "해상: 말라카-상하이"},
-    {"c": "#FF5D6E", "a": [40.7, -74.0], "b": [51.5, -0.1],   "note": "자본: 뉴욕-런던"},
-    {"c": "#FF5D6E", "a": [40.7, -74.0], "b": [35.7, 139.7],  "note": "자본: 뉴욕-도쿄"},
-    {"c": "#5FD8E8", "a": [37.5, 127.0], "b": [50.1, 8.7],    "note": "항공화물: 서울-프랑크푸르트"},
-    {"c": "#5FD8E8", "a": [22.3, 114.2], "b": [40.7, -74.0],  "note": "항공화물: 홍콩-뉴욕"},
-    {"c": "#A79BFF", "a": [51.5, -0.1],  "b": [22.3, 114.2],  "note": "정보: 런던-홍콩"}
+    {
+      "c": "#D9A441",
+      "a": [
+        24.7,
+        46.7
+      ],
+      "b": [
+        26.6,
+        56.5
+      ],
+      "note": "해상: 리야드-호르무즈"
+    },
+    {
+      "c": "#D9A441",
+      "a": [
+        26.6,
+        56.5
+      ],
+      "b": [
+        1.7,
+        101.0
+      ],
+      "note": "해상: 호르무즈-말라카"
+    },
+    {
+      "c": "#D9A441",
+      "a": [
+        1.7,
+        101.0
+      ],
+      "b": [
+        31.2,
+        121.5
+      ],
+      "note": "해상: 말라카-상하이"
+    },
+    {
+      "c": "#FF5D6E",
+      "a": [
+        40.7,
+        -74.0
+      ],
+      "b": [
+        51.5,
+        -0.1
+      ],
+      "note": "자본: 뉴욕-런던"
+    },
+    {
+      "c": "#FF5D6E",
+      "a": [
+        40.7,
+        -74.0
+      ],
+      "b": [
+        35.7,
+        139.7
+      ],
+      "note": "자본: 뉴욕-도쿄"
+    },
+    {
+      "c": "#5FD8E8",
+      "a": [
+        37.5,
+        127.0
+      ],
+      "b": [
+        50.1,
+        8.7
+      ],
+      "note": "항공화물: 서울-프랑크푸르트"
+    },
+    {
+      "c": "#5FD8E8",
+      "a": [
+        22.3,
+        114.2
+      ],
+      "b": [
+        40.7,
+        -74.0
+      ],
+      "note": "항공화물: 홍콩-뉴욕"
+    },
+    {
+      "c": "#A79BFF",
+      "a": [
+        51.5,
+        -0.1
+      ],
+      "b": [
+        22.3,
+        114.2
+      ],
+      "note": "정보: 런던-홍콩"
+    }
   ],
   "chokepoints": {
-    "hormuz":   {"name": "호르무즈", "la": 26.6,  "lo": 56.5},
-    "malacca":  {"name": "말라카",   "la": 1.7,   "lo": 101.0},
-    "suez":     {"name": "수에즈",   "la": 30.0,  "lo": 32.5},
-    "babelmandeb": {"name": "바브엘만데브", "la": 12.6, "lo": 43.3},
-    "panama":   {"name": "파나마",   "la": 9.0,   "lo": -79.5},
-    "bosporus": {"name": "보스포루스", "la": 41.1, "lo": 29.0}
+    "hormuz": {
+      "name": "호르무즈",
+      "la": 26.6,
+      "lo": 56.5
+    },
+    "malacca": {
+      "name": "말라카",
+      "la": 1.7,
+      "lo": 101.0
+    },
+    "suez": {
+      "name": "수에즈",
+      "la": 30.0,
+      "lo": 32.5
+    },
+    "babelmandeb": {
+      "name": "바브엘만데브",
+      "la": 12.6,
+      "lo": 43.3
+    },
+    "panama": {
+      "name": "파나마",
+      "la": 9.0,
+      "lo": -79.5
+    },
+    "bosporus": {
+      "name": "보스포루스",
+      "la": 41.1,
+      "lo": 29.0
+    }
   },
   "cards": [
     {
@@ -28,13 +140,55 @@
       "color": "#FF5D6E",
       "core": "코어 2.3·7.1",
       "grade": "B+",
-      "trigger": {"type": "event_upcoming"},
+      "trigger": {
+        "type": "event_upcoming"
+      },
       "spread": [
-        [[38.9, -77.04]],
-        [[40.7, -74.0]],
-        [[51.5, -0.1], [50.1, 8.7], [35.7, 139.7], [37.5, 127.0], [31.2, 121.5], [-33.9, 151.2], [-23.5, -46.6]]
+        [
+          [
+            38.9,
+            -77.04
+          ]
+        ],
+        [
+          [
+            40.7,
+            -74.0
+          ]
+        ],
+        [
+          [
+            51.5,
+            -0.1
+          ],
+          [
+            50.1,
+            8.7
+          ],
+          [
+            35.7,
+            139.7
+          ],
+          [
+            37.5,
+            127.0
+          ],
+          [
+            31.2,
+            121.5
+          ],
+          [
+            -33.9,
+            151.2
+          ],
+          [
+            -23.5,
+            -46.6
+          ]
+        ]
       ],
-      "path_note": "워싱턴(발표) → 뉴욕 → 전 시장 동시 방사 (런던·프랑크푸르트·도쿄·서울·상하이·시드니·상파울루)"
+      "path_note": "워싱턴(발표) → 뉴욕 → 전 시장 동시 방사 (런던·프랑크푸르트·도쿄·서울·상하이·시드니·상파울루)",
+      "name_en": "The Day of the CPI Surprise"
     },
     {
       "id": "L-PHY-004",
@@ -43,11 +197,38 @@
       "color": "#D9A441",
       "core": "코어 3.7·9.9",
       "grade": "B+",
-      "trigger": {"type": "news_cameo_near", "codes": ["18", "19", "20"], "sev_min": 4, "radius_km": 700},
+      "trigger": {
+        "type": "news_cameo_near",
+        "codes": [
+          "18",
+          "19",
+          "20"
+        ],
+        "sev_min": 4,
+        "radius_km": 700
+      },
       "spread": [
-        [[31.2, 121.5], [37.5, 127.0], [35.7, 139.7], [19.0, 72.8]]
+        [
+          [
+            31.2,
+            121.5
+          ],
+          [
+            37.5,
+            127.0
+          ],
+          [
+            35.7,
+            139.7
+          ],
+          [
+            19.0,
+            72.8
+          ]
+        ]
       ],
-      "path_note": "관문 → 상하이·서울·도쿄·뭄바이 동시 (에너지 수입 동선)"
+      "path_note": "관문 → 상하이·서울·도쿄·뭄바이 동시 (에너지 수입 동선)",
+      "name_en": "Gate Blockade"
     },
     {
       "id": "L-INF-004",
@@ -56,12 +237,33 @@
       "color": "#FF5D6E",
       "core": "코어 3.4",
       "grade": "B+",
-      "trigger": {"type": "market_move", "series": "wti", "abs_pct_min": 3.0},
-      "anchor": [24.7, 46.7],
-      "spread": [
-        [[40.7, -74.0], [51.5, -0.1], [35.7, 139.7]]
+      "trigger": {
+        "type": "market_move",
+        "series": "wti",
+        "abs_pct_min": 3.0
+      },
+      "anchor": [
+        24.7,
+        46.7
       ],
-      "path_note": "리야드(유가) → 뉴욕·런던·도쿄 동시 (금리 재점화 관찰)"
+      "spread": [
+        [
+          [
+            40.7,
+            -74.0
+          ],
+          [
+            51.5,
+            -0.1
+          ],
+          [
+            35.7,
+            139.7
+          ]
+        ]
+      ],
+      "path_note": "리야드(유가) → 뉴욕·런던·도쿄 동시 (금리 재점화 관찰)",
+      "name_en": "Oil's Second Ignition"
     },
     {
       "id": "L-MKT-001",
@@ -70,9 +272,13 @@
       "color": "#A79BFF",
       "core": "코어 5.2",
       "grade": "B+",
-      "trigger": {"type": "regime_conv", "min": 0.55},
+      "trigger": {
+        "type": "regime_conv",
+        "min": 0.55
+      },
       "spread": [],
-      "path_note": "상태 카드 — 무대 전체 조명(경보 테마)으로 표현"
+      "path_note": "상태 카드 — 무대 전체 조명(경보 테마)으로 표현",
+      "name_en": "Convergence Alarm"
     },
     {
       "id": "L-EVT-004",
@@ -81,11 +287,28 @@
       "color": "#A79BFF",
       "core": "코어 7장",
       "grade": "C+",
-      "trigger": {"type": "news_cameo", "codes": ["13", "14"], "sev_min": 4},
+      "trigger": {
+        "type": "news_cameo",
+        "codes": [
+          "13",
+          "14"
+        ],
+        "sev_min": 4
+      },
       "spread": [
-        [[40.7, -74.0], [51.5, -0.1]]
+        [
+          [
+            40.7,
+            -74.0
+          ],
+          [
+            51.5,
+            -0.1
+          ]
+        ]
       ],
-      "path_note": "정치 불확실성 진앙 → 뉴욕·런던 동시 (위험 프리미엄 관찰)"
+      "path_note": "정치 불확실성 진앙 → 뉴욕·런던 동시 (위험 프리미엄 관찰)",
+      "name_en": "The Election Uncertainty Curve"
     }
   ]
 }

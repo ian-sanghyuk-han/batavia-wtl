@@ -331,18 +331,17 @@
 <div id="setmenu" class="glass">
   <div class="sm-h">테마</div>
   <div class="sm-r" data-th="dark">● 다크 <span class="on-mark">✓</span></div>
-  <div class="sm-r" data-th="light">○ 라이트 <span class="beta">β</span><span class="on-mark"></span></div>
-  <div class="sm-r" data-th="gundam">◈ 건담 <span class="beta">β</span><span class="on-mark"></span></div>
+  <div class="sm-r" data-th="gundam">○ 라이트 <span class="on-mark"></span></div>
   <div class="sm-h" style="margin-top:8px">지역</div>
   <div class="sm-r" style="cursor:default">🌐 Global <span class="on-mark">✓</span></div>
   <div class="sm-h" style="margin-top:8px">언어</div>
+  <div class="sm-r" data-lg="en">English <span class="on-mark"></span></div>
   <div class="sm-r" data-lg="ko">한국어 <span class="on-mark"></span></div>
-  <div class="sm-r" data-lg="en">English <span class="beta">β</span><span class="on-mark"></span></div>
   <div class="sm-h" style="margin-top:8px">시세 색상</div>
   <div class="sm-cap">자동 = 언어 관례 따라감 · 한국어는 빨강 상승, 영어는 초록 상승</div>
   <div class="sm-r" data-ud="auto">자동 — 언어 따라감 <span class="on-mark"></span></div>
-  <div class="sm-r" data-ud="red"><span style="color:#FF6A6E">▲ 빨강 상승</span> · <span style="color:#5FA8FF">▼ 파랑 하락</span> <span class="on-mark"></span></div>
   <div class="sm-r" data-ud="green"><span style="color:#31C48D">▲ 초록 상승</span> · <span style="color:#FF6A6E">▼ 빨강 하락</span> <span class="on-mark"></span></div>
+  <div class="sm-r" data-ud="red"><span style="color:#FF6A6E">▲ 빨강 상승</span> · <span style="color:#5FA8FF">▼ 파랑 하락</span> <span class="on-mark"></span></div>
   <div class="sm-h" style="margin-top:8px">효과</div>
   <div class="sm-r" data-fx="alert">경보 번쩍임 <span class="on-mark"></span></div>
   <div class="sm-h" style="margin-top:8px">바로가기</div>
@@ -436,27 +435,40 @@ import * as topojson from 'topojson-client';
 /* 테마: 장면 색 팔레트 — 구조상 N개 확장 가능 */
 const THEMES={
   dark:{bg:0x05070c,ocean:'#0b131c',land:[24,34,44],war:[44,26,30],
-    inner:0xBFD9EA,coast:0x9FC0D6,stars:true,glowBoost:.8,obsC:0xEAF9FF,cityC:0x8fa6b8,
+    inner:0xBFD9EA,coast:0x9FC0D6,stars:true,glowBoost:1.05,obsC:0xEAF9FF,cityC:0x8fa6b8,
     lb:{t1:'rgba(224,238,248,.95)',t2:'rgba(196,216,232,.88)',t4:'rgba(159,199,224,.95)',
         t5:'rgba(143,178,204,.85)',t3:'rgba(158,180,198,.8)',w6:'rgba(120,162,196,.52)',
         w7:'rgba(127,168,200,.55)',w8:'rgba(151,196,224,.75)',halo:'rgba(4,8,13,.85)'}},
   light:{bg:0xdfe7ee,ocean:'#c9d6e2',land:[238,242,246],war:[236,214,212],
-    inner:0x5b7186,coast:0x7a93a6,stars:false,soft:true,glowBoost:1.5,obsC:0x1c3550,cityC:0x6b8299,
+    inner:0x5b7186,coast:0x7a93a6,stars:false,soft:true,glowBoost:1.9,obsC:0x1c3550,cityC:0x6b8299,
     lb:{t1:'rgba(20,34,48,.95)',t2:'rgba(35,52,70,.88)',t4:'rgba(30,64,96,.95)',
         t5:'rgba(60,88,112,.85)',t3:'rgba(60,80,100,.8)',w6:'rgba(70,110,150,.45)',
         w7:'rgba(70,110,150,.5)',w8:'rgba(40,90,130,.75)',halo:'rgba(255,255,255,.85)'}},
   gundam:{bg:0xe9edf3,ocean:'#c7d2e2',land:[248,250,252],war:[240,206,204],
-    inner:0x2c52b3,coast:0x5a6f96,stars:false,soft:true,glowBoost:1.5,obsC:0xF5C518,cityC:0x5a5b6d,
+    inner:0x2c52b3,coast:0x5a6f96,stars:false,soft:true,glowBoost:1.9,obsC:0xF5C518,cityC:0x5a5b6d,
     lb:{t1:'rgba(20,40,60,.95)',t2:'rgba(35,55,80,.88)',t4:'rgba(44,82,179,.95)',
         t5:'rgba(60,90,130,.85)',t3:'rgba(64,86,110,.8)',w6:'rgba(70,110,160,.45)',
         w7:'rgba(70,110,160,.5)',w8:'rgba(44,82,179,.7)',halo:'rgba(255,255,255,.88)'}}};
 /* 언어·효과 전역 (테마 다음, 무엇보다 먼저) */
-const LANG=localStorage.getItem('bp-lang')||'ko';
+const LANG=localStorage.getItem('bp-lang')||'en';
 document.documentElement.lang=LANG;
 let ALERTFX=localStorage.getItem('bp-alertfx')!=='0';
 let REGIX=1,LASTRG=null;
 let UPC='#FF6A6E',DNC='#5FA8FF';
+/* 카드 계열색 -> 건담(라이트) 팔레트 사상: 색상환 구간별 5색 배치 */
+function famC(c){
+  if(!TH.soft)return c;
+  try{const h={};new THREE.Color(c).getHSL(h);const d=h.h*360;
+    if(h.s<.15)return '#5a5b6d';
+    if(d<45||d>=330)return '#fb2f38';
+    if(d<75)return '#c99700';
+    if(d<170)return '#1f9d63';
+    if(d<210)return '#0e8ba8';
+    return '#2c52b3';
+  }catch(e){return c;}}
 let THN=localStorage.getItem('bp-theme')||'dark';
+if(THN==='light')THN='gundam'; /* 구 라이트는 보존만 — 선택지에서 제외, 건담이 라이트 */
+if(THN!=='dark'&&THN!=='gundam')THN='dark';
 if(!THEMES[THN])THN='dark';
 let TH=THEMES[THN];
 document.documentElement.dataset.theme=THN;
@@ -939,7 +951,7 @@ function drawRoutes(){
     routesGroup.add(new THREE.Mesh(new THREE.TubeGeometry(surfaceArc(rt.a,rt.b),40,.0016,5,false),m));});
   refreshClones();}
 function drawFlow(active,idx){
-  const col=new THREE.Color(active.card.color);
+  const col=new THREE.Color(famC(active.card.color));
   let gens=(active.card.spread||[]).map(g=>g.slice());
   if(active.anchor)gens=[[active.anchor],...gens];
   if(gens.length<2)return;
@@ -1183,7 +1195,7 @@ function renderLogicView(){
   const cbox=document.getElementById('lcbox'),kbox=document.getElementById('lkbox');
   cbox.innerHTML=SHOW.map((cd,i)=>{
     const card=cardOf(cd.id);
-    return `<div id="lc-${cd.id}" class="lnode ${cd.pass?'pass':'wait'}" style="--fam:${card.color};animation-delay:${.45+i*.12}s">`+
+    return `<div id="lc-${cd.id}" class="lnode ${cd.pass?'pass':'wait'}" style="--fam:${famC(card.color)};animation-delay:${.45+i*.12}s">`+
       `<h4>${cd.id}</h4><span class="st">${cd.pass?'발동':'대기'}</span>`+
       `<div class="formula">${cd.f}</div><div class="v">${cd.sub}</div>`+
       `<canvas class="lspark" id="lsp-${cd.id}" width="230" height="30"></canvas></div>`;}).join('');
@@ -1197,7 +1209,7 @@ function renderLogicView(){
     const cv2=document.getElementById('lsp-'+id);if(cv2)cv2.style.display='none';});
   kbox.innerHTML=SHOW.map((cd,i)=>{
     const card=cardOf(cd.id);
-    return `<div id="lk-${cd.id}" class="lnode lcard ${cd.pass?'pass':'wait'}" style="--fam:${card.color};animation-delay:${.95+i*.1}s">`+
+    return `<div id="lk-${cd.id}" class="lnode lcard ${cd.pass?'pass':'wait'}" style="--fam:${famC(card.color)};animation-delay:${.95+i*.1}s">`+
       `<h4>${card.name} <span style="color:var(--acc)">${card.grade}</span></h4>`+
       `<div class="v">${card.core} · ${cd.pass?'<b>지금 무대에서 파급 중</b>':'조건 충족 시 발동'}</div></div>`;}).join('');
   document.querySelectorAll('#lstage > div:first-child .lnode').forEach((n,i)=>
@@ -1236,7 +1248,7 @@ function drawLWires(){
       svg.appendChild(cc);
       logicPulses.push({path:p,dot:cc,ph:Math.random()});}};
   (LFILTER==='act'?CONDS.filter(c=>c.pass):CONDS).forEach(cd=>{
-    const col=cardOf(cd.id).color;
+    const col=famC(cardOf(cd.id).color);
     link(document.getElementById(cd.src),document.getElementById('lc-'+cd.id),col,cd.pass);
     link(document.getElementById('lc-'+cd.id),document.getElementById('lk-'+cd.id),col,cd.pass);
     if(cd.pass)link(document.getElementById('lk-'+cd.id),document.getElementById('ls-out'),col,true);});
@@ -1269,7 +1281,7 @@ function openPop(id){
   if(!CTX)return;
   const c=CTX,card=cardOf(id);
   const el=document.getElementById('popbody');
-  document.getElementById('popin').style.setProperty('--fam',card.color);
+  document.getElementById('popin').style.setProperty('--fam',famC(card.color));
   let html=`<h2>${card.id} ${card.name}<small>${card.grade}</small></h2>`;
   if(id==='L-INF-001'&&c.ev&&c.ev.event){
     const a2=c.a2,pp=c.pp;
@@ -1278,11 +1290,11 @@ function openPop(id){
     <div class="plain">${c.ev.event.release_kst.slice(0,10)} 밤, 미국 물가 성적표(CPI)가 나옵니다.
     이 카드는 한 가지만 잽니다 — <b>"시장이 발표 전에 미리 얼마나 움직여 놓았나?"</b></div>
     <div class="step"><span class="no">1</span><div class="bd"><h5>재료</h5>
-      ${pbar('이번: 미2년 금리 이동',a2.cur||0,0.25,card.color,`${a2.cur??'—'}%p`)}
+      ${pbar('이번: 미2년 금리 이동',a2.cur||0,0.25,famC(card.color),`${a2.cur??'—'}%p`)}
       ${pbar('평소(44번 중앙값)',a2.hist_median||0,0.25,'#5b6b7a',`${a2.hist_median??'—'}%p`)}
       <p>발표를 앞두고 시장 금리가 평소의 <b>약 ${ratio?ratio.toFixed(1):'—'}배</b> 움직였습니다.</p></div></div>
     <div class="step"><span class="no">2</span><div class="bd"><h5>계산</h5>
-      <div class="gaugewrap">${gaugeSVG(pp.index??0,card.color)}
+      <div class="gaugewrap">${gaugeSVG(pp.index??0,famC(card.color))}
         <div class="gtxt">과거 발표 ${a2.n||'—'}번과 비교하면<br>역대 <b>상위 ${a2.pctl?Math.round(a2.pctl*100):'—'}%</b>의 사전 움직임<br>→ 판정: <b>${pp.phrase||''}</b></div></div></div></div>
     <div class="step"><span class="no">3</span><div class="bd"><h5>그래서 무엇을 보나</h5>
       <div class="verdictbox">기대가 이미 가격에 많이 담긴 상태입니다. 이런 날은 발표 숫자 자체보다
@@ -1510,20 +1522,21 @@ document.getElementById('toast').addEventListener('click',()=>{
 /* ══ 파급 엔진 — 5분마다 실측 피드 재판독 ══ */
 function runEngine(){
 Promise.all([
-  fetch('logic/ledger.json').then(r=>r.json()),
-  fetch('data/news.json').then(r=>r.json()).catch(()=>({events:[]})),
-  fetch('data/market.json').then(r=>r.json()).catch(()=>({series:{}})),
-  fetch('data/regime.json').then(r=>r.json()).catch(()=>null),
-  fetch('data/event_card.json').then(r=>r.json()).catch(()=>null),
-  fetch('data/lens.json').then(r=>r.json()).catch(()=>null),
-  fetch('data/history/conv.csv').then(r=>r.text()).catch(()=>''),
-  fetch('data/history/days.jsonl').then(r=>r.text()).catch(()=>'')
+  fetch('logic/ledger.json',{cache:'no-store'}).then(r=>r.json()),
+  fetch('data/news.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>({events:[]})),
+  fetch('data/market.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>({series:{}})),
+  fetch('data/regime.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null),
+  fetch('data/event_card.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null),
+  fetch('data/lens.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null),
+  fetch('data/history/conv.csv',{cache:'no-store'}).then(r=>r.text()).catch(()=>''),
+  fetch('data/history/days.jsonl',{cache:'no-store'}).then(r=>r.text()).catch(()=>'')
 ]).then(([led,news,mkt,rg,ev,ln,cvh,dj])=>{
   engineLastRun=Date.now();
   DAYSH=dj.trim()?dj.trim().split(/\r?\n/).map(l=>{try{return JSON.parse(l);}catch(e){return null;}}).filter(Boolean):[];
   if(ln)LENSD=ln;
   CONVH=cvh.trim()?cvh.trim().split(/\r?\n/).map(l=>{const p=l.split(',');return {d:p[0],v:+p[1]};}).filter(r=>!isNaN(r.v)).slice(-90):[];
   ledCache=led;
+  if(LANG==='en')led.cards.forEach(c=>{if(c.name_en)c.name=c.name_en;});
   applyRegime(rg);renderTicker(mkt);renderNews(news);
   drawRoutes();
   hlIdx=null;
@@ -1631,14 +1644,14 @@ Promise.all([
     const acardViz=a=>{ /* 미니 인포그래픽: 문외한도 "아하" */
       if(a.card.id==='L-INF-001'&&CTX&&CTX.a2&&CTX.a2.cur!=null){
         const z=CTX.a2,r=z.hist_median?(z.cur/z.hist_median).toFixed(1):'—';
-        return `<div class="mb"><span class="l">이번 이동</span><span class="t"><span class="f" style="width:${Math.min(100,Math.abs(z.cur)/0.25*100)}%;background:${a.card.color}"></span></span><span class="mv">${z.cur}%p</span></div>`+
+        return `<div class="mb"><span class="l">이번 이동</span><span class="t"><span class="f" style="width:${Math.min(100,Math.abs(z.cur)/0.25*100)}%;background:${famC(a.card.color)}"></span></span><span class="mv">${z.cur}%p</span></div>`+
           `<div class="mb"><span class="l">평소(중앙값)</span><span class="t"><span class="f" style="width:${Math.min(100,Math.abs(z.hist_median)/0.25*100)}%;background:#5b6b7a"></span></span><span class="mv">${z.hist_median}%p</span></div>`+
           `<div class="easy">발표 D-${CTX.dd} — 시장이 평소의 <span class="bignum">${r}배</span> 미리 움직임 → 선반영 <span class="bignum">${CTX.pp.index??'—'}</span>/100 (${CTX.pp.phrase||''})</div>`;}
       const G=EASY[a.card.id];
       return `<div class="calc">${(a.calc&&a.calc.length?a.calc:[a.reason]).join('<br>')}</div>`+
         (G?`<div class="easy">${G.plain}</div>`:'');};
     bar.innerHTML=actives.map((a,i)=>
-      `<div class="acard" data-i="${i}" style="border-left-color:${a.card.color}">`+
+      `<div class="acard" data-i="${i}" style="border-left-color:${famC(a.card.color)}">`+
       `<div class="r1">${a.card.id} ${a.card.name}<span class="gr">${a.card.grade}</span></div>`+
       acardViz(a)+
       `<div class="src">${a.reason} · ${a.card.core} · ${a.label}</div>`+
@@ -1771,7 +1784,8 @@ function setTheme(n){
   {const bl=TH.soft?THREE.NormalBlending:THREE.AdditiveBlending;
    if(atmMat.blending!==bl){atmMat.blending=bl;rimMat.blending=bl;
      atmMat.needsUpdate=true;rimMat.needsUpdate=true;}
-   if(LASTRG)applyRegime(LASTRG);}
+   if(LASTRG)applyRegime(LASTRG);
+   if(ledCache)runEngine();}
   localStorage.setItem('bp-theme',n);
   document.documentElement.dataset.theme=n;
   renderer.setClearColor(TH.bg);
@@ -1888,6 +1902,10 @@ const RX=[
  [/최근/g,'recent'],[/상위/g,'top'],[/중앙값/g,'median'],[/지수/g,'index'],
  [/이동/g,'move'],[/코어/g,'core'],[/뉴스/g,'news'],[/진앙/g,'epicenter'],
  [/발표/g,'release'],[/\/(\d+)일/g,'/$1d'],[/일정/g,'calendar'],[/건(?=[\s·,)]|$)/g,' hits'],
+ [/선반영 지수/g,'pre-pricing index'],[/과반영 의심/g,'over-pricing suspected'],
+ [/직전 CPI/g,'previous CPI'],[/인근/g,'near'],
+ [/호르무즈/g,'Hormuz'],[/말라카/g,'Malacca'],[/수에즈/g,'Suez'],
+ [/바브엘만데브/g,'Bab-el-Mandeb'],[/파나마/g,'Panama'],[/보스포루스/g,'Bosporus'],
  [/관문/g,'gates'],[/무대/g,'stage'],[/채점/g,'grading'],
  [/워싱턴/g,'Washington'],[/뉴욕/g,'New York'],[/런던/g,'London'],
  [/프랑크푸르트/g,'Frankfurt'],[/도쿄/g,'Tokyo'],[/서울/g,'Seoul'],[/상하이/g,'Shanghai'],
