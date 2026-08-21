@@ -84,6 +84,15 @@
   .lrow .sw{display:flex;gap:3px}
   .lrow .st{margin-left:auto;color:#5b6b7a;font-size:9px}
   #layers .foot{margin-top:6px;font:9px Consolas,monospace;color:#5b6b7a}
+  /* 노드 렌즈 — 도시 탭 → 그 시장의 지수 */
+  #lens{position:fixed;left:12px;bottom:92px;z-index:12;width:262px;padding:11px 13px;display:none}
+  #lens.on{display:block}
+  #lens h3{margin:0 0 2px;font:600 12px Consolas,monospace;letter-spacing:2px;color:var(--ink)}
+  #lens h3 small{color:#5b6b7a;font-size:9px;margin-left:6px}
+  #lensval{font:11px Consolas,monospace;color:var(--dim);margin:4px 0 6px}
+  #lensval b{color:#F4FBFF;font-size:15px}
+  #lensfoot{margin-top:5px;font:9px Consolas,monospace;color:#5b6b7a}
+  #lensclose{float:right;font:11px Consolas,monospace;color:var(--dim);cursor:pointer;padding:0 4px}
   /* 전광판 티커 — 계속 흐른다 */
   #ticker{position:fixed;left:0;right:0;bottom:0;z-index:10;overflow:hidden;white-space:nowrap;
     padding:8px 0;padding-bottom:max(8px,env(safe-area-inset-bottom));font:11px Consolas,monospace;
@@ -190,8 +199,8 @@
 <div id="activebar"></div>
 <div id="modebar" class="glass">
   <span class="mbtn on" data-v="3d">3D</span>
-  <span class="mbtn" data-v="2d">평면</span>
-  <span class="mbtn" data-v="logic">로직</span>
+  <span class="mbtn" data-v="2d">MAP</span>
+  <span class="mbtn" data-v="logic">ENGINE</span>
 </div>
 <div id="layersbtn" class="glass">레이어 ▤</div>
 <div id="layers" class="glass">
@@ -204,6 +213,10 @@
   <div class="lrow" data-l="citylabels"><span class="sw"><span class="dot" style="background:#8fa6b8"></span></span>도시 라벨<span class="st">ON</span></div>
   <div class="foot">뉴스 색 = 관찰 3상태(긍정·중립·부정)<br>─ 동선(상시·옅음) · ━ 파급(활성·밝음)</div>
 </div>
+<div id="lens" class="glass"><span id="lensclose">✕</span>
+  <h3 id="lenscity"></h3><div id="lensval"></div>
+  <canvas id="lensspark" width="236" height="54"></canvas>
+  <div id="lensfoot"></div></div>
 <div id="btnrow">
   <div id="cardsbtn" class="pbtn glass">활성 카드 —</div>
   <div id="newsbtn" class="pbtn glass">NEWS LOG</div>
@@ -212,7 +225,7 @@
   <div id="cardfoot"></div></div>
 <div id="news" class="glass"><h3>NEWS LOG<span id="newsupd" style="color:#5b6b7a"></span></h3><div id="newslist">로드 중…</div></div>
 <div id="logicview"><div id="lwrap" class="glass">
-  <div id="lhead">LOGIC — 살아있는 계산 · 수식이 실시간으로 평가됩니다<span id="lfilter"><span class="lf on" data-f="all">전체</span><span class="lf" data-f="act">활성만</span></span></div>
+  <div id="lhead">ENGINE — 기관실 · 원장의 수식이 실시간으로 판정됩니다<span id="lfilter"><span class="lf on" data-f="all">전체</span><span class="lf" data-f="act">활성만</span></span></div>
   <div id="lstage">
     <div>
       <div class="colh">① 데이터 (지금 값)</div>
@@ -986,8 +999,10 @@ Promise.all([
   fetch('data/news.json').then(r=>r.json()).catch(()=>({events:[]})),
   fetch('data/market.json').then(r=>r.json()).catch(()=>({series:{}})),
   fetch('data/regime.json').then(r=>r.json()).catch(()=>null),
-  fetch('data/event_card.json').then(r=>r.json()).catch(()=>null)
-]).then(([led,news,mkt,rg,ev])=>{
+  fetch('data/event_card.json').then(r=>r.json()).catch(()=>null),
+  fetch('data/lens.json').then(r=>r.json()).catch(()=>null)
+]).then(([led,news,mkt,rg,ev,ln])=>{
+  if(ln)LENSD=ln;
   ledCache=led;
   applyRegime(rg);renderTicker(mkt);renderNews(news);
   drawRoutes();
@@ -1143,6 +1158,70 @@ Promise.all([
   runEngine();
   setInterval(runEngine,5*60*1000);});
 
+/* ══ 노드 렌즈: 관측 노드를 탭하면 그 시장의 지수·30일 흐름 ══ */
+let LENSD=null;
+const OBS_KEYS=['SEL','TYO','NY','LDN','SHA','RYD','SIN','HKG','MUM','FRA','SP','SYD','CHI','PAR'];
+const OBS_NAMES=['서울','도쿄','뉴욕','런던','상하이','리야드','싱가포르','홍콩','뭄바이','프랑크푸르트','상파울루','시드니','시카고','파리'];
+function openLens(i){
+  const key=OBS_KEYS[i],nm=OBS_NAMES[i];
+  const el=document.getElementById('lens');
+  document.getElementById('layers').classList.remove('on');
+  document.getElementById('lenscity').innerHTML=`${nm}<small>${key} · 관측 노드</small>`;
+  const nd=LENSD&&LENSD.nodes&&LENSD.nodes[key];
+  const cv=document.getElementById('lensspark');
+  const g=cv.getContext('2d');g.clearRect(0,0,cv.width,cv.height);
+  if(nd){
+    const up=nd.chg_pct>0.001,dn=nd.chg_pct<-0.001;
+    const cls=up?'#FF6A6E':dn?'#5FA8FF':'#93a7b8';
+    document.getElementById('lensval').innerHTML=
+      `${nd.label} <b>${nd.value}</b> <span style="color:${cls}">${up?'▲':dn?'▼':'—'} ${nd.chg_pct>0?'+':''}${nd.chg_pct}%</span>`;
+    const sp=nd.spark||[];
+    if(sp.length>1){
+      const mn=Math.min(...sp),mx=Math.max(...sp),rg2=(mx-mn)||1;
+      g.strokeStyle=cls;g.lineWidth=1.5;g.beginPath();
+      sp.forEach((v,j)=>{
+        const x=6+j/(sp.length-1)*(cv.width-12);
+        const y=cv.height-8-(v-mn)/rg2*(cv.height-16);
+        j?g.lineTo(x,y):g.moveTo(x,y);});
+      g.stroke();
+      g.fillStyle='rgba(159,199,224,.5)';g.font='8px Consolas';
+      g.fillText('30일',6,10);}
+    document.getElementById('lensfoot').textContent=`기준일 ${nd.asof} · 원장 렌즈`;
+  }else{
+    document.getElementById('lensval').textContent='지수 피드 연결 준비 중';
+    document.getElementById('lensfoot').textContent='이 노드는 뉴스·동선 관측만 연결되어 있습니다';}
+  el.classList.add('on');}
+document.getElementById('lensclose').addEventListener('click',()=>
+  document.getElementById('lens').classList.remove('on'));
+/* 탭 판정: 드래그가 아니면 노드 레이캐스트 */
+const ray=new THREE.Raycaster();
+ray.params.Mesh={threshold:0};
+let pdown=null;
+renderer.domElement.addEventListener('pointerdown',e=>{pdown=[e.clientX,e.clientY];});
+renderer.domElement.addEventListener('pointerup',e=>{
+  if(!pdown)return;
+  const moved=Math.hypot(e.clientX-pdown[0],e.clientY-pdown[1]);
+  pdown=null;
+  if(moved>6||!obsIM)return;
+  const ndc=new THREE.Vector2(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);
+  ray.setFromCamera(ndc,camera);
+  /* 노드 점이 작으므로: 각 노드의 화면 거리로 판정(28px 반경) */
+  let best=null;
+  OBS_KEYS.forEach((k,i)=>{
+    const p=toV3(OBS[i][0],OBS[i][1],R*1.003).clone();
+    if(VIEW!=='2d'){ /* 뒷면 노드 제외 */
+      if(p.clone().normalize().dot(camera.position.clone().normalize())<.15)return;}
+    const sp2=p.project(camera);
+    const sx=(sp2.x+1)/2*innerWidth,sy=(-sp2.y+1)/2*innerHeight;
+    const d=Math.hypot(sx-e.clientX,sy-e.clientY);
+    if(d<28&&(!best||d<best.d))best={i,d};});
+  if(best)openLens(best.i);});
+
+/* ══ 2D 자동 흐름: 옛 무대처럼 천천히 — 손대면 멈추고 잠시 후 재개 ══ */
+let drift2dPause=0,driftDir=1,lastNow=performance.now();
+controls.addEventListener('start',()=>{drift2dPause=Infinity;});
+controls.addEventListener('end',()=>{drift2dPause=performance.now()+12000;});
+
 /* 패널 토글 */
 const newsEl=document.getElementById('news');
 const cardsEl=document.getElementById('cards');
@@ -1193,6 +1272,13 @@ function loop(now){
     dimK=dimTween.from+(dimTween.to-dimTween.from)*e3;
     if(u>=1)dimTween=null;}
   applyVisual();
+  /* 2D 자동 흐름 */
+  {const dt=Math.min(100,now-lastNow);lastNow=now;
+   if(VIEW==='2d'&&MODE==='2d'&&!morphAnim&&!camAnim&&now>drift2dPause){
+     camera.position.x+=driftDir*.00004*dt*camera.position.z;
+     if(camera.position.x>1.55)driftDir=-1;
+     if(camera.position.x<-1.55)driftDir=1;
+     controls.target.x=camera.position.x;controls.target.y=camera.position.y;}}
   updateLabels();
   pulses.forEach(rg=>{const s=1+.9*((now/1400+rg.userData.ph)%1);
     rg.scale.set(s,s,s);
