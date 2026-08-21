@@ -103,23 +103,49 @@ fetch(COUNTRIES).then(r=>r.json()).then(topo=>{
     new THREE.LineBasicMaterial({color:0x9FC0D6,transparent:true,opacity:.38})));
 }).catch(e=>{document.getElementById('ncty').textContent='로드 실패';});
 
-/* ── 주요국 라벨 (빌보드 스프라이트 — 항상 카메라를 봄) ── */
-const LABELS=[['UNITED STATES',39,-98],['CANADA',58,-105],['BRAZIL',-10,-52],['RUSSIA',60,95],
- ['CHINA',35,103],['INDIA',21,78],['AUSTRALIA',-25,134],['SAUDI ARABIA',24,45],
- ['KOREA',36.4,127.8],['JAPAN',37.5,138.5],['UK',54,-2],['FRANCE',47,2],['GERMANY',51,10],
- ['EGYPT',26,30],['NIGERIA',9,8],['SOUTH AFRICA',-29,25],['MEXICO',24,-102],
- ['INDONESIA',-2,118],['TURKIYE',39,35],['IRAN',32,54],['ARGENTINA',-34,-64],['KAZAKHSTAN',48,68]];
-function labelSprite(txt){
+/* ── 라벨 v2: 단계 노출(LOD) + 수평선 페이드 + 가독 헤일로 ──
+   tier 1 = 항상 · tier 2 = 줌<2.3부터 · tier 3(도시) = 줌<1.95부터 */
+const LABELS=[
+ ['UNITED STATES',39,-98,1],['RUSSIA',60,95,1],['CHINA',35,103,1],['BRAZIL',-10,-52,1],
+ ['INDIA',21,78,1],['AUSTRALIA',-25,134,1],['CANADA',58,-105,1],['KOREA',36.4,127.8,1],
+ ['JAPAN',37.5,138.5,1],['SAUDI ARABIA',24,45,1],['MEXICO',24,-102,1],['INDONESIA',-2,118,1],
+ ['UK',54,-2,2],['FRANCE',47,2,2],['GERMANY',51,10,2],['EGYPT',26,30,2],['NIGERIA',9,8,2],
+ ['SOUTH AFRICA',-29,25,2],['TURKIYE',39,35,2],['IRAN',32,54,2],['ARGENTINA',-34,-64,2],
+ ['KAZAKHSTAN',48,68,2],['ANTARCTICA',-78,40,2],['GREENLAND',72,-41,2],
+ ['SEOUL',37.5,127,3],['TOKYO',35.7,139.7,3],['NEW YORK',40.7,-74,3],['LONDON',51.5,-.1,3],
+ ['SHANGHAI',31.2,121.5,3],['RIYADH',24.7,46.7,3],['SINGAPORE',1.35,103.8,3],
+ ['HONG KONG',22.3,114.2,3],['MUMBAI',19,72.8,3],['FRANKFURT',50.1,8.7,3],
+ ['SÃO PAULO',-23.5,-46.6,3],['SYDNEY',-33.9,151.2,3]];
+function labelSprite(txt,tier){
   const c=document.createElement('canvas');c.width=512;c.height=96;
   const x=c.getContext('2d');
-  x.font='600 40px Consolas,monospace';x.textAlign='center';x.textBaseline='middle';
-  x.letterSpacing='6px';
-  x.fillStyle='rgba(214,232,244,.85)';x.fillText(txt,256,48);
+  const size=tier===3?30:tier===2?34:40;
+  x.font=`600 ${size}px Consolas,monospace`;x.textAlign='center';x.textBaseline='middle';
+  x.letterSpacing='5px';
+  x.lineWidth=7;x.strokeStyle='rgba(4,8,13,.85)';x.strokeText(txt,256,48); /* 헤일로 */
+  x.fillStyle=tier===3?'rgba(159,199,224,.95)':'rgba(220,235,245,.92)';
+  x.fillText(txt,256,48);
   const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;
-  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthTest:true}));
-  s.scale.set(.30,.056,1);return s;}
-LABELS.forEach(([n,la,lo])=>{
-  const s=labelSprite(n);s.position.copy(toV3(la,lo,R*1.012));earth.add(s);});
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,
+    depthTest:false,opacity:0})); /* 구에 잘리지 않음 — 노출은 아래 페이드가 결정 */
+  s.renderOrder=20;
+  const k=tier===3?.20:tier===2?.24:.30;
+  s.scale.set(k,k*96/512,1);return s;}
+const labelObjs=[];
+LABELS.forEach(([n,la,lo,tier])=>{
+  const s=labelSprite(n,tier);
+  s.position.copy(toV3(la,lo,R*1.012));
+  labelObjs.push({s,tier,normal:s.position.clone().normalize()});
+  earth.add(s);});
+/* 도시 라벨용 앵커 점 */
+function updateLabels(){
+  const camDir=camera.position.clone().normalize();
+  const dist=camera.position.length();
+  labelObjs.forEach(o=>{
+    const facing=o.normal.dot(camDir);              /* 1=정면 · 0=림 · 음수=뒷면 */
+    const tierOn=o.tier===1||(o.tier===2&&dist<2.3)||(o.tier===3&&dist<1.95);
+    const fade=THREE.MathUtils.smoothstep(facing,.12,.35); /* 수평선 근처에서 스르륵 */
+    o.s.material.opacity=tierOn?fade*.95:0;});}
 
 /* ── 색 = 데이터 ── */
 const NODES={SEL:[37.5,127],TYO:[35.7,139.7],NY:[40.7,-74],LDN:[51.5,-.1],SHA:[31.2,121.5],RYD:[24.7,46.7],SIN:[1.35,103.8]};
@@ -172,6 +198,7 @@ let frames=0,fpsT=performance.now();
 const fpsEl=document.getElementById('fps');
 function loop(now){
   controls.update();
+  updateLabels();
   pulses.forEach(rg=>{const s=1+.9*((now/1400+rg.userData.ph)%1);
     rg.scale.set(s,s,s);rg.material.opacity=Math.max(0,1.15-s*.55);});
   renderer.render(scene,camera);
