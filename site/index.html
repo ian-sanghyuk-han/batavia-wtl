@@ -26,11 +26,11 @@
     padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top))}
   #brand{font:600 13px/1.2 Consolas,monospace;letter-spacing:3px;color:var(--ink);white-space:nowrap}
   #brand small{display:block;font-weight:400;font-size:9px;letter-spacing:5px;color:var(--acc);margin-top:2px}
-  #regimechip{margin-left:auto;padding:8px 12px 9px 10px;font:11px/1.5 Consolas,monospace;color:var(--dim);
-    text-align:right;flex:none;border-left:4px solid var(--acc)}
-  #rgspark{display:block;margin:5px 0 0 auto}
-  #regimechip b{color:var(--acc);letter-spacing:2px}
-  #regimechip .prov{font-size:9px;color:#5b6b7a}
+  #regimechip{margin-left:14px;padding:7px 12px 7px 10px;font:11px Consolas,monospace;color:var(--dim);
+    flex:none;border-left:4px solid var(--acc);display:flex;align-items:center;gap:10px}
+  #rgspark{display:block}
+  #regimechip b{color:var(--acc);letter-spacing:2px;white-space:nowrap}
+  #regimechip #rgval{white-space:nowrap}
   /* 뉴스 토스트 — 최상단(브랜드 옆) 상시 영역, 맑은 유리, 왼쪽 논조 띠 */
   #toast{flex:1 1 auto;min-width:0;margin:0 14px;padding:8px 14px 8px 12px;cursor:pointer;
     background:rgba(7,11,17,.42);border-left-width:3px;border-left-style:solid;
@@ -105,6 +105,7 @@
   #zoombar{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:9;
     width:26px;padding:8px 0;text-align:center;display:none}
   #zoombar.on{display:block}
+  #zoombar{cursor:pointer}
   #zoomtrack{position:relative;width:4px;height:132px;margin:0 auto;border-radius:2px;
     background:rgba(159,199,224,.14)}
   #zoomfill{position:absolute;bottom:0;left:0;width:100%;border-radius:2px;background:var(--acc)}
@@ -120,7 +121,7 @@
   .tk{color:var(--dim);margin-right:26px} .tk b{color:var(--ink);font-weight:600}
   .up{color:#FF6A6E} .dn{color:#5FA8FF} .fl{color:#93a7b8}
   /* ── 로직 뷰: 살아있는 계산의 무대 (유령 지구본 위 오버레이) ── */
-  #logicview{position:fixed;top:118px;bottom:42px;left:0;right:0;z-index:8;
+  #logicview{position:fixed;top:86px;bottom:42px;left:0;right:0;z-index:8;
     overflow:auto;padding:8px 14px;visibility:hidden;opacity:0;transform:translateY(16px);
     transition:opacity .5s ease,transform .5s ease,visibility 0s .5s;pointer-events:none}
   #logicview.on{visibility:visible;opacity:1;transform:none;pointer-events:auto;
@@ -205,15 +206,15 @@
   .easy{margin-top:5px;font-size:11px;line-height:1.6;color:#c6d9e6}
   .more{margin-top:5px;font:9.5px Consolas,monospace;color:var(--acc);cursor:pointer}
   @media(max-width:880px){
-    #logicview{top:168px}
+    #logicview{top:150px}
     #lstage{grid-template-columns:1fr;min-width:0}
     #lwires{display:none}
     #logicview{padding:8px 10px}
   }
   @media(max-width:520px){
     #brand{font-size:11px;letter-spacing:2px}
-    #regimechip{max-width:60vw;font-size:9px;padding:5px 9px}
-    #regimechip .prov{display:none}
+    #regimechip{font-size:9px;padding:5px 8px;gap:6px}
+    #rgspark{width:70px}
     #topbar{flex-wrap:wrap}
     #toast{order:3;flex-basis:100%;margin:6px 0 0;font-size:11px}
     #activebar{top:136px}
@@ -226,9 +227,9 @@
 <div id="topbar">
   <div id="brand">BATAVIA PROJECT<small>OBSERVATORY</small></div>
   <div id="toast" class="glass"></div>
-  <div id="regimechip" class="glass">국면 <b id="rgname">—</b><br>
-    <span id="rgval">—</span><br><span class="prov" id="rgprov"></span>
-    <canvas id="rgspark" width="176" height="44"></canvas></div>
+  <div id="regimechip" class="glass" id2="slim">
+    <b id="rgname">—</b><span id="rgval">—</span>
+    <canvas id="rgspark" width="112" height="26"></canvas></div>
 </div>
 <div id="activebar"></div>
 <div id="modebar" class="glass">
@@ -253,7 +254,7 @@
   <h3 id="lenscity"></h3><div id="lensval"></div>
   <canvas id="lensspark" width="236" height="54"></canvas>
   <div id="lensfoot"></div><div id="lenscards"></div></div>
-<div id="zoombar" class="glass"><div id="zoomtrack"><div id="zoomfill"></div></div>
+<div id="zoombar" class="glass" title="드래그로 크기 조절"><div id="zoomtrack"><div id="zoomfill"></div></div>
   <div id="zoompct">—</div></div>
 <div id="btnrow">
   <a class="pbtn glass" href="replay.html" style="text-decoration:none">REPLAY</a>
@@ -300,7 +301,7 @@ import * as topojson from 'topojson-client';
 
 const scene=new THREE.Scene();
 const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,.05,100);
-camera.position.set(0,0.5,3.35); /* 대형 화면 기준: 지구본이 화면 높이의 ~80%가 되는 거리 */
+camera.position.set(0,0.5,3.8); /* 대형 화면 기준: 지구본이 화면 높이의 ~80%가 되는 거리 */
 const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth,innerHeight);
 renderer.setPixelRatio(Math.min(1.75,devicePixelRatio));
@@ -333,7 +334,7 @@ function fitCamera(){
   const fovY=camera.fov*Math.PI/180;
   const fovX=2*Math.atan(Math.tan(fovY/2)*camera.aspect);
   const half=Math.min(fovY,fovX)/2;
-  const d=Math.max(3.35,1.18/Math.sin(half));
+  const d=Math.max(3.8,1.18/Math.sin(half));
   controls.maxDistance=Math.max(5.5,d+.4);
   if(camera.position.length()<d)camera.position.setLength(d);}
 
@@ -526,7 +527,10 @@ function arcCurve(a,b){
   if(VIEW==='2d'){
     const A=toV3(a[0],a[1],R*1.004),B=toV3(b[0],b[1],R*1.004);
     const d=A.distanceTo(B);
-    const M=A.clone().add(B).multiplyScalar(.5);M.z+=.06+.1*Math.min(1,d/2);
+    const M=A.clone().add(B).multiplyScalar(.5);
+    const dir=B.clone().sub(A).normalize();
+    M.add(new THREE.Vector3(-dir.y,dir.x,0).multiplyScalar(d*.16)); /* 옆으로 휨 */
+    M.z+=.05+.07*Math.min(1,d/2);
     return new THREE.QuadraticBezierCurve3(A,M,B);}
   const A=sphV3(a[0],a[1],1),B=sphV3(b[0],b[1],1);
   const ang=A.angleTo(B);
@@ -542,7 +546,11 @@ function arcCurve(a,b){
 function surfaceArc(a,b){
   if(VIEW==='2d'){
     const A=toV3(a[0],a[1],R*1.002),B=toV3(b[0],b[1],R*1.002);
-    const M=A.clone().add(B).multiplyScalar(.5);M.z+=.015;
+    const d=A.distanceTo(B);
+    const M=A.clone().add(B).multiplyScalar(.5);
+    const dir=B.clone().sub(A).normalize();
+    M.add(new THREE.Vector3(-dir.y,dir.x,0).multiplyScalar(d*.08));
+    M.z+=.012;
     return new THREE.QuadraticBezierCurve3(A,M,B);}
   const A=sphV3(a[0],a[1],1),B=sphV3(b[0],b[1],1);
   const ang=A.angleTo(B);
@@ -671,7 +679,7 @@ function renderConflicts(){
   /* ④ 원거리 교전: 지그재그 스파크 호 — 국경을 안 맞댄 위협선 */
   (C.farpairs||[]).forEach(fp=>{
     const curve=arcCurve(fp.a,fp.b);
-    const pts=zigzag(curve.getPoints(72),.007);
+    const pts=zigzag(curve.getPoints(150),.005); /* 춘춘한 스파크 */
     const dm=new THREE.LineBasicMaterial({color:0xD9524B,transparent:true,opacity:.6});
     dm.userData.co=.6;
     frontMats.push(dm);
@@ -936,7 +944,7 @@ function startMorph(k1,vFinal){
   controls.enabled=false;camAnim=null;
   morphAnim={k0:MORPH,k1,t0:performance.now(),dur:1200,vFinal,
     camFrom:camera.position.clone(),
-    camTo:k1===1?new THREE.Vector3(0,0,2.6):new THREE.Vector3(0,.5,3.35)};}
+    camTo:k1===1?new THREE.Vector3(0,0,2.6):new THREE.Vector3(0,.5,3.8)};}
 
 /* ── 카메라: 뷰별 조작 + 활공 ── */
 let camAnim=null,autoT=null;
@@ -971,7 +979,7 @@ function configCamera(){
     controls.autoRotateSpeed=MODE==='logic'?.45:.22; /* 기관실: 체감되는 자전 */ /* 기관실: 느린 자전 */
     controls.minDistance=1.4;controls.maxDistance=5.5;
     controls.target.set(0,0,0);
-    if(camera.position.length()<1.5)camera.position.set(0,.5,3.35);
+    if(camera.position.length()<1.5)camera.position.set(0,.5,3.8);
     fitCamera();}}
 
 /* ══ 로직 뷰: 살아있는 계산의 플로우차트 ══ */
@@ -1186,13 +1194,14 @@ function applyRegime(d){
   document.documentElement.style.setProperty('--acc',t.acc);
   atmMat.uniforms.c.value.set(t.atm);
   rimMat.uniforms.c.value.set(t.atm);
-  document.getElementById('rgname').textContent=t.en+' · '+t.name;
+  document.getElementById('rgname').textContent=t.en;
+  document.getElementById('regimechip').title=
+    `국면 ${t.name} · 기준: 긴장 ${th.tension} · 경보 ${th.alert} · ${d.conv.provenance||''}`;
   let dtxt='';
   if(CONVH.length>1){
     const dv=v-CONVH[CONVH.length-2].v;
     dtxt=dv>0.0005?` ▲${dv.toFixed(3)}`:dv<-0.0005?` ▼${Math.abs(dv).toFixed(3)}`:' —';}
-  document.getElementById('rgval').textContent=`동조도 ${v.toFixed(3)}${dtxt} (긴장 ${th.tension} · 경보 ${th.alert})`;
-  document.getElementById('rgprov').textContent=d.conv.provenance||'';
+  document.getElementById('rgval').textContent=`${v.toFixed(3)}${dtxt}`;
   drawRegimeSpark(t.acc,th);}
 let CONVH=[],DAYSH=[];
 function drawMini(cv,vals,color,th){
@@ -1547,6 +1556,20 @@ let drift2dPause=0,wrap2d=false,lastNow=performance.now();
 controls.addEventListener('start',()=>{drift2dPause=Infinity;});
 controls.addEventListener('end',()=>{drift2dPause=performance.now()+12000;});
 
+/* 줌 바 조작: 클릭·드래그 = 카메라 거리 */
+{const zb=document.getElementById('zoombar');
+ const track=document.getElementById('zoomtrack');
+ let zdrag=false;
+ const setFromY=e=>{
+   if(MODE!=='3d')return;
+   const r=track.getBoundingClientRect();
+   const pct=1-Math.max(0,Math.min(1,(e.clientY-r.top)/r.height));
+   const mn=controls.minDistance,mx=controls.maxDistance;
+   camera.position.setLength(mx-pct*(mx-mn));};
+ zb.addEventListener('pointerdown',e=>{zdrag=true;setFromY(e);e.preventDefault();});
+ addEventListener('pointermove',e=>{if(zdrag)setFromY(e);});
+ addEventListener('pointerup',()=>{zdrag=false;});}
+
 /* 패널 토글 */
 const newsEl=document.getElementById('news');
 document.getElementById('newsbtn').addEventListener('click',()=>{
@@ -1610,7 +1633,7 @@ function loop(now){
   /* 2D 자동 흐름 */
   {const dt=Math.min(100,now-lastNow);lastNow=now;
    if(VIEW==='2d'&&MODE==='2d'&&!morphAnim&&!camAnim&&now>drift2dPause){
-     camera.position.x+=.00012*dt*camera.position.z; /* 한 방향, 끊김 없음 */
+     camera.position.x+=.000025*dt*camera.position.z; /* 한 방향, 끊김 없음 */
      controls.target.x=camera.position.x;controls.target.y=camera.position.y;}
    if(VIEW==='2d'&&!morphAnim){ /* 정확 주기 무음 점프 — 복제 무대 덕분 화면은 동일 */
      if(camera.position.x>W2/2){camera.position.x-=W2;controls.target.x-=W2;}

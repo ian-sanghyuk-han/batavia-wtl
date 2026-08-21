@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<!-- STATUS: ACCOUNT / SIGN-UP v0 DRAFT — UI only, no backend, form disabled.
+     Real accounts require an auth backend decision (P5) and precede payments. -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>BATAVIA PROJECT — Account</title>
+<style>
+  :root{--acc:#7FD8FF;--ink:#EAF9FF;--dim:#93a7b8;--mut:#5b6b7a;
+    --glass:rgba(7,11,17,.60);--edge:rgba(159,199,224,.20)}
+  *{box-sizing:border-box}
+  body{margin:0;background:#05070c;color:var(--ink);font-family:'Segoe UI',system-ui,sans-serif;
+    display:flex;flex-direction:column;min-height:100vh}
+  .glass{background:var(--glass);border:1px solid var(--edge);backdrop-filter:blur(9px);border-radius:11px}
+  header{padding:18px;max-width:760px;margin:0 auto;width:100%}
+  header b{font:600 14px Consolas,monospace;letter-spacing:3px}
+  header a{color:var(--acc);text-decoration:none;font:10px Consolas,monospace;float:right;margin-top:4px}
+  main{flex:1;display:flex;align-items:center;justify-content:center;padding:18px}
+  #card{width:min(400px,92vw);padding:26px 26px 22px}
+  h1{margin:0 0 4px;font:600 15px Consolas,monospace;letter-spacing:2px}
+  .sub{font-size:12px;color:var(--dim);margin-bottom:18px;line-height:1.7}
+  label{display:block;font:10px Consolas,monospace;color:var(--mut);letter-spacing:1px;margin:12px 0 5px}
+  input{width:100%;background:rgba(7,11,17,.6);border:1px solid var(--edge);border-radius:9px;
+    color:var(--ink);font:13px 'Segoe UI';padding:11px 13px;outline:none;opacity:.55}
+  #cta{width:100%;margin-top:18px;padding:12px;border-radius:9px;border:1px dashed var(--edge);
+    background:none;color:var(--mut);font:600 12px Consolas,monospace;letter-spacing:2px;cursor:not-allowed}
+  .foot{margin-top:14px;font-size:11px;color:var(--mut);line-height:1.7;text-align:center}
+  .foot a{color:var(--acc);text-decoration:none}
+</style>
+</head>
+<body>
+<header><a href="./">← OBSERVATORY</a><b>BATAVIA PROJECT</b></header>
+<main>
+  <div id="card" class="glass">
+    <h1>관측소 계정</h1>
+    <div class="sub">가입 기능은 준비 중입니다 — 지금은 계정 없이도
+    관측소의 모든 무료 기능을 쓸 수 있습니다.</div>
+    <label>EMAIL</label>
+    <input type="email" placeholder="you@example.com" disabled>
+    <label>PASSWORD</label>
+    <input type="password" placeholder="········" disabled>
+    <button id="cta" disabled>가입 오픈 준비 중</button>
+    <div class="foot">
+      오픈 시 <a href="pricing.html">구독 안내</a> · <a href="policy.html">데이터와 원칙</a> ·
+      <a href="refund.html">환불 정책</a>이 함께 적용됩니다
+    </div>
+  </div>
+</main>
+</body>
+</html>
