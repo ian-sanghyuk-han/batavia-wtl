@@ -49,21 +49,25 @@
   .cv small{display:block;color:#5b6b7a;font-size:9px;font-family:Consolas,monospace;margin-top:2px}
   .cv.on{border-left:2px solid var(--acc);background:rgba(127,216,255,.05)}
   #cardfoot{margin-top:8px;font:9px Consolas,monospace;color:#5b6b7a}
-  /* 상시 표시: 헤드라인 배너 + 활성 카드 칩 */
-  #subbar{position:fixed;top:88px;left:12px;right:12px;z-index:9;display:flex;
-    flex-direction:column;gap:6px;align-items:flex-start;pointer-events:none}
-  #headline{pointer-events:auto;max-width:100%;padding:6px 12px;border-radius:2px;cursor:pointer;
-    font:11px/1.5 'Segoe UI',sans-serif;color:var(--ink);white-space:nowrap;overflow:hidden;
-    text-overflow:ellipsis}
-  #headline small{color:#5b6b7a;font-family:Consolas,monospace;font-size:9px;margin-right:6px}
-  #headline .sev{display:inline-block;width:7px;height:7px;border-radius:50%;background:#FF5D6E;
-    margin-right:6px;vertical-align:middle}
-  #activebar{pointer-events:auto;display:flex;flex-wrap:wrap;gap:6px}
-  .achip{padding:4px 10px;border-radius:2px;font:10px Consolas,monospace;color:var(--ink);
-    cursor:pointer;letter-spacing:1px}
-  .achip .dot{width:6px;height:6px}
-  .achip.on{outline:1px solid var(--acc)}
-  @media(max-width:520px){#subbar{top:78px}}
+  /* 뉴스 토스트 — 유리에 떴다가 사라진다 */
+  #toast{position:fixed;top:88px;left:50%;transform:translateX(-50%);z-index:9;
+    max-width:min(560px,calc(100vw - 24px));padding:9px 16px;border-radius:2px;cursor:pointer;
+    font:12px/1.5 'Segoe UI',sans-serif;color:var(--ink);white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;opacity:0;transition:opacity 1.1s ease;pointer-events:none}
+  #toast.show{opacity:1;pointer-events:auto}
+  #toast small{color:#5b6b7a;font-family:Consolas,monospace;font-size:9px;margin-right:7px}
+  .tdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;vertical-align:middle}
+  /* 활성 카드 — 상시, 근거·수치 동반 */
+  #activebar{position:fixed;left:12px;top:130px;z-index:9;display:flex;flex-direction:column;gap:8px}
+  .acard{width:min(302px,calc(100vw - 24px));padding:9px 12px;border-radius:2px;cursor:pointer}
+  .acard .r1{font:600 11px Consolas,monospace;color:var(--ink);letter-spacing:1px}
+  .acard .r1 .gr{color:var(--acc);float:right}
+  .acard .calc{margin-top:4px;font:10px/1.6 Consolas,monospace;color:#9fb8cc}
+  .acard .calc b{color:#CFE9F7;font-weight:600}
+  .acard .src{margin-top:3px;font:9px Consolas,monospace;color:#5b6b7a}
+  .acard.on{outline:1px solid var(--acc)}
+  @media(max-width:520px){#toast{top:78px}#activebar{top:118px}
+    .acard{width:min(258px,calc(100vw - 24px))}}
   .nv{display:block;color:var(--ink);text-decoration:none;font-size:11px;line-height:1.45;
     padding:7px 0;border-top:1px solid rgba(159,199,224,.10)}
   .nv:first-of-type{border-top:none}
@@ -89,20 +93,19 @@
     <span id="rgval">—</span><br><span class="prov" id="rgprov"></span></div>
 </div>
 <div id="legend" class="glass">
-  <span class="dot" style="background:#FF9A5A"></span>유조선 <span class="dot" style="background:#5FD8E8"></span>화물선(실측 AIS)<br>
-  <span class="dot" style="background:#FF5D6E"></span>뉴스 진앙(실측 GDELT) <span class="dot" style="background:#EAF9FF"></span>관측 노드
+  <span class="dot" style="background:#FF9A5A"></span>유조선 <span class="dot" style="background:#5FD8E8"></span>화물선 · AIS<br>
+  뉴스 관찰 <span class="dot" style="background:#3FE0A0"></span>긍정 <span class="dot" style="background:#D9A441"></span>중립 <span class="dot" style="background:#FF5D6E"></span>부정 <span class="dot" style="background:#EAF9FF"></span>관측 노드<br>
+  <span style="opacity:.6">─ 관측 동선(상시·옅음) · ━ 활성 파급</span>
 </div>
-<div id="subbar">
-  <div id="headline" class="glass" style="display:none"></div>
-  <div id="activebar"></div>
-</div>
+<div id="toast" class="glass"></div>
+<div id="activebar"></div>
 <div id="btnrow">
   <div id="cardsbtn" class="pbtn glass">활성 카드 —</div>
   <div id="newsbtn" class="pbtn glass">뉴스 ⊕</div>
 </div>
 <div id="cards" class="glass"><h3>활성 카드 — 파급 경로</h3><div id="cardlist">판정 중…</div>
   <div id="cardfoot"></div></div>
-<div id="news" class="glass"><h3>실시간 관측 <span>실측</span> · GDELT 15분<span id="newsupd" style="color:#5b6b7a"></span></h3><div id="newslist">로드 중…</div></div>
+<div id="news" class="glass"><h3>NEWS LOG<span id="newsupd" style="color:#5b6b7a"></span></h3><div id="newslist">로드 중…</div></div>
 <div id="ticker" class="glass"></div>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
@@ -335,45 +338,81 @@ fetch('data/ships.json').then(r=>r.json()).then(d=>{
     im.instanceMatrix.needsUpdate=true;earth.add(im);});
 }).catch(()=>{});
 
-/* ══ 뉴스 레이어 (펄스·목록·상시 헤드라인) — 엔진이 5분마다 갱신 ══ */
+/* ══ 뉴스 레이어 — 논조 3색 관찰(긍정·중립·부정), 토스트, NEWS LOG(최대 30), 클릭=진앙 회전 ══ */
 const pulses=[];
 const newsLayer=new THREE.Group();earth.add(newsLayer);
-let headTimer=null;
+const NEWS_LOG_MAX=30;
+const newsLog=[],newsSeen=new Set();
+function toneColor(e){return e.tone<=-3?'#FF5D6E':e.tone>=2?'#3FE0A0':'#D9A441';}
+function relKo(ts){ /* 발행 시각 → "몇 분/시간/일 전" */
+  if(!ts)return '';
+  let t;
+  if(/^\d{14}$/.test(ts))t=Date.UTC(+ts.slice(0,4),+ts.slice(4,6)-1,+ts.slice(6,8),
+    +ts.slice(8,10),+ts.slice(10,12),+ts.slice(12,14));
+  else{const d=new Date(ts);if(isNaN(d))return '';t=d.getTime();}
+  const m=Math.max(0,Math.round((Date.now()-t)/60000));
+  return m<1?'방금':m<60?m+'분 전':m<1440?Math.round(m/60)+'시간 전':Math.round(m/1440)+'일 전';}
+/* 진앙 회전: 카메라를 그 지점 상공으로 부드럽게 */
+let camAnim=null,autoT=null;
+function rotateTo(la,lo){
+  const from=camera.position.clone().normalize();
+  const to=toV3(la,lo,1).normalize();
+  if(from.dot(to)<-0.999)to.x+=.01;
+  camAnim={from,to,dist:camera.position.length(),t0:performance.now()};
+  const was=controls.autoRotate;controls.autoRotate=false;
+  clearTimeout(autoT);autoT=setTimeout(()=>{controls.autoRotate=was;},15000);}
 function renderNews(d){
-  newsLayer.clear();pulses.length=0;
   const evs=(d&&d.events)||[];
-  evs.slice(0,10).forEach(e=>{
+  /* 로그 축적 (세션 내, 새 것 위로, 최대 30) */
+  evs.forEach(e=>{if(!newsSeen.has(e.id)){newsSeen.add(e.id);newsLog.unshift(e);}});
+  if(newsLog.length>NEWS_LOG_MAX)newsLog.length=NEWS_LOG_MAX;
+  /* 진앙 펄스 — 논조색 */
+  newsLayer.clear();pulses.length=0;
+  newsLog.slice(0,12).forEach(e=>{
     const p=toV3(e.la,e.lo,R*1.008);
     const sz=.008+.002*(e.sev||3);
     const ring=new THREE.Mesh(new THREE.RingGeometry(sz,sz*1.35,32),
-      new THREE.MeshBasicMaterial({color:0xFF5D6E,transparent:true,side:THREE.DoubleSide}));
+      new THREE.MeshBasicMaterial({color:new THREE.Color(toneColor(e)),transparent:true,side:THREE.DoubleSide}));
     ring.position.copy(p);ring.lookAt(p.clone().multiplyScalar(2));
     ring.userData={ph:Math.random()*6.28};
     newsLayer.add(ring);pulses.push(ring);});
+  /* NEWS LOG 패널 — 행 탭 = 진앙 회전 · ↗ = 기사 */
   const list=document.getElementById('newslist');
-  list.innerHTML=evs.slice(0,6).map(e=>{
-    const t=(e.ts_pub||'').replace('T',' ').slice(5,16);
-    return `<a class="nv" href="${e.url}" target="_blank" rel="noopener">`+
-      `<span class="sev" style="opacity:${.4+.15*(e.sev||3)}"></span>${e.name}`+
-      `<small>${e.src||''} · ${t} · 심각도 ${e.sev}/5</small></a>`;}).join('')
+  list.innerHTML=newsLog.map((e,i)=>
+    `<div class="nv" data-i="${i}" style="cursor:pointer">`+
+    `<span class="sev" style="background:${toneColor(e)}"></span>${e.name}`+
+    ` <a href="${e.url}" target="_blank" rel="noopener" style="color:#5b6b7a;text-decoration:none">↗</a>`+
+    `<small>${e.src||''} · ${relKo(e.ts_pub||e.ts)} · 심각도 ${e.sev}/5 · 논조 ${e.tone>0?'+':''}${e.tone}</small></div>`).join('')
     ||'뉴스 없음';
+  list.querySelectorAll('.nv').forEach(dv=>dv.addEventListener('click',ev2=>{
+    if(ev2.target.tagName==='A')return;
+    const e=newsLog[+dv.dataset.i];if(e)rotateTo(e.la,e.lo);}));
+  document.getElementById('newsbtn').textContent=`NEWS LOG ${newsLog.length}`;
   if(d&&d.updated_utc){
     const k=new Date(new Date(d.updated_utc).getTime()+9*3600e3);
     document.getElementById('newsupd').textContent=
       ` · 수집 ${String(k.getUTCHours()).padStart(2,'0')}:${String(k.getUTCMinutes()).padStart(2,'0')} KST`;}
-  /* 상시 헤드라인 — 7초마다 순환, 탭하면 목록 열림 */
-  const hl=document.getElementById('headline');
-  const items=evs.slice(0,6);
-  if(headTimer){clearInterval(headTimer);headTimer=null;}
-  if(items.length){
-    hl.style.display='block';
-    let hi=0;
-    const show=()=>{const e=items[hi%items.length];
-      hl.innerHTML=`<span class="sev" style="opacity:${.4+.15*(e.sev||3)}"></span>`+
-        `<small>${e.src||''} · ${(e.ts_pub||'').replace('T',' ').slice(5,16)}</small>${e.name}`;
-      hi++;};
-    show();headTimer=setInterval(show,7000);
-  }else hl.style.display='none';}
+  startToast();}
+/* 토스트: 유리에 떠올랐다 사라진다 — 10초 주기(표시 7.5초, 소멸 1.1초) */
+let toastTimer=null,toastIdx=0;
+function startToast(){
+  if(toastTimer)return;
+  const tEl=document.getElementById('toast');
+  const cycle=()=>{
+    const items=newsLog.slice(0,8);
+    if(!items.length){tEl.classList.remove('show');return;}
+    const e=items[toastIdx%items.length];toastIdx++;
+    tEl.innerHTML=`<span class="tdot" style="background:${toneColor(e)}"></span>`+
+      `<small>${e.src||''} · ${relKo(e.ts_pub||e.ts)}</small>${e.name}`;
+    tEl.dataset.la=e.la;tEl.dataset.lo=e.lo;
+    tEl.classList.add('show');
+    setTimeout(()=>tEl.classList.remove('show'),7500);};
+  cycle();toastTimer=setInterval(cycle,10000);}
+document.getElementById('toast').addEventListener('click',()=>{
+  const t=document.getElementById('toast');
+  rotateTo(+t.dataset.la,+t.dataset.lo);
+  document.getElementById('news').classList.add('on');
+  document.getElementById('cards').classList.remove('on');});
 
 /* ══ 국면 자동 테마 (실측 conv → 무대 조명·글로우) ══ */
 const REGIMES={
@@ -390,13 +429,16 @@ function applyRegime(d){
   rimMat.uniforms.c.value.set(t.atm);
   document.getElementById('rgname').textContent=t.en+' · '+t.name;
   document.getElementById('rgval').textContent=`동조도 ${v.toFixed(3)} (긴장 ${th.tension} · 경보 ${th.alert})`;
-  document.getElementById('rgprov').textContent=(d.conv.provenance||'')+' · 실측';}
+  document.getElementById('rgprov').textContent=d.conv.provenance||'';}
 
 /* ══ 시장 티커 (실측) — 한국 관례: 상승 적색 · 하락 청색 ══ */
 function renderTicker(d){
   const el=document.getElementById('ticker');
   const s=(d&&d.series)||{};
-  el.innerHTML=Object.values(s).map(v=>{
+  /* 경제 위계 순서(T1 대국 → 글로벌 공통 → 지역 렌즈) — 한국이 중심이 아님 */
+  const ORDER=['spx','us2y','us10y','dxy','vix','wti','copper','gold','btc','kospi'];
+  const keys=[...ORDER.filter(k=>s[k]),...Object.keys(s).filter(k=>!ORDER.includes(k))];
+  el.innerHTML=keys.map(k=>s[k]).map(v=>{
     let chg,txt;
     if(v.delta_kind==='pct'){chg=v.prev?(v.value/v.prev-1)*100:0;txt=`${chg>=0?'+':''}${chg.toFixed(2)}%`;}
     else{chg=v.value-(v.prev??v.value);txt=`${chg>=0?'+':''}${chg.toFixed(2)}%p`;}
@@ -450,6 +492,22 @@ function drawFlow(active,idx){
   rippleGroup.add(group);
   flows.push({pulses,nGen:gens.length-1,ph:idx*.37,group});
   active.flow=group;}
+/* 상시 관측 동선 — 원장이 늘 지켜보는 통로(옅게, 지면 가까이). 활성 파급(밝음)과 구분 */
+function surfaceArc(a,b){
+  const A=toV3(a[0],a[1],1),B=toV3(b[0],b[1],1);
+  const ang=A.angleTo(B);
+  const pts=[];
+  for(let i=0;i<=32;i++){
+    const t=i/32;
+    const s=Math.sin((1-t)*ang)/Math.sin(ang),c2=Math.sin(t*ang)/Math.sin(ang);
+    const p=A.clone().multiplyScalar(s).add(B.clone().multiplyScalar(c2)).normalize();
+    p.multiplyScalar(R*(1.0035+.012*Math.sin(Math.PI*t)));
+    pts.push(p);}
+  return new THREE.CatmullRomCurve3(pts);}
+function drawRoutes(led){
+  (led.routes||[]).forEach(rt=>{
+    earth.add(new THREE.Mesh(new THREE.TubeGeometry(surfaceArc(rt.a,rt.b),40,.0016,5,false),
+      new THREE.MeshBasicMaterial({color:new THREE.Color(rt.c),transparent:true,opacity:.16})));});}
 let hlIdx=null;
 function applyHighlight(actives){
   actives.forEach((a,i)=>{
@@ -475,18 +533,29 @@ Promise.all([
   led.cards.forEach(card=>{
     const tr=card.trigger||{};
     if(tr.type==='event_upcoming'&&ev&&ev.event){
+      const pp=ev.prepricing||{};
+      const a2=(pp.assets||{}).us2y;
+      const dd=ev.event.release_date?Math.max(0,Math.ceil((new Date(ev.event.release_date+'T00:00:00Z')-Date.now())/86400e3)):null;
       push({card,anchor:null,
-        reason:`${ev.event.name} · ${ev.event.release_kst} 발표 예정`,label:'실측 일정'});}
+        reason:`${ev.event.name} · ${ev.event.release_kst} 발표${dd!=null?` (D-${dd})`:''}`,
+        label:'일정',
+        calc:[
+          pp.index!=null?`선반영 지수 <b>${pp.index}</b> — ${pp.phrase||''}`:null,
+          a2?`${a2.label} 이동 <b>${a2.cur}${a2.unit}</b> vs 중앙값 ${a2.hist_median}${a2.unit} → 상위 <b>${Math.round(a2.pctl*100)}%ile</b> (n=${a2.n})`:null,
+          ev.prior?`직전 CPI y/y ${ev.prior.yoy}% · m/m ${ev.prior.mom}%`:null
+        ].filter(Boolean)});}
     else if(tr.type==='market_move'){
       const s=mkt.series&&mkt.series[tr.series];
       if(s&&s.prev){const chg=(s.value/s.prev-1)*100;
         if(Math.abs(chg)>=tr.abs_pct_min)
           push({card,anchor:card.anchor||null,
-            reason:`${s.label} ${chg>=0?'+':''}${chg.toFixed(2)}% (실측)`,label:'실측'});}}
+            reason:`${s.label} ${chg>=0?'+':''}${chg.toFixed(2)}%`,label:'시장',
+            calc:[`|Δ${s.label}| <b>${Math.abs(chg).toFixed(2)}%</b> ≥ 기준 ${tr.abs_pct_min}%`]});}}
     else if(tr.type==='regime_conv'&&rg&&rg.conv){
       if(rg.conv.value>=tr.min)
         push({card,anchor:null,
-          reason:`동조도 ${rg.conv.value.toFixed(3)} ≥ ${tr.min} (실측)`,label:'실측'});}
+          reason:`동조도 ${rg.conv.value.toFixed(3)}`,label:'국면',
+          calc:[`동조도 <b>${rg.conv.value.toFixed(3)}</b> ≥ 경보선 ${tr.min}`]});}
     else if(tr.type==='news_cameo'||tr.type==='news_cameo_near'){
       (news.events||[]).forEach(e=>{
         if(seen.has(card.id))return;
@@ -499,11 +568,14 @@ Promise.all([
             if(d<=tr.radius_km&&(!near||d<near.d))near={cp,d};});
           if(!near)return;
           push({card,anchor:[near.cp.la,near.cp.lo],
-            reason:`${near.cp.name} 반경 ${Math.round(near.d)}km · 심각도 ${e.sev}/5 (실측 GDELT)`,label:'실측 뉴스'});
+            reason:`${near.cp.name} 인근 뉴스`,label:'뉴스',
+            calc:[`관문 거리 <b>${Math.round(near.d)}km</b> ≤ ${tr.radius_km}km · 심각도 <b>${e.sev}/5</b> ≥ ${tr.sev_min}`]});
         }else{
           push({card,anchor:[e.la,e.lo],
-            reason:`정치 불확실성 · 심각도 ${e.sev}/5 (실측 GDELT)`,label:'실측 뉴스'});}});}
+            reason:`정치 불확실성 관찰`,label:'뉴스',
+            calc:[`심각도 <b>${e.sev}/5</b> ≥ ${tr.sev_min} · 논조 ${e.tone>0?'+':''}${e.tone}`]});}});}
   });
+  if(!runEngine.routesDrawn){runEngine.routesDrawn=true;drawRoutes(led);}
   actives.forEach((a,i)=>drawFlow(a,i));
   /* 패널 + 상시 활성 카드 칩 */
   document.getElementById('cardsbtn').textContent=`활성 카드 ${actives.length}`;
@@ -520,14 +592,17 @@ Promise.all([
       `<small>발동 근거: ${a.reason}</small>`+
       `<small>${a.card.core} · ${a.card.path_note||''} · ${a.label}</small></div>`).join('');
     bar.innerHTML=actives.map((a,i)=>
-      `<span class="achip glass" data-i="${i}">`+
-      `<span class="dot" style="background:${a.card.color}"></span> ${a.card.id} ${a.card.name}</span>`).join('');
+      `<div class="acard glass" data-i="${i}">`+
+      `<div class="r1"><span class="dot" style="background:${a.card.color}"></span>`+
+      `${a.card.id} ${a.card.name}<span class="gr">${a.card.grade}</span></div>`+
+      `<div class="calc">${(a.calc&&a.calc.length?a.calc:[a.reason]).join('<br>')}</div>`+
+      `<div class="src">${a.reason} · ${a.card.core} · ${a.label}</div></div>`).join('');
     const sync=()=>{
       el.querySelectorAll('.cv').forEach((x,xi)=>x.classList.toggle('on',hlIdx===xi));
-      bar.querySelectorAll('.achip').forEach((x,xi)=>x.classList.toggle('on',hlIdx===xi));};
+      bar.querySelectorAll('.acard').forEach((x,xi)=>x.classList.toggle('on',hlIdx===xi));};
     const toggleHl=i=>{hlIdx=(hlIdx===i)?null:i;sync();applyHighlight(actives);};
     el.querySelectorAll('.cv').forEach(d=>d.addEventListener('click',()=>toggleHl(+d.dataset.i)));
-    bar.querySelectorAll('.achip').forEach(ch=>ch.addEventListener('click',()=>toggleHl(+ch.dataset.i)));}
+    bar.querySelectorAll('.acard').forEach(ch=>ch.addEventListener('click',()=>toggleHl(+ch.dataset.i)));}
   document.getElementById('cardfoot').textContent=led.label||'';
 }).catch(()=>{document.getElementById('cardlist').textContent='원장 로드 실패';});}
 runEngine();
@@ -540,12 +615,17 @@ document.getElementById('newsbtn').addEventListener('click',()=>{
   newsEl.classList.toggle('on');cardsEl.classList.remove('on');});
 document.getElementById('cardsbtn').addEventListener('click',()=>{
   cardsEl.classList.toggle('on');newsEl.classList.remove('on');});
-document.getElementById('headline').addEventListener('click',()=>{
-  newsEl.classList.add('on');cardsEl.classList.remove('on');});
 
 let frames=0,fpsT=performance.now();
 function loop(now){
   controls.update();
+  /* 뉴스 클릭 → 진앙 상공으로 카메라 활공 */
+  if(camAnim){
+    const u=Math.min(1,(now-camAnim.t0)/900);
+    const e2=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
+    camera.position.copy(camAnim.from.clone().lerp(camAnim.to,e2).normalize().multiplyScalar(camAnim.dist));
+    camera.lookAt(0,0,0);
+    if(u>=1)camAnim=null;}
   updateLabels();
   pulses.forEach(rg=>{const s=1+.9*((now/1400+rg.userData.ph)%1);
     rg.scale.set(s,s,s);rg.material.opacity=Math.max(0,1.15-s*.55);});

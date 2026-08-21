@@ -2,6 +2,16 @@
   "version": "v0.1",
   "note": "Machine-readable subset of docs/BATAVIA-LOGIC-LEDGER-v1.md — only cards whose activation can be judged from live feeds today. Trigger rules are v0 heuristics (label: 추정) until graded. 'spread' is a list of generations: every node in generation g radiates to every node in generation g+1 — ripples fan out, no single terminus, no market is the protagonist. Display routes are observations, not instructions.",
   "label": "연결 규칙 v0 · 추정 (실측 채점 전)",
+  "routes": [
+    {"c": "#D9A441", "a": [24.7, 46.7],  "b": [26.6, 56.5],   "note": "해상: 리야드-호르무즈"},
+    {"c": "#D9A441", "a": [26.6, 56.5],  "b": [1.7, 101.0],   "note": "해상: 호르무즈-말라카"},
+    {"c": "#D9A441", "a": [1.7, 101.0],  "b": [31.2, 121.5],  "note": "해상: 말라카-상하이"},
+    {"c": "#FF5D6E", "a": [40.7, -74.0], "b": [51.5, -0.1],   "note": "자본: 뉴욕-런던"},
+    {"c": "#FF5D6E", "a": [40.7, -74.0], "b": [35.7, 139.7],  "note": "자본: 뉴욕-도쿄"},
+    {"c": "#5FD8E8", "a": [37.5, 127.0], "b": [50.1, 8.7],    "note": "항공화물: 서울-프랑크푸르트"},
+    {"c": "#5FD8E8", "a": [22.3, 114.2], "b": [40.7, -74.0],  "note": "항공화물: 홍콩-뉴욕"},
+    {"c": "#A79BFF", "a": [51.5, -0.1],  "b": [22.3, 114.2],  "note": "정보: 런던-홍콩"}
+  ],
   "chokepoints": {
     "hormuz":   {"name": "호르무즈", "la": 26.6,  "lo": 56.5},
     "malacca":  {"name": "말라카",   "la": 1.7,   "lo": 101.0},
