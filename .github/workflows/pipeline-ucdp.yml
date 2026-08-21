@@ -1,0 +1,39 @@
+name: Weekly UCDP conflict pipeline
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'   # Mondays 03:00 UTC — conflicts change slowly
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch UCDP conflict data
+        run: python pipeline/ucdp_conflicts.py
+        env:
+          UCDP_TOKEN: ${{ secrets.UCDP_TOKEN }}
+      - name: Commit updated data
+        id: commit
+        run: |
+          git config user.name "batavia-pipeline"
+          git config user.email "actions@users.noreply.github.com"
+          git add site/data/conflicts-ucdp.json || true
+          if git diff --cached --quiet; then echo "no change"; echo "pushed=false" >> "$GITHUB_OUTPUT"; exit 0; fi
+          git commit -m "data: conflicts-ucdp.json 갱신 (weekly UCDP)"
+          git pull --rebase
+          git push
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+      - name: Deploy site (robot pushes do not trigger pages.yml)
+        if: steps.commit.outputs.pushed == 'true'
+        run: gh workflow run pages.yml
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -342,7 +342,7 @@ const shipMats=[],routeMats=[];
 
 /* ══ 데이터 캐시 (뷰 재조립의 재료) ══ */
 let topoCache=null,fillTex=null,ledCache=null,shipsCache=[],activesCache=[];
-let CTX=null,CONDS=null,CONFL=null,CONFLAUTO=null;
+let CTX=null,CONDS=null,CONFL=null,CONFLAUTO=null,CONFLUCDP=null;
 const logicPulses=[];
 const newsLog=[],newsSeen=new Set();
 const NEWS_LOG_MAX=30;
@@ -675,6 +675,16 @@ function renderConflicts(){
     conflictLayer.add(ring);confPulses.push(ring);
     addConfLabel('\uD83D\uDCE1 \ubcf4\ub3c4 \ubc00\uc9d1: '+sp.country+' ('+sp.n+'\uac74/14\uc77c)',
       toV3(sp.hot[0]-1.8,sp.hot[1],R*1.014),'#E09A70',1.8);});
+  /* UCDP: 학계 표준 사망자 기반 강도 (토큰 연결 시 주 1회 자동) */
+  (((CONFLUCDP||{}).spots)||[]).forEach(sp=>{
+    const p=toV3(sp.hot[0],sp.hot[1],R*1.0065);
+    const ring=new THREE.Mesh(new THREE.RingGeometry(.011,.0135,26),
+      new THREE.MeshBasicMaterial({color:0x9E2B25,transparent:true,side:THREE.DoubleSide,opacity:.75}));
+    ring.position.copy(p);orient(ring,p);
+    ring.userData={ph:Math.random()*6.28,per:4600-650*sp.intensity};
+    conflictLayer.add(ring);confPulses.push(ring);
+    addConfLabel('UCDP · '+sp.country+' (\uc0ac\ub9dd '+sp.deaths+')',
+      toV3(sp.hot[0]-2.4,sp.hot[1],R*1.014),'#C96A5E',2.1);});
   conflictLayer.visible=L.conflicts;}
 function renderShips(){
   if(!shipsGroup)return;
@@ -1356,10 +1366,12 @@ Promise.all([
   fetch(COUNTRIES).then(r=>r.json()).catch(()=>null),
   fetch('data/ships.json').then(r=>r.json()).catch(()=>null),
   fetch('logic/conflicts.json').then(r=>r.json()).catch(()=>null),
-  fetch('data/conflicts-auto.json').then(r=>r.json()).catch(()=>null)
-]).then(([topo,sh,cf,ca])=>{
+  fetch('data/conflicts-auto.json').then(r=>r.json()).catch(()=>null),
+  fetch('data/conflicts-ucdp.json').then(r=>r.json()).catch(()=>null)
+]).then(([topo,sh,cf,ca,cu])=>{
   if(cf)CONFL=cf;
   if(ca)CONFLAUTO=ca;
+  if(cu)CONFLUCDP=cu;
   if(topo){topoCache=topo;fillTex=fillCanvasTexture();}
   if(sh&&sh.fleet)shipsCache=sh.fleet;
   buildStage();
