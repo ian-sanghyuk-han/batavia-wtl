@@ -247,7 +247,7 @@
   <div class="lrow" data-l="clabels"><span class="sw"><span class="dot" style="background:#c4d8e8"></span></span>국가 라벨<span class="st">ON</span></div>
   <div class="lrow" data-l="citylabels"><span class="sw"><span class="dot" style="background:#8fa6b8"></span></span>도시 라벨<span class="st">ON</span></div>
   <div class="lrow" data-l="water"><span class="sw"><span class="dot" style="background:#78a2c4"></span></span>바다·해협 라벨<span class="st">ON</span></div>
-  <div class="foot">뉴스 색 = 관찰 3상태(긍정·중립·부정)<br>─ 동선(상시) · ━ 파급(활성) · $ 경제 분쟁<br><a href="policy.html" style="color:var(--acc);text-decoration:none">데이터 출처와 원칙 →</a></div>
+  <div class="foot">뉴스 색 = 관찰 3상태(긍정·중립·부정)<br>─ 동선(상시) · ━ 파급(활성)<br><a href="policy.html" style="color:var(--acc);text-decoration:none">데이터 출처와 원칙 →</a></div>
 </div>
 <div id="lens" class="glass"><span id="lensclose">✕</span>
   <h3 id="lenscity"></h3><div id="lensval"></div>
@@ -727,22 +727,7 @@ function renderConflicts(){
     conflictLayer.add(ring);confPulses.push(ring);
     addConfLabel('UCDP · '+sp.country+' (\uc0ac\ub9dd '+sp.deaths+')',
       toV3(sp.hot[0]-2.4,sp.hot[1],R*1.014),'#C96A5E',2.1);});}
-  /* ⑤ 경제 분쟁: 관세·제재 — 청색 점선 호 (무기 없는 전쟁도 지도에) */
-  (((CONFL||{}).econwars)||[]).forEach(ew=>{
-    const pts=arcCurve(ew.a,ew.b).getPoints(60);
-    const g2=new THREE.BufferGeometry().setFromPoints(pts);
-    const dm=new THREE.LineDashedMaterial({color:0x5B8DEF,transparent:true,opacity:.55,
-      dashSize:.05,gapSize:.035});
-    dm.userData.co=.55;confMats.push(dm);
-    const ln=new THREE.Line(g2,dm);
-    ln.computeLineDistances();
-    conflictLayer.add(ln);
-    const mp=arcCurve(ew.a,ew.b).getPoint(.5).clone().multiplyScalar(1.02);
-    const lb=confLabelSprite('$ '+ew.name,'#8FB4F0');
-    lb.position.copy(mp);
-    confLabels.push({s:lb,normal:mp.clone().normalize(),gate:3.2});
-    conflictLayer.add(lb);});
-  conflictLayer.visible=L.conflicts;refreshClones();}
+    conflictLayer.visible=L.conflicts;refreshClones();}
 function renderShips(){
   if(!shipsGroup)return;
   shipsGroup.clear();shipMats.length=0;
