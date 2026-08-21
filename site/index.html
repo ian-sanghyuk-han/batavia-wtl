@@ -26,11 +26,21 @@
     padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top))}
   #brand{font:600 13px/1.2 Consolas,monospace;letter-spacing:3px;color:var(--ink);white-space:nowrap}
   #brand small{display:block;font-weight:400;font-size:9px;letter-spacing:5px;color:var(--acc);margin-top:2px}
-  #regimechip{margin-left:14px;padding:7px 12px 7px 10px;font:11px Consolas,monospace;color:var(--dim);
-    flex:none;border-left:4px solid var(--acc);display:flex;align-items:center;gap:10px}
-  #rgspark{display:block}
-  #regimechip b{color:var(--acc);letter-spacing:2px;white-space:nowrap}
-  #regimechip #rgval{white-space:nowrap}
+  /* 국면 카드 — 카드 열 최상단 고정, 살아있는 계산 */
+  #regimecard{width:min(316px,calc(100vw - 24px));padding:10px 13px 9px;margin-bottom:8px;
+    border-left:4px solid var(--acc)}
+  #regimecard .rrow1{font:600 10px Consolas,monospace;letter-spacing:2px;color:var(--dim)}
+  #regimecard .rrow1 b{color:var(--acc);margin-left:6px;letter-spacing:3px}
+  #regimecard #rgtick{float:right;color:#3FE0A0;font-weight:400}
+  #regimecard .rrow2{margin-top:2px}
+  #regimecard #rgval{font:600 24px Consolas,monospace;color:#F4FBFF;letter-spacing:1px}
+  #regimecard #rgdelta{margin-left:8px;font:600 12px Consolas,monospace}
+  #regimecard .rformula{margin-top:3px;font:9.5px Consolas,monospace;color:#7f95a8;
+    background:rgba(159,199,224,.06);border-radius:6px;padding:3px 7px;display:inline-block}
+  @keyframes rlive{0%,100%{opacity:.25}50%{opacity:1}}
+  #regimecard .rlive{color:#3FE0A0;animation:rlive 1.8s infinite}
+  #rgspark{display:block;margin-top:6px}
+  #regimecard .rth{margin-top:2px;font:8.5px Consolas,monospace;display:flex;gap:12px}
   /* 뉴스 토스트 — 최상단(브랜드 옆) 상시 영역, 맑은 유리, 왼쪽 논조 띠 */
   #toast{flex:1 1 auto;min-width:0;margin:0 14px;padding:8px 14px 8px 12px;cursor:pointer;
     background:rgba(7,11,17,.42);border-left-width:3px;border-left-style:solid;
@@ -39,7 +49,7 @@
   #toast.show{opacity:1;pointer-events:auto}
   #toast small{color:#5b6b7a;font-family:Consolas,monospace;font-size:9px;margin-right:7px}
   /* 활성 카드 — 상시, 왼쪽 계열색 띠 + 수치 강조 */
-  #activebar{position:fixed;left:12px;top:142px;z-index:9;display:flex;flex-direction:column;gap:8px}
+  #activebar{position:fixed;left:12px;top:70px;z-index:9;display:flex;flex-direction:column;gap:8px}
   .acard{width:min(316px,calc(100vw - 24px));padding:9px 12px 9px 11px;cursor:pointer;
     background:var(--glass2);border-left-width:4px;border-left-style:solid}
   .acard .r1{font:600 12px Consolas,monospace;color:#F4FBFF;letter-spacing:1px}
@@ -121,7 +131,7 @@
   .tk{color:var(--dim);margin-right:26px} .tk b{color:var(--ink);font-weight:600}
   .up{color:#FF6A6E} .dn{color:#5FA8FF} .fl{color:#93a7b8}
   /* ── 로직 뷰: 살아있는 계산의 무대 (유령 지구본 위 오버레이) ── */
-  #logicview{position:fixed;top:86px;bottom:42px;left:0;right:0;z-index:8;
+  #logicview{position:fixed;top:70px;bottom:42px;left:0;right:0;z-index:8;
     overflow:auto;padding:8px 14px;visibility:hidden;opacity:0;transform:translateY(16px);
     transition:opacity .5s ease,transform .5s ease,visibility 0s .5s;pointer-events:none}
   #logicview.on{visibility:visible;opacity:1;transform:none;pointer-events:auto;
@@ -206,18 +216,18 @@
   .easy{margin-top:5px;font-size:11px;line-height:1.6;color:#c6d9e6}
   .more{margin-top:5px;font:9.5px Consolas,monospace;color:var(--acc);cursor:pointer}
   @media(max-width:880px){
-    #logicview{top:150px}
+    #logicview{top:118px}
     #lstage{grid-template-columns:1fr;min-width:0}
     #lwires{display:none}
     #logicview{padding:8px 10px}
   }
   @media(max-width:520px){
     #brand{font-size:11px;letter-spacing:2px}
-    #regimechip{font-size:9px;padding:5px 8px;gap:6px}
-    #rgspark{width:70px}
+    #regimecard{width:min(262px,calc(100vw - 24px))}
+    #rgspark{width:220px}
     #topbar{flex-wrap:wrap}
     #toast{order:3;flex-basis:100%;margin:6px 0 0;font-size:11px}
-    #activebar{top:136px}
+    #activebar{top:104px}
     .acard{width:min(262px,calc(100vw - 24px))}
     #modebar{bottom:94px}
   }
@@ -227,11 +237,18 @@
 <div id="topbar">
   <div id="brand">BATAVIA PROJECT<small>OBSERVATORY</small></div>
   <div id="toast" class="glass"></div>
-  <div id="regimechip" class="glass" id2="slim">
-    <b id="rgname">—</b><span id="rgval">—</span>
-    <canvas id="rgspark" width="112" height="26"></canvas></div>
+
 </div>
-<div id="activebar"></div>
+<div id="activebar">
+  <div id="regimecard" class="glass">
+    <div class="rrow1">REGIME <b id="rgname">—</b><span id="rgtick"></span></div>
+    <div class="rrow2"><span id="rgval">—</span><span id="rgdelta"></span></div>
+    <div class="rformula">w = 평균 |ρ| · 60일 · 7자산 바스켓 <span class="rlive">●</span></div>
+    <canvas id="rgspark" width="288" height="46"></canvas>
+    <div class="rth"><span style="color:#E8A33D">–– 긴장 0.38</span><span style="color:#FF6A6E">–– 경보 0.55</span></div>
+  </div>
+  <div id="accards"></div>
+</div>
 <div id="modebar" class="glass">
   <span class="mbtn on" data-v="3d">3D</span>
   <span class="mbtn" data-v="2d">MAP</span>
@@ -1194,14 +1211,24 @@ function applyRegime(d){
   document.documentElement.style.setProperty('--acc',t.acc);
   atmMat.uniforms.c.value.set(t.atm);
   rimMat.uniforms.c.value.set(t.atm);
-  document.getElementById('rgname').textContent=t.en;
-  document.getElementById('regimechip').title=
-    `국면 ${t.name} · 기준: 긴장 ${th.tension} · 경보 ${th.alert} · ${d.conv.provenance||''}`;
-  let dtxt='';
-  if(CONVH.length>1){
-    const dv=v-CONVH[CONVH.length-2].v;
-    dtxt=dv>0.0005?` ▲${dv.toFixed(3)}`:dv<-0.0005?` ▼${Math.abs(dv).toFixed(3)}`:' —';}
-  document.getElementById('rgval').textContent=`${v.toFixed(3)}${dtxt}`;
+  document.getElementById('rgname').textContent=t.en+' · '+t.name;
+  document.getElementById('regimecard').title=d.conv.provenance||'';
+  document.getElementById('regimecard').style.borderLeftColor=t.acc;
+  {const de=document.getElementById('rgdelta');
+   if(CONVH.length>1){
+     const dv=v-CONVH[CONVH.length-2].v;
+     de.textContent=dv>0.0005?`▲${dv.toFixed(3)}`:dv<-0.0005?`▼${Math.abs(dv).toFixed(3)}`:'—';
+     de.style.color=dv>0.0005?'#FF6A6E':dv<-0.0005?'#5FA8FF':'#93a7b8';}
+   else de.textContent='';}
+  /* 값 카운트업 — 계산이 돌아가는 느낌 */
+  {const el=document.getElementById('rgval');
+   const from=parseFloat(el.dataset.v||'0')||0,to=v,t0=performance.now();
+   el.dataset.v=to;
+   const stepFn=now=>{
+     const u=Math.min(1,(now-t0)/700);
+     el.textContent=(from+(to-from)*u).toFixed(3);
+     if(u<1)requestAnimationFrame(stepFn);};
+   requestAnimationFrame(stepFn);}
   drawRegimeSpark(t.acc,th);}
 let CONVH=[],DAYSH=[];
 function drawMini(cv,vals,color,th){
@@ -1429,7 +1456,7 @@ Promise.all([
      const h=decodeURIComponent(location.hash.slice(1));
      if(/^L-[A-Z]{3}-\d{3}$/.test(h))openPop(h);}}
   /* 상시 카드 (좌측 미니 인포그래픽이 유일한 활성 카드 표면) */
-  const bar=document.getElementById('activebar');
+  const bar=document.getElementById('accards');
   if(!actives.length){
     bar.innerHTML='<div class="acard" style="border-left-color:#3a4a58;cursor:default">'+
       '<div class="r1">활성 카드 없음</div>'+
@@ -1583,9 +1610,10 @@ window.__dbg={get labelObjs(){return labelObjs;},camera,setView,get L(){return L
 /* ENGINE 생동감: 재판독 카운트다운(실제 5분 주기) + 생각하는 노드 */
 let engineLastRun=Date.now();
 setInterval(()=>{
-  const el=document.getElementById('ltickv');if(!el)return;
   const left=Math.max(0,300-Math.floor((Date.now()-engineLastRun)/1000));
-  el.textContent=`재판독 T-${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`;},1000);
+  const txt=`T-${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`;
+  const el=document.getElementById('ltickv');if(el)el.textContent='재판독 '+txt;
+  const rg2=document.getElementById('rgtick');if(rg2)rg2.textContent=txt;},1000);
 setInterval(()=>{
   if(!document.getElementById('logicview').classList.contains('on'))return;
   const nodes=document.querySelectorAll('#lcbox .lnode');
