@@ -12,6 +12,7 @@
 <title>BATAVIA PROJECT — Observatory</title>
 <style>
   :root{--acc:#7FD8FF;--ink:#EAF9FF;--dim:#93a7b8;
+    --upc:#FF6A6E;--dnc:#5FA8FF;--flc:#93a7b8;
     --glass:rgba(7,11,17,.60);--glass2:rgba(7,11,17,.74);--edge:rgba(159,199,224,.20)}
   html[data-theme="light"]{--ink:#16232f;--dim:#4a6076;
     --glass:rgba(248,250,252,.72);--glass2:rgba(244,248,251,.86);--edge:rgba(30,60,90,.16)}
@@ -70,7 +71,6 @@
   html[data-theme="gundam"] .acard .gr{color:#c99700}
   html[data-theme="gundam"] .more{color:#2c52b3}
   html[data-theme="gundam"] #ticker{border-top:2px solid #2c52b3}
-  html[data-theme="gundam"] .up{color:#fb2f38}
   html[data-theme="gundam"] #brand{color:#14283c}
   *{box-sizing:border-box}
   body{margin:0;background:#05070c;color:var(--ink);font-family:'Segoe UI',system-ui,sans-serif;
@@ -136,7 +136,8 @@
   /* 활성 카드 — 상시, 왼쪽 계열색 띠 + 수치 강조 */
   #activebar{position:fixed;left:12px;top:70px;z-index:9;display:flex;flex-direction:column;gap:8px}
   .acard{width:min(316px,calc(100vw - 24px));padding:9px 12px 9px 11px;cursor:pointer;
-    background:var(--glass2);border-left-width:4px;border-left-style:solid;border-radius:11px}
+    background:var(--glass2);border-left-width:4px;border-left-style:solid;border-radius:11px;
+    margin-bottom:9px}
   .acard .r1{font:600 12px Consolas,monospace;color:#F4FBFF;letter-spacing:1px}
   .acard .r1 .gr{color:var(--acc);float:right}
   .acard .calc{margin-top:5px;font:10.5px/1.75 Consolas,monospace;color:#9fb8cc}
@@ -214,7 +215,7 @@
   #ticker:hover .rail{animation-play-state:paused}
   @keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
   .tk{color:var(--dim);margin-right:26px} .tk b{color:var(--ink);font-weight:600}
-  .up{color:#FF6A6E} .dn{color:#5FA8FF} .fl{color:#93a7b8}
+  .up{color:var(--upc)} .dn{color:var(--dnc)} .fl{color:var(--flc)}
   /* ── 로직 뷰: 살아있는 계산의 무대 (유령 지구본 위 오버레이) ── */
   #logicview{position:fixed;top:70px;bottom:42px;left:0;right:0;z-index:8;
     overflow:auto;padding:8px 14px;visibility:hidden;opacity:0;transform:translateY(16px);
@@ -334,8 +335,14 @@
   <div class="sm-h" style="margin-top:8px">지역</div>
   <div class="sm-r" style="cursor:default">🌐 Global <span class="on-mark">✓</span></div>
   <div class="sm-h" style="margin-top:8px">언어</div>
-  <div class="sm-r" style="cursor:default">한국어 <span class="on-mark">✓</span></div>
-  <div class="sm-r" style="cursor:default;opacity:.5">English <span class="beta">준비 중</span></div>
+  <div class="sm-r" data-lg="ko">한국어 <span class="on-mark"></span></div>
+  <div class="sm-r" data-lg="en">English <span class="beta">β</span><span class="on-mark"></span></div>
+  <div class="sm-h" style="margin-top:8px">시세 색상</div>
+  <div class="sm-r" data-ud="auto">자동 — 언어 관례 따름 <span class="on-mark"></span></div>
+  <div class="sm-r" data-ud="red">빨강 = 상승 <span class="on-mark"></span></div>
+  <div class="sm-r" data-ud="green">초록 = 상승 <span class="on-mark"></span></div>
+  <div class="sm-h" style="margin-top:8px">효과</div>
+  <div class="sm-r" data-fx="alert">경보 번쩍임 <span class="on-mark"></span></div>
   <div class="sm-h" style="margin-top:8px">바로가기</div>
   <a class="sm-r" href="ledger.html">원장 열람</a>
   <a class="sm-r" href="replay.html">REPLAY</a>
@@ -427,7 +434,7 @@ import * as topojson from 'topojson-client';
 /* 테마: 장면 색 팔레트 — 구조상 N개 확장 가능 */
 const THEMES={
   dark:{bg:0x05070c,ocean:'#0b131c',land:[24,34,44],war:[44,26,30],
-    inner:0xBFD9EA,coast:0x9FC0D6,stars:true,obsC:0xEAF9FF,cityC:0x8fa6b8,
+    inner:0xBFD9EA,coast:0x9FC0D6,stars:true,glowBoost:.35,obsC:0xEAF9FF,cityC:0x8fa6b8,
     lb:{t1:'rgba(224,238,248,.95)',t2:'rgba(196,216,232,.88)',t4:'rgba(159,199,224,.95)',
         t5:'rgba(143,178,204,.85)',t3:'rgba(158,180,198,.8)',w6:'rgba(120,162,196,.52)',
         w7:'rgba(127,168,200,.55)',w8:'rgba(151,196,224,.75)',halo:'rgba(4,8,13,.85)'}},
@@ -441,6 +448,12 @@ const THEMES={
     lb:{t1:'rgba(20,40,60,.95)',t2:'rgba(35,55,80,.88)',t4:'rgba(44,82,179,.95)',
         t5:'rgba(60,90,130,.85)',t3:'rgba(64,86,110,.8)',w6:'rgba(70,110,160,.45)',
         w7:'rgba(70,110,160,.5)',w8:'rgba(44,82,179,.7)',halo:'rgba(255,255,255,.88)'}}};
+/* 언어·효과 전역 (테마 다음, 무엇보다 먼저) */
+const LANG=localStorage.getItem('bp-lang')||'ko';
+document.documentElement.lang=LANG;
+let ALERTFX=localStorage.getItem('bp-alertfx')!=='0';
+let REGIX=1,LASTRG=null;
+let UPC='#FF6A6E',DNC='#5FA8FF';
 let THN=localStorage.getItem('bp-theme')||'dark';
 if(!THEMES[THN])THN='dark';
 let TH=THEMES[THN];
@@ -495,16 +508,18 @@ function fitCamera(){
 
 /* 대기 글로우 (3D 전용) */
 const atmMat=new THREE.ShaderMaterial({
-  transparent:true,side:THREE.BackSide,depthWrite:false,blending:THREE.AdditiveBlending,
+  transparent:true,side:THREE.BackSide,depthWrite:false,
+  blending:TH.soft?THREE.NormalBlending:THREE.AdditiveBlending,
   uniforms:{c:{value:new THREE.Color(0x9fc7e0)},a:{value:1}},
   vertexShader:'varying vec3 vN;void main(){vN=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-  fragmentShader:'uniform vec3 c;uniform float a;varying vec3 vN;void main(){float i=pow(.58-dot(vN,vec3(0.,0.,1.)),2.2);gl_FragColor=vec4(c,1.)*i*1.15*a;}'});
+  fragmentShader:'uniform vec3 c;uniform float a;varying vec3 vN;void main(){float i=pow(.58-dot(vN,vec3(0.,0.,1.)),2.2);gl_FragColor=vec4(c,clamp(i*1.15*a,0.,1.));}'});
 const atmMesh=new THREE.Mesh(new THREE.SphereGeometry(R*1.09,64,64),atmMat);scene.add(atmMesh);
 const rimMat=new THREE.ShaderMaterial({
-  transparent:true,side:THREE.FrontSide,depthWrite:false,blending:THREE.AdditiveBlending,
+  transparent:true,side:THREE.FrontSide,depthWrite:false,
+  blending:TH.soft?THREE.NormalBlending:THREE.AdditiveBlending,
   uniforms:{c:{value:new THREE.Color(0x9fc7e0)},a:{value:1}},
   vertexShader:'varying vec3 vN;void main(){vN=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-  fragmentShader:'uniform vec3 c;uniform float a;varying vec3 vN;void main(){float i=pow(1.-abs(dot(vN,vec3(0.,0.,1.))),3.5);gl_FragColor=vec4(c,1.)*i*.32*a;}'});
+  fragmentShader:'uniform vec3 c;uniform float a;varying vec3 vN;void main(){float i=pow(1.-abs(dot(vN,vec3(0.,0.,1.))),3.5);gl_FragColor=vec4(c,clamp(i*.32*a,0.,1.));}'});
 const rimMesh=new THREE.Mesh(new THREE.SphereGeometry(R*1.002,96,96),rimMat);scene.add(rimMesh);
 /* 전환의 결: 데이터 레이어 알파(모핑 앞뒤 페이드) · 로직 물들기(dimK) */
 let layerAlpha=1,layerTween=null,dimK=0,dimTween=null;
@@ -1038,7 +1053,8 @@ function applyVisual(){
   routeMats.forEach(m=>m.opacity=(.16-(.16-.06)*dimK)*layerAlpha);
   shipMats.forEach(m=>m.opacity=dataA);
   if(cityIM)cityIM.material.opacity=.8*dataA;
-  const aa=(VIEW==='3d'?1:0)*(1-dimK)*layerAlpha*(TH.glowBoost||1);
+  let aa=(VIEW==='3d'?1:0)*(1-dimK)*layerAlpha*(TH.glowBoost||1);
+  if(ALERTFX&&REGIX>=3)aa*=1+(REGIX===4?.5:.22)*Math.sin(performance.now()/(REGIX===4?170:340));
   atmMat.uniforms.a.value=aa;rimMat.uniforms.a.value=aa;
   atmMesh.visible=aa>.01;rimMesh.visible=aa>.01;
   if(rippleGroup)rippleGroup.traverse(o=>{
@@ -1333,27 +1349,33 @@ document.querySelectorAll('.lrow').forEach(rw=>rw.addEventListener('click',()=>{
 /* ── 국면 자동 테마 ── */
 const REGIMES5=[
   {max:.25,en:'CALM',ko:'안정',acc:'#3FE0A0',atm:0x77d9b0,
-   easy:'자산들이 제각각 — 분산이 살아있는 시장'},
+   easy:'자산들이 제각각 — 분산이 살아있는 시장',
+   easyEn:'Assets moving apart — diversification alive'},
   {max:.38,en:'STEADY',ko:'평온',acc:'#7FD8FF',atm:0x9fc7e0,
-   easy:'낮은 동조 — 평소의 호흡'},
+   easy:'낮은 동조 — 평소의 호흡',
+   easyEn:'Low convergence — the usual rhythm'},
   {max:.47,en:'WATCH',ko:'주의',acc:'#E8D44D',atm:0xd9c95a,
-   easy:'연결이 늘어나는 중 — 동조 상승'},
+   easy:'연결이 늘어나는 중 — 동조 상승',
+   easyEn:'Connections growing — convergence rising'},
   {max:.55,en:'TENSION',ko:'긴장',acc:'#E8A33D',atm:0xE8A33D,
-   easy:'같이 움직이기 시작 — 분산이 얇아짐'},
+   easy:'같이 움직이기 시작 — 분산이 얇아짐',
+   easyEn:'Moving together — diversification thinning'},
   {max:9,en:'ALERT',ko:'경보',acc:'#FF6A6E',atm:0xFF6A6E,
-   easy:'한 몸처럼 움직임 — 분산 소멸'}];
+   easy:'한 몸처럼 움직임 — 분산 소멸',
+   easyEn:'Moving as one — diversification gone'}];
 function applyRegime(d){
   if(!d||!d.conv)return;
   const v=d.conv.value, th=d.conv.thresholds||{tension:.38,alert:.55};
   const t=REGIMES5.find(r=>v<r.max)||REGIMES5[REGIMES5.length-1];
+  REGIX=REGIMES5.indexOf(t);LASTRG=d;
   document.documentElement.style.setProperty('--acc',t.acc);
   {const ac=new THREE.Color(t.atm);
-   if(TH.soft)ac.lerp(new THREE.Color(0xffffff),.92); /* 밝은 테마: 하얀 테두리 */
+   if(TH.soft)ac.lerp(new THREE.Color(0xffffff),.55); /* soft themes: pale tinted glow */
    atmMat.uniforms.c.value.copy(ac);
    rimMat.uniforms.c.value.copy(ac);}
   document.getElementById('rgname').textContent=t.en;
-  document.getElementById('rgko').textContent=t.ko;
-  document.getElementById('rgeasy').textContent=t.easy;
+  document.getElementById('rgko').textContent=LANG==='en'?'':t.ko;
+  document.getElementById('rgeasy').textContent=LANG==='en'?t.easyEn:t.easy;
   document.getElementById('regimecard').title=d.conv.provenance||'';
   document.getElementById('regimecard').style.borderLeftColor=t.acc;
   {const de=document.getElementById('rgdelta');
@@ -1423,7 +1445,7 @@ function drawRegimeSpark(acc,th){
     g.fillStyle='#EAF9FF';g.font='600 9px Consolas';
     g.textAlign='right';g.fillText(last.v.toFixed(3),W-pad-2,Y(last.v)-5);}
   g.fillStyle='rgba(147,167,184,.55)';g.font='8px Consolas';g.textAlign='left';
-  g.fillText('동조도 '+CONVH.length+'일',pad+1,9);}
+  g.fillText(LANG==='en'?('conv '+CONVH.length+'d'):('동조도 '+CONVH.length+'일'),pad+1,9);}
 
 /* ── 전광판 티커 ── */
 function renderTicker(d){
@@ -1664,7 +1686,7 @@ function openLens(i){
   const g=cv.getContext('2d');g.clearRect(0,0,cv.width,cv.height);
   if(nd){
     const up=nd.chg_pct>0.001,dn=nd.chg_pct<-0.001;
-    const cls=up?'#FF6A6E':dn?'#5FA8FF':'#93a7b8';
+    const cls=up?UPC:dn?DNC:'#93a7b8';
     document.getElementById('lensval').innerHTML=
       `${nd.label} <b>${nd.value}</b> <span style="color:${cls}">${up?'▲':dn?'▼':'—'} ${nd.chg_pct>0?'+':''}${nd.chg_pct}%</span>`;
     const sp=nd.spark||[];
@@ -1744,6 +1766,10 @@ controls.addEventListener('end',()=>{drift2dPause=performance.now()+12000;});
 function setTheme(n){
   if(!THEMES[n]||n===THN)return;
   THN=n;TH=THEMES[n];
+  {const bl=TH.soft?THREE.NormalBlending:THREE.AdditiveBlending;
+   if(atmMat.blending!==bl){atmMat.blending=bl;rimMat.blending=bl;
+     atmMat.needsUpdate=true;rimMat.needsUpdate=true;}
+   if(LASTRG)applyRegime(LASTRG);}
   localStorage.setItem('bp-theme',n);
   document.documentElement.dataset.theme=n;
   renderer.setClearColor(TH.bg);
@@ -1754,6 +1780,137 @@ function setTheme(n){
     const m=r.querySelector('.on-mark');if(m)m.textContent=r.dataset.th===n?'✓':'';});}
 document.getElementById('setbtn').addEventListener('click',()=>{
   document.getElementById('setmenu').classList.toggle('on');});
+/* ── 언어 전환 ── */
+document.querySelectorAll('#setmenu .sm-r[data-lg]').forEach(r=>{
+  r.querySelector('.on-mark').textContent=r.dataset.lg===LANG?'✓':'';
+  r.addEventListener('click',()=>{if(r.dataset.lg===LANG)return;
+    localStorage.setItem('bp-lang',r.dataset.lg);location.reload();});});
+/* ── 시세 색상 규칙: auto = 언어 관례(ko 빨강↑ · en 초록↑) ── */
+let UPDN=localStorage.getItem('bp-updn')||'auto';
+function applyUpdn(){
+  const eff=UPDN==='auto'?(LANG==='en'?'green':'red'):UPDN;
+  UPC=eff==='green'?'#31C48D':'#FF6A6E';
+  DNC=eff==='green'?'#FF6A6E':'#5FA8FF';
+  const rs=document.documentElement.style;
+  rs.setProperty('--upc',UPC);rs.setProperty('--dnc',DNC);
+  document.querySelectorAll('#setmenu .sm-r[data-ud]').forEach(r=>
+    r.querySelector('.on-mark').textContent=r.dataset.ud===UPDN?'✓':'');}
+document.querySelectorAll('#setmenu .sm-r[data-ud]').forEach(r=>
+  r.addEventListener('click',()=>{UPDN=r.dataset.ud;
+    localStorage.setItem('bp-updn',UPDN);applyUpdn();}));
+applyUpdn();
+/* ── 효과 토글 ── */
+document.querySelectorAll('#setmenu .sm-r[data-fx]').forEach(r=>{
+  r.querySelector('.on-mark').textContent=ALERTFX?'✓':'';
+  r.addEventListener('click',()=>{ALERTFX=!ALERTFX;
+    localStorage.setItem('bp-alertfx',ALERTFX?'1':'0');
+    r.querySelector('.on-mark').textContent=ALERTFX?'✓':'';});});
+/* ══ i18n: EN 모드 — 정적 문서 + 동적 렌더 전부 치환 ══ */
+if(LANG==='en'){
+const D={'로그인':'Sign in','시작하기':'Get started','테마':'Theme','● 다크':'● Dark',
+ '○ 라이트':'○ Light','◈ 건담':'◈ Gundam','지역':'Region','언어':'Language',
+ '바로가기':'Shortcuts','원장 열람':'Open the ledger','구독 안내':'Pricing',
+ '데이터와 원칙':'Data & principles','시세 색상':'Price colors',
+ '자동 — 언어 관례 따름':'Auto — follows language custom','빨강 = 상승':'Red = up',
+ '초록 = 상승':'Green = up','효과':'Effects','경보 번쩍임':'Alert pulse',
+ 'REGIME · 시장 국면':'REGIME · market state',
+ 'w = 평균 |ρ| · 60일 · 7자산 바스켓':'w = avg |ρ| · 60d · 7-asset basket',
+ '안정':'Calm','평온':'Steady','주의':'Watch','긴장':'Tension','경보':'Alert',
+ '레이어 ▤':'Layers ▤','선박 · AIS':'Ships · AIS','뉴스 진앙':'News epicenters',
+ '관측 동선':'Observation routes','활성 파급':'Active spread','분쟁 지역':'Conflicts',
+ '(수동 v0)':'(manual v0)','국가 라벨':'Country labels','도시 라벨':'City labels',
+ '바다·해협 라벨':'Sea & strait labels',
+ '뉴스 색 = 관찰 3상태(긍정·중립·부정)':'News color = 3-state observation (positive · neutral · negative)',
+ '─ 동선(상시) · ━ 파급(활성)':'─ routes (always) · ━ spread (active)',
+ '데이터 출처와 원칙 →':'Data sources & principles →','로드 중…':'Loading…',
+ '뉴스 없음':'No news yet',
+ 'ENGINE — 기관실 · 원장의 수식이 실시간으로 판정됩니다':'ENGINE — the machine room · ledger formulas judged live',
+ '전체':'All','활성만':'Active only','① 데이터 (지금 값)':'① Data (live values)',
+ '일정 · 이벤트':'Calendar · events','시장 · 시세':'Market · prices',
+ '국면 · 동조도':'Regime · convergence','뉴스 · 관찰':'News · observation',
+ '② 판정 — 수식에 지금 값을 대입':'② Judgment — live values into each formula',
+ '③ 카드':'③ Cards','④ 파급 (발동 시)':'④ Spread (on fire)','✕ 닫기':'✕ Close',
+ '발동':'FIRED','대기':'STANDBY','발동 조건':'Fire condition','발동하면':'When it fires',
+ '채점':'Grading','발동 후의 관찰이 맞았는지 자동 채점되어 기록됩니다.':'After firing, the observation is auto-graded and archived.',
+ '조건 충족 시 발동':'fires when the condition is met',
+ '지금 무대에서 파급 중':'spreading on the stage now',
+ '발동 카드 없음 — 무소식도 기록됩니다':'No fired cards — silence is recorded too',
+ '대기 카드도 "왜 아직인지"가 수치로 보입니다 · 카드 클릭 = 완전한 이야기(고유 주소 #카드ID) ·':'Standby cards show why-not-yet in numbers · click a card = its full story (permalink #cardID) ·',
+ '데이터와 원칙 →':'Data & principles →',
+ '등록 이벤트 없음':'No registered event','활성 카드 없음':'No active cards',
+ '지금 파급 관측 없음 — 무소식도 기록됩니다 (관측 유지)':'No spread observed now — silence is recorded too (watch held)',
+ '무대 전체 조명 전환':'Whole-stage lighting change',
+ '무대 전체의 조명이 경보색으로 바뀝니다':'The whole stage turns alert-colored',
+ '자세히 › 계산 전체 보기':'Details › full calculation',
+ '진앙 →':'Epicenter →','관문 →':'Gates →','리야드 →':'Riyadh →',
+ '정치 불확실성 관찰':'Political uncertainty observed',
+ '기름값이 하루에 크게 뛰면, 그 충격은 며칠 뒤 금리와 물가 기대로 번진 전례가 많습니다. 이 카드는 그 "2차 점화"를 지켜봅니다.':'When oil jumps hard in a day, the shock has often spread into rates and inflation expectations days later. This card watches for that second ignition.',
+ '평소엔 제각각 움직이던 자산들이 한 방향으로 같이 움직이기 시작하면 — 분산이 사라지는 경보입니다. 시장 전체의 "날씨"를 재는 카드입니다.':'When assets that usually move apart start moving as one, diversification is vanishing — an alarm. This card measures the weather of the whole market.',
+ '세계 무역의 좁은 문(호르무즈·수에즈·말라카…)이 흔들리면 에너지와 운임이 먼저 반응합니다. 관문 근처의 큰 사건을 지켜보는 카드입니다.':'When the narrow gates of world trade (Hormuz · Suez · Malacca…) shake, energy and freight react first. This card watches big events near the gates.',
+ '큰 정치 불확실성(시위·위협)은 그 자체보다 "무엇이 나올지 모른다"는 상태가 위험 프리미엄을 키웁니다.':'With big political uncertainty (protests · threats), it is the not-knowing itself that grows the risk premium.',
+ '원장 전체 열람(63장) →':'Browse the full ledger (63 cards) →',
+ '닛케이':'NIKKEI','센섹스':'SENSEX','코스피':'KOSPI','상하이':'SHANGHAI',
+ '항셍':'HANG SENG','미2년':'US 2Y','미10년':'US 10Y','구리':'COPPER','금':'GOLD',
+ '은':'SILVER','원유':'WTI','달러':'DXY'};
+const RX=[
+ [/워싱턴\(발표\) → 뉴욕\(금리\) → 전 시장 동시 방사/g,'Washington (release) → New York (rates) → all markets at once'],
+ [/선반영 지수 = 자산 이동의 역사 대비 위치/g,"pre-pricing index = today's move vs its own history"],
+ [/\|ΔWTI 하루\| ≥ 3% \?/g,'|ΔWTI 1-day| ≥ 3% ?'],
+ [/\|WTI 하루 변동\| ≥ 3%/g,'|WTI 1-day move| ≥ 3%'],
+ [/전 자산 평균 상관 ≥ 0.55/g,'avg cross-asset correlation ≥ 0.55'],
+ [/관문 700km 내 심각도≥4 사건 \?/g,'severity≥4 event within 700km of a gate ?'],
+ [/관문 반경 (\d+)km 내 심각도≥4 사건/g,'severity≥4 event within $1km of a gate'],
+ [/심각도≥4 정치 사건\(시위·위협\)/g,'severity≥4 political event (protest·threat)'],
+ [/발표 D-(\d+) — 시장이 평소의/g,'Release D-$1 — market pre-moved'],
+ [/(\d[\d.]*)배/g,'$1×'],
+ [/미리 움직임 → 선반영/g,'of its usual → pre-priced'],
+ [/\/100 \(과반영 의심\)/g,'/100 (over-pricing suspected)'],
+ [/발표 D-/g,'Release D-'],[/발표 전 중앙값/g,'pre-release median'],
+ [/이번: 미2년 금리 이동/g,'this time: US 2Y rate move'],
+ [/이번 이동/g,'this move'],[/평소\(중앙값\)/g,'usual (median)'],
+ [/미2년 이동/g,'US 2Y move'],[/미2년/g,'US 2Y'],[/미10년/g,'US 10Y'],
+ [/미국 CPI/g,'US CPI'],[/\((\d{4})년 (\d+)월분\)/g,'($1-$2 data)'],
+ [/기준: 긴장 ([\d.]+) · 경보 ([\d.]+)/g,'thresholds: tension $1 · alert $2'],
+ [/평균 상관/g,'avg correlation'],[/최고 심각도/g,'peak severity'],
+ [/관문 반경 (\d+)km/g,'within $1km of gates'],[/관문 거리/g,'gate distance'],
+ [/가장 가까운 사건↔관문/g,'nearest event↔gate'],
+ [/(\d+)분 전/g,'$1m ago'],[/(\d+)시간 전/g,'$1h ago'],[/(\d+)일 전/g,'$1d ago'],
+ [/방금/g,'just now'],[/재판독/g,'RE-READ'],[/수집/g,'fetched'],
+ [/조건 충족 시 발동/g,'fires when the condition is met'],
+ [/연결 뉴스/g,'linked news'],[/심각도/g,'severity'],[/논조/g,'tone'],
+ [/발동/g,'FIRED'],[/대기/g,'STANDBY'],[/지금/g,'now'],
+ [/(\d+)\s*건/g,'$1 hit(s)'],[/사건/g,'event'],[/관측 노드/g,'observation node'],
+ [/최근/g,'recent'],[/상위/g,'top'],[/중앙값/g,'median'],[/지수/g,'index'],
+ [/이동/g,'move'],[/코어/g,'core'],[/뉴스/g,'news'],[/진앙/g,'epicenter'],
+ [/발표/g,'release'],[/\/(\d+)일/g,'/$1d'],[/일정/g,'calendar'],[/건(?=[\s·,)]|$)/g,' hits'],
+ [/관문/g,'gates'],[/무대/g,'stage'],[/채점/g,'grading'],
+ [/워싱턴/g,'Washington'],[/뉴욕/g,'New York'],[/런던/g,'London'],
+ [/프랑크푸르트/g,'Frankfurt'],[/도쿄/g,'Tokyo'],[/서울/g,'Seoul'],[/상하이/g,'Shanghai'],
+ [/시드니/g,'Sydney'],[/상파울루/g,'São Paulo'],[/뭄바이/g,'Mumbai'],[/리야드/g,'Riyadh'],
+ [/싱가포르/g,'Singapore'],[/홍콩/g,'Hong Kong'],[/시카고/g,'Chicago'],[/파리/g,'Paris']];
+const KOR=/[\u1100-\u11FF\u3130-\u318F\uAC00-\uD7A3]/;
+function trNode(n){
+  const v0=n.nodeValue;
+  if(!v0||!KOR.test(v0))return;
+  const t=v0.trim();
+  if(D[t]!=null){n.nodeValue=v0.replace(t,D[t]);return;}
+  const pe=n.parentElement;
+  if(pe&&pe.closest('#logicview,#news,#toast,#popin,#lens,#activebar,#ticker,#newsupd')){
+    let v=v0;RX.forEach(pr=>{v=v.replace(pr[0],pr[1]);});
+    if(v!==v0)n.nodeValue=v;}}
+function trWalk(root){
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  let n;while(n=w.nextNode())trNode(n);}
+trWalk(document.body);
+new MutationObserver(ms=>ms.forEach(m=>{
+  if(m.type==='characterData'){trNode(m.target);return;}
+  m.addedNodes.forEach(nd=>{
+    if(nd.nodeType===3)trNode(nd);
+    else if(nd.nodeType===1)trWalk(nd);});
+})).observe(document.body,{childList:true,subtree:true,characterData:true});
+document.getElementById('zoombar').title='Drag to zoom';
+document.getElementById('fsbtn').title='Fullscreen — only the globe remains';
+}
 /* 전체 화면 = 시네마 모드: UI가 물러나고 지구만 돈다 (화면 보호기) */
 document.getElementById('fsbtn').addEventListener('click',()=>{
   if(document.fullscreenElement)document.exitFullscreen();
