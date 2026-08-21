@@ -1,5 +1,5 @@
 // WTL service worker — network-first with cache fallback (dev-friendly: updates win, offline still works)
-const V = 'wtl-v2';
+const V = 'batavia-v3';
 const CORE = ['.', 'index.html', 'manifest.webmanifest', 'data/geo/land-110m.json',
   'icons/icon-192.png', 'icons/icon-512.png'];
 

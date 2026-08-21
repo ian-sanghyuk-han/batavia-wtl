@@ -23,12 +23,13 @@ jobs:
           python-version: '3.12'
       - name: Run pipeline (stdlib only)
         run: python pipeline/gdelt_news.py
+          python pipeline/conflict_intensity.py
       - name: Commit updated data
         id: commit
         run: |
           git config user.name "batavia-pipeline"
           git config user.email "actions@users.noreply.github.com"
-          git add site/data/news.json
+          git add site/data/news.json site/data/conflicts-auto.json site/data/history/conflict_days.json
           if git diff --cached --quiet; then echo "no change"; echo "pushed=false" >> "$GITHUB_OUTPUT"; exit 0; fi
           git commit -m "data: news.json 갱신 (GDELT 15-min)"
           git pull --rebase
