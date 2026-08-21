@@ -348,12 +348,12 @@ function fillCanvasTexture(){ /* 등장방형 채움 — 구·평면 공용 */
   const x=c.getContext('2d');
   x.fillStyle='#0b131c';x.fillRect(0,0,4096,2048);
   const px=(lo)=>(lo+180)/360*4096,py=(la)=>(90-la)/180*2048;
-  const warSet=new Set(((CONFL&&CONFL.conflicts)||[]).map(c=>c.country));
+  const warSet=new Set(((CONFL&&CONFL.wars)||[]).flatMap(w=>w.pair)); /* 전면전 당사국만 옅게 */
   feats.forEach((f,fi)=>{
     const shade=0.85+((fi*2654435761)%1000)/1000*0.3;
     const nm2=(f.properties.name||'').toLowerCase();
     x.fillStyle=warSet.has(nm2)
-      ?`rgb(${Math.round(52*shade)},${Math.round(24*shade)},${Math.round(27*shade)})` /* 분쟁국: 어두운 적갈 */
+      ?`rgb(${Math.round(44*shade)},${Math.round(26*shade)},${Math.round(30*shade)})` /* 교전 당사국: 옅은 적갈 */
       :`rgb(${Math.round(24*shade)},${Math.round(34*shade)},${Math.round(44*shade)})`;
     const polys=f.geometry.type==='Polygon'?[f.geometry.coordinates]:f.geometry.coordinates;
     if((f.properties.name||'').toLowerCase()==='antarctica'){
@@ -531,16 +531,59 @@ function relKo(ts){
 
 /* ── 레이어 렌더러 (현재 뷰 기준으로 그린다) ── */
 let conflictLayer=null;
-const confPulses=[];
+const confPulses=[],frontMats=[],confMats=[];
+function pairMesh(n1,n2){ /* 두 나라가 맞댄 국경만 추출 — 전선·대치선의 재료 */
+  if(!topoCache)return null;
+  const want=new Set([n1,n2]);
+  try{
+    const m=topojson.mesh(topoCache,topoCache.objects.countries,(a,b)=>{
+      if(a===b)return false;
+      const na=(a.properties.name||'').toLowerCase(),nb=(b.properties.name||'').toLowerCase();
+      return want.has(na)&&want.has(nb)&&na!==nb;});
+    return (m&&m.coordinates&&m.coordinates.length)?m:null;
+  }catch(e){return null;}}
 function renderConflicts(){
   if(!conflictLayer)return;
-  conflictLayer.clear();confPulses.length=0;
-  ((CONFL&&CONFL.conflicts)||[]).forEach(c=>{
+  conflictLayer.clear();confPulses.length=0;frontMats.length=0;confMats.length=0;
+  const C=CONFL||{};
+  /* ① 전면전: 공유 국경이 타오른다 — 빠른 진홍 맥동 (심 + 넓은 광) */
+  (C.wars||[]).forEach(w=>{
+    const m=pairMesh(w.pair[0],w.pair[1]);if(!m)return;
+    const coreM=new THREE.LineBasicMaterial({color:0xFF4444,transparent:true,opacity:.95});coreM.userData.co=.95;
+    const core=new THREE.LineSegments(meshToSegs(m,R*1.0026),coreM);
+    const glowM=new THREE.LineBasicMaterial({color:0xC0392B,transparent:true,opacity:.4});glowM.userData.co=.4;
+    const glow=new THREE.LineSegments(meshToSegs(m,R*1.0022),glowM);
+    frontMats.push(core.material,glow.material);
+    conflictLayer.add(glow);conflictLayer.add(core);});
+  /* ③ 대치·휴전: 가는 호박색 정지선 — 맥동 없음 (긴장은 있으나 교전 아님) */
+  (C.standoffs||[]).forEach(st=>{
+    if(st.kind==='border'&&st.pair){
+      const m=pairMesh(st.pair[0],st.pair[1]);if(!m)return;
+      const lm=new THREE.LineBasicMaterial({color:0xE8A33D,transparent:true,opacity:.85});lm.userData.co=.85;
+      const ln=new THREE.LineSegments(meshToSegs(m,R*1.0024),lm);
+      confMats.push(lm);conflictLayer.add(ln);
+    }else if(st.kind==='line'&&st.line){
+      const tm=new THREE.MeshBasicMaterial({color:0xE8A33D,transparent:true,opacity:.55});tm.userData.co=.55;
+      confMats.push(tm);
+      conflictLayer.add(new THREE.Mesh(
+        new THREE.TubeGeometry(surfaceArc(st.line[0],st.line[1]),24,.0014,5,false),tm));}});
+  /* ④ 원거리 교전: 점선 진홍 호 — 국경을 안 맞댄 위협선 */
+  (C.farpairs||[]).forEach(fp=>{
+    const pts=arcCurve(fp.a,fp.b).getPoints(48);
+    const g=new THREE.BufferGeometry().setFromPoints(pts);
+    const dm=new THREE.LineDashedMaterial({color:0xC0392B,transparent:true,opacity:.55,
+      dashSize:.028,gapSize:.02});dm.userData.co=.55;
+    confMats.push(dm);
+    const ln=new THREE.Line(g,dm);
+    ln.computeLineDistances();
+    conflictLayer.add(ln);});
+  /* ② 국지 분쟁·내전: 진앙 마커만 — 채움 없음 */
+  (C.zones||[]).forEach(c=>{
     if(!c.hot)return;
     const p=toV3(c.hot[0],c.hot[1],R*1.007);
-    /* 상시 분쟁 마커: 짙은 진홍 이중 고리 — 뉴스 펄스(논조색)와 구분되는 느린 맥동 */
-    const core=new THREE.Mesh(new THREE.SphereGeometry(.004,8,8),
-      new THREE.MeshBasicMaterial({color:0xC0392B}));
+    const cm=new THREE.MeshBasicMaterial({color:0xC0392B,transparent:true,opacity:1});cm.userData.co=1;
+    confMats.push(cm);
+    const core=new THREE.Mesh(new THREE.SphereGeometry(.004,8,8),cm);
     core.position.copy(p);conflictLayer.add(core);
     const ring=new THREE.Mesh(new THREE.RingGeometry(.010,.0125,28),
       new THREE.MeshBasicMaterial({color:0xC0392B,transparent:true,side:THREE.DoubleSide,opacity:.7}));
@@ -703,7 +746,11 @@ function applyVisual(){
   atmMesh.visible=aa>.01;rimMesh.visible=aa>.01;
   if(rippleGroup)rippleGroup.traverse(o=>{
     if(o.material&&o.material.userData&&o.material.userData.bo!=null)
-      o.material.opacity=o.material.userData.bo*layerAlpha;});}
+      o.material.opacity=o.material.userData.bo*layerAlpha;});
+  const cA=layerAlpha*(1-dimK*.6); /* 분쟁층: ENGINE에서도 흐릿하게 남긴다 — 세계의 배경 상태 */
+  confMats.forEach(m=>m.opacity=(m.userData.co??.8)*cA);
+  const fp2=.55+.45*Math.sin(performance.now()/260); /* 전선: 빠른 맥동 = 뜨거움 */
+  frontMats.forEach(m=>m.opacity=(m.userData.co??.9)*fp2*cA);}
 
 function updateLabels(){
   const camDir=camera.position.clone().normalize();

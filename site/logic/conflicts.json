@@ -1,23 +1,33 @@
 {
-  "version": "v0",
-  "note": "Active armed conflicts — MANUALLY curated registry (기준 2026-08, 수동 등록). Countries are matched against world-atlas properties.name (lowercase). 'hot' = representative conflict focal point for the always-on marker. Planned upgrade: automatic maintenance from UCDP/GDELT conflict-event density.",
-  "label": "분쟁 등록부 v0 · 수동 관리 · 기준 2026-08",
-  "conflicts": [
-    {"country": "ukraine",       "type": "국가간 전쟁", "since": 2022, "hot": [48.5, 37.9],  "name": "러시아-우크라이나 전쟁"},
-    {"country": "russia",        "type": "국가간 전쟁", "since": 2022, "hot": [50.2, 36.0],  "name": "러시아-우크라이나 전쟁(교전 당사국)"},
-    {"country": "israel",        "type": "무장 분쟁",   "since": 2023, "hot": [31.4, 34.4],  "name": "이스라엘-가자 분쟁"},
-    {"country": "palestine",     "type": "무장 분쟁",   "since": 2023, "hot": [31.5, 34.45], "name": "가자 전쟁"},
-    {"country": "lebanon",       "type": "무장 분쟁",   "since": 2023, "hot": [33.3, 35.4],  "name": "이스라엘-헤즈볼라 분쟁"},
-    {"country": "yemen",         "type": "내전·해상 위협", "since": 2014, "hot": [15.3, 44.2], "name": "예멘 내전·홍해 위협"},
-    {"country": "sudan",         "type": "내전",        "since": 2023, "hot": [15.6, 32.5],  "name": "수단 내전(SAF-RSF)"},
-    {"country": "myanmar",       "type": "내전",        "since": 2021, "hot": [21.9, 96.1],  "name": "미얀마 내전"},
-    {"country": "mali",          "type": "무장 반군",   "since": 2012, "hot": [16.3, -3.0],  "name": "사헬 반군 분쟁"},
-    {"country": "burkina faso",  "type": "무장 반군",   "since": 2015, "hot": [13.0, -1.5],  "name": "사헬 반군 분쟁"},
-    {"country": "niger",         "type": "무장 반군",   "since": 2015, "hot": [13.5, 2.1],   "name": "사헬 반군 분쟁"},
-    {"country": "somalia",       "type": "내전",        "since": 2009, "hot": [2.0, 45.3],   "name": "소말리아 알샤바브 분쟁"},
-    {"country": "dem. rep. congo","type": "무장 분쟁",  "since": 2022, "hot": [-1.7, 29.2],  "name": "동부 콩고 M23 분쟁"},
-    {"country": "ethiopia",      "type": "무장 분쟁",   "since": 2023, "hot": [11.6, 37.4],  "name": "암하라 분쟁"},
-    {"country": "syria",         "type": "내전 여파",   "since": 2011, "hot": [35.0, 38.0],  "name": "시리아 불안정"},
-    {"country": "haiti",         "type": "무장 갱 분쟁", "since": 2021, "hot": [18.5, -72.3], "name": "아이티 갱 위기"}
+  "version": "v1",
+  "note": "Conflict grammar v1 (owner-approved 4-tier taxonomy). MANUALLY curated, 기준 2026-08. wars: belligerent PAIRS sharing a border -> the shared border burns (fast red pulse) + light fill on both. zones: localized conflict/civil war -> epicenter marker only, NO country fill. standoffs: armistice/tension lines -> thin static amber (no pulse) — tension without combat (Korea DMZ insight). farpairs: belligerents without shared border -> dashed crimson arc. Intensity = pulse speed, not color. Upgrade path: UCDP/GDELT auto-maintenance.",
+  "label": "분쟁 문법 v1 · 수동 관리 · 기준 2026-08",
+  "wars": [
+    {"pair": ["ukraine", "russia"], "name": "러시아-우크라이나 전쟁", "since": 2022}
+  ],
+  "zones": [
+    {"hot": [48.5, 37.9],  "name": "돈바스 전선",            "type": "전면전 진앙"},
+    {"hot": [31.4, 34.4],  "name": "가자 전쟁",              "type": "무장 분쟁"},
+    {"hot": [33.3, 35.4],  "name": "이스라엘-헤즈볼라",       "type": "무장 분쟁"},
+    {"hot": [15.3, 44.2],  "name": "예멘 내전·홍해 위협",     "type": "내전"},
+    {"hot": [15.6, 32.5],  "name": "수단 내전(SAF-RSF)",     "type": "내전"},
+    {"hot": [21.9, 96.1],  "name": "미얀마 내전",            "type": "내전"},
+    {"hot": [16.3, -3.0],  "name": "사헬 반군(말리)",         "type": "무장 반군"},
+    {"hot": [13.0, -1.5],  "name": "사헬 반군(부르키나파소)",  "type": "무장 반군"},
+    {"hot": [13.5, 2.1],   "name": "사헬 반군(니제르)",       "type": "무장 반군"},
+    {"hot": [2.0, 45.3],   "name": "소말리아 알샤바브",       "type": "내전"},
+    {"hot": [-1.7, 29.2],  "name": "동부 콩고 M23",          "type": "무장 분쟁"},
+    {"hot": [11.6, 37.4],  "name": "에티오피아 암하라",       "type": "무장 분쟁"},
+    {"hot": [35.0, 38.0],  "name": "시리아 불안정",          "type": "내전 여파"},
+    {"hot": [18.5, -72.3], "name": "아이티 갱 위기",         "type": "무장 갱 분쟁"}
+  ],
+  "standoffs": [
+    {"pair": ["south korea", "north korea"], "name": "한반도 휴전선(DMZ)", "kind": "border"},
+    {"pair": ["india", "pakistan"],          "name": "인도-파키스탄 LoC",  "kind": "border"},
+    {"line": [[25.6, 121.9], [22.7, 118.2]], "name": "대만해협 대치",      "kind": "line"}
+  ],
+  "farpairs": [
+    {"a": [31.4, 34.4], "b": [15.3, 44.2], "name": "이스라엘 ↔ 후티(예멘)"},
+    {"a": [31.8, 35.2], "b": [35.7, 51.4], "name": "이란 ↔ 이스라엘 긴장"}
   ]
 }
