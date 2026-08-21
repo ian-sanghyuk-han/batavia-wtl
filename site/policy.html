@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<!-- STATUS: POLICY / METHODOLOGY page v1 — single place for data sources, update cadence,
+     labeling principles, conflict-layer criteria, language rules, grading promise.
+     In-product surfaces link here instead of repeating 추정/출처 boilerplate. -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>BATAVIA PROJECT — Policy</title>
+<style>
+  :root{--acc:#7FD8FF;--ink:#EAF9FF;--dim:#93a7b8;--mut:#5b6b7a;
+    --glass:rgba(7,11,17,.60);--edge:rgba(159,199,224,.20)}
+  *{box-sizing:border-box}
+  body{margin:0;background:#05070c;color:var(--ink);font-family:'Segoe UI',system-ui,sans-serif}
+  .glass{background:var(--glass);border:1px solid var(--edge);backdrop-filter:blur(9px);border-radius:11px}
+  header{padding:18px;max-width:860px;margin:0 auto}
+  header b{font:600 14px Consolas,monospace;letter-spacing:3px}
+  header small{display:block;color:var(--mut);font:10px Consolas,monospace;margin-top:4px}
+  header a{color:var(--acc);text-decoration:none;font:10px Consolas,monospace;float:right;margin-top:4px}
+  main{max-width:860px;margin:0 auto;padding:4px 18px 48px}
+  section{padding:16px 18px;margin-bottom:14px}
+  h2{margin:0 0 10px;font:600 12px Consolas,monospace;letter-spacing:2px;color:var(--acc)}
+  p,li{font-size:13px;line-height:1.8;color:#c5d7e4;margin:6px 0}
+  ul{margin:6px 0;padding-left:18px}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th{font:600 10px Consolas,monospace;letter-spacing:1px;color:var(--mut);text-align:left;
+    padding:6px 8px;border-bottom:1px solid var(--edge)}
+  td{padding:7px 8px;border-bottom:1px solid rgba(159,199,224,.08);color:#c5d7e4;line-height:1.55}
+  td b{color:#F4FBFF}
+  td a{color:var(--acc);text-decoration:none}
+  .tag{display:inline-block;font:9px Consolas,monospace;border-radius:5px;padding:1px 7px;
+    margin-right:4px;border:1px solid var(--edge);color:var(--dim)}
+  .hl{color:#F4FBFF}
+</style>
+</head>
+<body>
+<header>
+  <a href="./">← OBSERVATORY</a>
+  <b>BATAVIA PROJECT</b> · POLICY — 데이터와 원칙
+  <small>이 관측소가 무엇을, 어디서 받아, 어떻게 보여주고, 어떻게 채점받는지</small>
+</header>
+<main>
+  <section class="glass">
+    <h2>우리가 하는 일</h2>
+    <p>세계 시장이 어떻게 연결되어 있는지에 대한 이론을 세우고(원장),
+    그 이론이 실데이터 앞에서 맞는지 <span class="hl">공개적으로 기계가 채점</span>하게 합니다.
+    이 화면의 어떤 문장도 매매 지시가 아닙니다 — 모든 신호는
+    <span class="hl">긍정 / 중립 / 부정의 관찰</span>로만 말합니다.</p>
+  </section>
+
+  <section class="glass">
+    <h2>데이터 출처와 갱신 주기</h2>
+    <table>
+      <tr><th>레이어</th><th>출처</th><th>갱신</th></tr>
+      <tr><td><b>뉴스·진앙</b></td><td><a href="https://www.gdeltproject.org/" target="_blank" rel="noopener">GDELT Project</a> 2.0 — 전 세계 보도 이벤트</td><td>15분</td></tr>
+      <tr><td><b>시장 시세</b> (지수·FX·원자재·크립토)</td><td>Yahoo Finance</td><td>하루 2회</td></tr>
+      <tr><td><b>금리·크레딧·유동성</b></td><td><a href="https://fred.stlouisfed.org/" target="_blank" rel="noopener">FRED</a> (미 세인트루이스 연준)</td><td>하루 2회</td></tr>
+      <tr><td><b>선박(AIS)</b></td><td><a href="https://aisstream.io" target="_blank" rel="noopener">aisstream.io</a> — 연안 수신 기반</td><td>2시간</td></tr>
+      <tr><td><b>무장 분쟁</b></td><td><a href="https://ucdp.uu.se" target="_blank" rel="noopener">UCDP</a> (웁살라 대학 분쟁 데이터 프로그램) candidate 이벤트</td><td>주 1회</td></tr>
+      <tr><td><b>분쟁 보도 밀집</b></td><td>GDELT 분쟁 코드 보도의 14일 누적 (자체 산출)</td><td>15분</td></tr>
+      <tr><td><b>지도</b></td><td>Natural Earth (world-atlas 110m)</td><td>정적</td></tr>
+      <tr><td><b>국면(동조도)</b></td><td>자체 산출 — 자산 바스켓 상관의 평균 |ρ| (이론 코어 5.1–5.2)</td><td>하루 2회</td></tr>
+    </table>
+    <p style="margin-top:10px">수집·가공은 전부 공개 저장소의 자동 파이프라인이 수행하며,
+    모든 수치는 수집 시각과 함께 기록됩니다.</p>
+  </section>
+
+  <section class="glass">
+    <h2>표기 원칙</h2>
+    <ul>
+      <li><span class="tag">실데이터</span> 위 출처에서 받은 값은 가공 없이(또는 명시된 계산식으로만) 표시합니다.</li>
+      <li><span class="tag">연결 규칙 v0</span> "어떤 사건이 어떤 카드를 깨우는가"의 규칙은 아직 초기 버전이며,
+        규칙 자체도 앞으로 채점 대상입니다.</li>
+      <li><span class="tag">재구성</span> 과거 리플레이(2008·2020)의 사건 연표는 실제이지만, 당시 계기값은
+        근사 재현입니다 — 일일 아카이브가 쌓이는 대로 실기록 재생으로 대체됩니다.</li>
+      <li><span class="tag">수동 등록</span> 분쟁 문법의 구조 관계(전선·대치선·경제 분쟁)는 사람이 등록하고
+        주기적으로 검토합니다.</li>
+    </ul>
+  </section>
+
+  <section class="glass">
+    <h2>분쟁 레이어의 기준</h2>
+    <p>분쟁 표기는 다섯 계층 문법을 씁니다:
+    <span class="hl">전면전</span>(교전 쌍의 공유 국경 — 스파크선) ·
+    <span class="hl">국지 분쟁·내전</span>(진앙 마커) ·
+    <span class="hl">대치·휴전</span>(호박색 정지선 — 예: 한반도 DMZ) ·
+    <span class="hl">원거리 교전</span>(지그재그 위협선) ·
+    <span class="hl">경제 분쟁</span>(관세·제재 — 청색 점선).</p>
+    <p>UCDP 자동 표기는 <span class="hl">경제적 파급력 기준으로 상위만</span> 보여줍니다
+    (사망자 규모 × 해당 경제의 규모·관문 근접 가중). 세계의 모든 고통을 나열하는 것이 아니라,
+    시장이라는 렌즈에서 의미 있는 신호를 고르기 위한 절단입니다 — 기준은 이 페이지에 공개합니다.</p>
+    <p>강도는 색이 아니라 <span class="hl">맥동 속도</span>로 표현합니다. 데이터 출처: UCDP·GDELT.</p>
+  </section>
+
+  <section class="glass">
+    <h2>채점 약속</h2>
+    <p>모든 카드의 관찰은 사전 등록되고, 결과가 나오면 <span class="hl">기계가 자동 채점</span>하여
+    기록에 남습니다 — 맞은 날도, 틀린 날도, 지우지 않습니다. 판정 페이지는 모든 요금제에서 영원히 무료입니다.</p>
+  </section>
+
+  <section class="glass">
+    <h2>아닌 것</h2>
+    <p>이 서비스는 투자 자문이 아니며, 매수·매도 신호를 제공하지 않습니다.
+    거래 기능·증권사 연결·수익 약속은 존재하지 않고 앞으로도 추가되지 않습니다.</p>
+  </section>
+</main>
+</body>
+</html>

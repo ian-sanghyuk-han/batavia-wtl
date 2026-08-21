@@ -101,6 +101,14 @@
   .lchip{display:inline-block;margin:2px 4px 2px 0;padding:3px 8px 3px 6px;border-radius:0 6px 6px 0;
     background:rgba(159,199,224,.07);font:9.5px Consolas,monospace;color:var(--ink);cursor:pointer}
   .lchip:hover{background:rgba(159,199,224,.14)}
+  /* 줌 퍼센트 바 — 3D 전용, 우측 중단 */
+  #zoombar{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:9;
+    width:26px;padding:8px 0;text-align:center;display:none}
+  #zoombar.on{display:block}
+  #zoomtrack{position:relative;width:4px;height:132px;margin:0 auto;border-radius:2px;
+    background:rgba(159,199,224,.14)}
+  #zoomfill{position:absolute;bottom:0;left:0;width:100%;border-radius:2px;background:var(--acc)}
+  #zoompct{margin-top:6px;font:9px Consolas,monospace;color:var(--dim)}
   /* 전광판 티커 — 계속 흐른다 */
   #ticker{position:fixed;left:0;right:0;bottom:0;z-index:10;overflow:hidden;white-space:nowrap;
     padding:8px 0;padding-bottom:max(8px,env(safe-area-inset-bottom));font:11px Consolas,monospace;
@@ -239,12 +247,14 @@
   <div class="lrow" data-l="clabels"><span class="sw"><span class="dot" style="background:#c4d8e8"></span></span>국가 라벨<span class="st">ON</span></div>
   <div class="lrow" data-l="citylabels"><span class="sw"><span class="dot" style="background:#8fa6b8"></span></span>도시 라벨<span class="st">ON</span></div>
   <div class="lrow" data-l="water"><span class="sw"><span class="dot" style="background:#78a2c4"></span></span>바다·해협 라벨<span class="st">ON</span></div>
-  <div class="foot">뉴스 색 = 관찰 3상태(긍정·중립·부정)<br>─ 동선(상시·옅음) · ━ 파급(활성·밝음)</div>
+  <div class="foot">뉴스 색 = 관찰 3상태(긍정·중립·부정)<br>─ 동선(상시) · ━ 파급(활성) · $ 경제 분쟁<br><a href="policy.html" style="color:var(--acc);text-decoration:none">데이터 출처와 원칙 →</a></div>
 </div>
 <div id="lens" class="glass"><span id="lensclose">✕</span>
   <h3 id="lenscity"></h3><div id="lensval"></div>
   <canvas id="lensspark" width="236" height="54"></canvas>
   <div id="lensfoot"></div><div id="lenscards"></div></div>
+<div id="zoombar" class="glass"><div id="zoomtrack"><div id="zoomfill"></div></div>
+  <div id="zoompct">—</div></div>
 <div id="btnrow">
   <a class="pbtn glass" href="replay.html" style="text-decoration:none">REPLAY</a>
   <div id="newsbtn" class="pbtn glass">NEWS LOG</div>
@@ -274,7 +284,7 @@
     </div>
   </div>
   <svg id="lwires"></svg>
-  <div id="lfoot">대기 카드도 "왜 아직인지"가 수치로 보입니다 · 카드 클릭 = 완전한 이야기(고유 주소 #카드ID) · <a href="ledger.html" style="color:var(--acc);text-decoration:none">원장 전체 열람(63장) →</a></div>
+  <div id="lfoot">대기 카드도 "왜 아직인지"가 수치로 보입니다 · 카드 클릭 = 완전한 이야기(고유 주소 #카드ID) · <a href="ledger.html" style="color:var(--acc);text-decoration:none">원장 전체 열람(63장) →</a> · <a href="policy.html" style="color:var(--acc);text-decoration:none">데이터와 원칙 →</a></div>
 </div></div>
 <div id="pop"><div id="popin" class="glass"><span id="popclose">✕ 닫기</span><div id="popbody"></div></div></div>
 <div id="ticker" class="glass"><div class="rail" id="tickrail"></div></div>
@@ -696,8 +706,19 @@ function renderConflicts(){
     conflictLayer.add(ring);confPulses.push(ring);
     addConfLabel('\uD83D\uDCE1 \ubcf4\ub3c4 \ubc00\uc9d1: '+sp.country+' ('+sp.n+'\uac74/14\uc77c)',
       toV3(sp.hot[0]-1.8,sp.hot[1],R*1.014),'#E09A70',1.8);});
-  /* UCDP: 학계 표준 사망자 기반 강도 (토큰 연결 시 주 1회 자동) */
-  (((CONFLUCDP||{}).spots)||[]).forEach(sp=>{
+  /* UCDP: 경제적 파급력 상위만 표기 — 사망자 × 경제 규모 가중 (기준은 policy 공개) */
+  {const UNAME={'dr congo (zaire)':'dem. rep. congo','united states of america':'united states of america',
+    'russia (soviet union)':'russia','myanmar (burma)':'myanmar','cambodia (kampuchea)':'cambodia',
+    'yemen (north yemen)':'yemen'};
+  const econW=nm=>{const k=(UNAME[nm.toLowerCase()]||nm.toLowerCase());
+    return T1.has(k)?3:T2.has(k)?2:1;};
+  const CHK=Object.values((CONFL||{}).chokepoints||{});
+  const nearChk=sp=>CHK.some(cp=>havKm(sp.hot,[cp.la,cp.lo])<900);
+  const scored=(((CONFLUCDP||{}).spots)||[]).map(sp=>({...sp,
+    score:sp.deaths*econW(sp.country)*(nearChk(sp)?1.5:1)}))
+    .sort((a,b)=>b.score-a.score)
+    .slice(0,8);
+  scored.forEach(sp=>{
     const p=toV3(sp.hot[0],sp.hot[1],R*1.0065);
     const ring=new THREE.Mesh(new THREE.RingGeometry(.011,.0135,26),
       new THREE.MeshBasicMaterial({color:0x9E2B25,transparent:true,side:THREE.DoubleSide,opacity:.75}));
@@ -705,7 +726,22 @@ function renderConflicts(){
     ring.userData={ph:Math.random()*6.28,per:4600-650*sp.intensity};
     conflictLayer.add(ring);confPulses.push(ring);
     addConfLabel('UCDP · '+sp.country+' (\uc0ac\ub9dd '+sp.deaths+')',
-      toV3(sp.hot[0]-2.4,sp.hot[1],R*1.014),'#C96A5E',2.1);});
+      toV3(sp.hot[0]-2.4,sp.hot[1],R*1.014),'#C96A5E',2.1);});}
+  /* ⑤ 경제 분쟁: 관세·제재 — 청색 점선 호 (무기 없는 전쟁도 지도에) */
+  (((CONFL||{}).econwars)||[]).forEach(ew=>{
+    const pts=arcCurve(ew.a,ew.b).getPoints(60);
+    const g2=new THREE.BufferGeometry().setFromPoints(pts);
+    const dm=new THREE.LineDashedMaterial({color:0x5B8DEF,transparent:true,opacity:.55,
+      dashSize:.05,gapSize:.035});
+    dm.userData.co=.55;confMats.push(dm);
+    const ln=new THREE.Line(g2,dm);
+    ln.computeLineDistances();
+    conflictLayer.add(ln);
+    const mp=arcCurve(ew.a,ew.b).getPoint(.5).clone().multiplyScalar(1.02);
+    const lb=confLabelSprite('$ '+ew.name,'#8FB4F0');
+    lb.position.copy(mp);
+    confLabels.push({s:lb,normal:mp.clone().normalize(),gate:3.2});
+    conflictLayer.add(lb);});
   conflictLayer.visible=L.conflicts;refreshClones();}
 function renderShips(){
   if(!shipsGroup)return;
@@ -1105,7 +1141,7 @@ function openPop(id){
       <p style="margin-top:5px">${G?G.now(c):''} → <b>${pass&&pass.pass?'발동':'대기'}</b></p></div></div>
     <div class="step"><span class="no">2</span><div class="bd"><h5>발동하면</h5><p>${G?G.path:''}</p></div></div>
     <div class="step"><span class="no">3</span><div class="bd"><h5>채점</h5><p>발동 후의 관찰이 맞았는지 자동 채점되어 기록됩니다.</p></div></div>`;}
-  html+=`<div class="provline">${card.core} · 연결 규칙 v0 · 추정 (실측 채점 전) · 고유 주소 #${card.id}</div>`;
+  html+=`<div class="provline">${card.core} · 연결 규칙 v0 · <a href="policy.html" style="color:var(--acc);text-decoration:none">데이터와 원칙 →</a> · #${card.id}</div>`;
   el.innerHTML=html;
   document.getElementById('pop').classList.add('on');
   history.replaceState(null,'','#'+card.id);
@@ -1595,6 +1631,15 @@ function loop(now){
      if(camera.position.x>W2/2){camera.position.x-=W2;controls.target.x-=W2;}
      else if(camera.position.x<-W2/2){camera.position.x+=W2;controls.target.x+=W2;}}}
   updateLabels();
+  { /* 줌 바: 3D에서만, 가까울수록 100% */
+    const zb=document.getElementById('zoombar');
+    const show=MODE==='3d'&&!morphAnim;
+    zb.classList.toggle('on',show);
+    if(show){
+      const mn=controls.minDistance,mx=controls.maxDistance;
+      const pc=Math.round(Math.max(0,Math.min(1,(mx-camera.position.length())/(mx-mn)))*100);
+      document.getElementById('zoomfill').style.height=pc+'%';
+      document.getElementById('zoompct').textContent=pc+'%';}}
   pulses.forEach(rg=>{const s=1+.9*((now/1400+rg.userData.ph)%1);
     rg.scale.set(s,s,s);
     rg.material.opacity=Math.max(0,1.15-s*.55)*layerAlpha*(1-dimK);});
