@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   run:
@@ -26,11 +27,18 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       - name: Commit updated data
+        id: commit
         run: |
           git config user.name "batavia-pipeline"
           git config user.email "actions@users.noreply.github.com"
           git add site/data/event_card.json site/data/briefing.json
-          if git diff --cached --quiet; then echo "no change"; exit 0; fi
+          if git diff --cached --quiet; then echo "no change"; echo "pushed=false" >> "$GITHUB_OUTPUT"; exit 0; fi
           git commit -m "data: 모닝 브리핑 생성 (07:30 KST)"
           git pull --rebase
           git push
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+      - name: Deploy site (robot pushes do not trigger pages.yml)
+        if: steps.commit.outputs.pushed == 'true'
+        run: gh workflow run pages.yml
+        env:
+          GH_TOKEN: ${{ github.token }}
