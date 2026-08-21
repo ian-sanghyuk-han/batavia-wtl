@@ -60,14 +60,21 @@ else:
     print("WARN: FRED_API_KEY missing - FRED series skipped")
 
 # --- Yahoo Finance: index/FX/commodity/crypto closes ---
+# Index order = economic size (T1 tiers of the label system): US, CN, JP, DE, IN, UK, KR.
+# The stage is global — no market is the protagonist.
 TICKERS = {
-    "dxy":    ("DX-Y.NYB", "DXY"),
-    "spx":    ("^GSPC",    "S&P"),
-    "kospi":  ("^KS11",    "KOSPI"),
-    "wti":    ("CL=F",     "WTI"),
-    "copper": ("HG=F",     "구리"),
-    "vix":    ("^VIX",     "VIX"),
-    "btc":    ("BTC-USD",  "BTC"),
+    "spx":      ("^GSPC",     "S&P"),
+    "shanghai": ("000001.SS", "상하이"),
+    "nikkei":   ("^N225",     "닛케이"),
+    "dax":      ("^GDAXI",    "DAX"),
+    "sensex":   ("^BSESN",    "센섹스"),
+    "ftse":     ("^FTSE",     "FTSE"),
+    "kospi":    ("^KS11",     "KOSPI"),
+    "dxy":      ("DX-Y.NYB",  "DXY"),
+    "wti":      ("CL=F",      "WTI"),
+    "copper":   ("HG=F",      "구리"),
+    "vix":      ("^VIX",      "VIX"),
+    "btc":      ("BTC-USD",   "BTC"),
 }
 data = yf.download([t[0] for t in TICKERS.values()], period="7d", interval="1d",
                    progress=False, group_by="ticker", threads=True, auto_adjust=True)

@@ -436,7 +436,8 @@ function renderTicker(d){
   const el=document.getElementById('ticker');
   const s=(d&&d.series)||{};
   /* 경제 위계 순서(T1 대국 → 글로벌 공통 → 지역 렌즈) — 한국이 중심이 아님 */
-  const ORDER=['spx','us2y','us10y','dxy','vix','wti','copper','gold','btc','kospi'];
+  const ORDER=['spx','shanghai','nikkei','dax','sensex','ftse','kospi',
+    'us2y','us10y','dxy','vix','wti','copper','gold','btc'];
   const keys=[...ORDER.filter(k=>s[k]),...Object.keys(s).filter(k=>!ORDER.includes(k))];
   el.innerHTML=keys.map(k=>s[k]).map(v=>{
     let chg,txt;
