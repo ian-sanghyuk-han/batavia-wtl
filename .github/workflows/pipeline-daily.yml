@@ -25,6 +25,7 @@ jobs:
           python pipeline/lens_kpi.py
           python pipeline/event_card.py
           python pipeline/grade_card.py
+          python pipeline/archive_day.py
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
       - name: Commit updated data

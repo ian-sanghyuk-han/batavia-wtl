@@ -178,6 +178,11 @@
   .bignum{font:600 13px Consolas,monospace;color:#fff}
   .easy{margin-top:5px;font-size:11px;line-height:1.6;color:#c6d9e6}
   .more{margin-top:5px;font:9.5px Consolas,monospace;color:var(--acc);cursor:pointer}
+  @media(max-width:880px){
+    #lstage{grid-template-columns:1fr;min-width:0}
+    #lwires{display:none}
+    #logicview{padding:8px 10px}
+  }
   @media(max-width:520px){
     #brand{font-size:11px;letter-spacing:2px}
     #regimechip{max-width:60vw;font-size:9px;padding:5px 9px}
@@ -222,6 +227,7 @@
   <canvas id="lensspark" width="236" height="54"></canvas>
   <div id="lensfoot"></div></div>
 <div id="btnrow">
+  <a class="pbtn glass" href="replay.html" style="text-decoration:none">REPLAY</a>
   <div id="newsbtn" class="pbtn glass">NEWS LOG</div>
 </div>
 <div id="news" class="glass"><h3>NEWS LOG<span id="newsupd" style="color:#5b6b7a"></span></h3><div id="newslist">로드 중…</div></div>
@@ -532,6 +538,47 @@ function relKo(ts){
 /* ── 레이어 렌더러 (현재 뷰 기준으로 그린다) ── */
 let conflictLayer=null;
 const confPulses=[],frontMats=[],confMats=[];
+function zigzag(pts,amp){ /* 스파크 선: 경로의 홀수 점을 접선면 수직으로 번갈아 밀어낸다 */
+  const out=[];
+  for(let i=0;i<pts.length;i++){
+    const p=pts[i].clone();
+    if(i>0&&i<pts.length-1&&i%2===1){
+      const dir=pts[i+1].clone().sub(pts[i-1]).normalize();
+      const n=VIEW==='2d'?new THREE.Vector3(0,0,1):p.clone().normalize();
+      const perp=new THREE.Vector3().crossVectors(dir,n).normalize();
+      p.add(perp.multiplyScalar(amp*(((i>>1)%2===0)?1:-1)));}
+    out.push(p);}
+  return out;}
+const confLabels=[];
+function confLabelSprite(txt,color){
+  const c=document.createElement('canvas');c.width=640;c.height=96;
+  const x=c.getContext('2d');
+  x.font='600 26px "Segoe UI",sans-serif';x.textAlign='center';x.textBaseline='middle';
+  x.lineWidth=6;x.strokeStyle='rgba(4,8,13,.85)';x.strokeText(txt,320,48);
+  x.fillStyle=color;x.fillText(txt,320,48);
+  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthTest:false,opacity:0}));
+  sp.renderOrder=22;sp.scale.set(.2,.2*96/640,1);
+  return sp;}
+function addConfLabel(txt,pos3,color,gate){
+  const sp=confLabelSprite(txt,color);
+  sp.position.copy(pos3);
+  confLabels.push({s:sp,normal:pos3.clone().normalize(),gate:gate||2.3});
+  conflictLayer.add(sp);}
+function emojiSprite(ch,scale){
+  const c=document.createElement('canvas');c.width=96;c.height=96;
+  const x=c.getContext('2d');
+  x.font='64px "Segoe UI Emoji","Segoe UI",sans-serif';x.textAlign='center';x.textBaseline='middle';
+  x.fillText(ch,48,52);
+  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthTest:false,opacity:.95}));
+  sp.renderOrder=23;sp.scale.set(scale,scale,1);
+  return sp;}
+function meshMid(m){ /* 국경 메시의 대표점 */
+  const lines=m.type==='MultiLineString'?m.coordinates:[m.coordinates];
+  let best=lines[0];lines.forEach(l=>{if(l.length>best.length)best=l;});
+  const c=best[Math.floor(best.length/2)];
+  return {la:c[1],lo:c[0]};}
 function pairMesh(n1,n2){ /* 두 나라가 맞댄 국경만 추출 — 전선·대치선의 재료 */
   if(!topoCache)return null;
   const want=new Set([n1,n2]);
@@ -546,15 +593,27 @@ function renderConflicts(){
   if(!conflictLayer)return;
   conflictLayer.clear();confPulses.length=0;frontMats.length=0;confMats.length=0;
   const C=CONFL||{};
-  /* ① 전면전: 공유 국경이 타오른다 — 빠른 진홍 맥동 (심 + 넓은 광) */
+  confLabels.length=0;
+  /* ① 전면전: 공유 국경이 지그재그 스파크로 타오른다 + 충돌 표식 + 부연 라벨 */
   (C.wars||[]).forEach(w=>{
     const m=pairMesh(w.pair[0],w.pair[1]);if(!m)return;
+    const lines=m.type==='MultiLineString'?m.coordinates:[m.coordinates];
     const coreM=new THREE.LineBasicMaterial({color:0xFF4444,transparent:true,opacity:.95});coreM.userData.co=.95;
-    const core=new THREE.LineSegments(meshToSegs(m,R*1.0026),coreM);
     const glowM=new THREE.LineBasicMaterial({color:0xC0392B,transparent:true,opacity:.4});glowM.userData.co=.4;
-    const glow=new THREE.LineSegments(meshToSegs(m,R*1.0022),glowM);
-    frontMats.push(core.material,glow.material);
-    conflictLayer.add(glow);conflictLayer.add(core);});
+    frontMats.push(coreM,glowM);
+    lines.forEach(line=>{
+      const pts=line.map(q=>toV3(q[1],q[0],R*1.0026));
+      if(pts.length<3)return;
+      conflictLayer.add(new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(pts),glowM));
+      conflictLayer.add(new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(zigzag(pts,.006)),coreM));});
+    const mid=meshMid(m);
+    const boom=emojiSprite('💥', .05);
+    boom.position.copy(toV3(mid.la,mid.lo,R*1.012));
+    boom.material.userData.co=.95;frontMats.push(boom.material);
+    conflictLayer.add(boom);
+    addConfLabel('💥'+' '+w.name,toV3(mid.la-2.6,mid.lo,R*1.016),'#FF6A6E',2.6);});
   /* ③ 대치·휴전: 가는 호박색 정지선 — 맥동 없음 (긴장은 있으나 교전 아님) */
   (C.standoffs||[]).forEach(st=>{
     if(st.kind==='border'&&st.pair){
@@ -562,21 +621,28 @@ function renderConflicts(){
       const lm=new THREE.LineBasicMaterial({color:0xE8A33D,transparent:true,opacity:.85});lm.userData.co=.85;
       const ln=new THREE.LineSegments(meshToSegs(m,R*1.0024),lm);
       confMats.push(lm);conflictLayer.add(ln);
+      const md=meshMid(m);
+      addConfLabel('⏸ '+st.name,toV3(md.la-1.8,md.lo,R*1.016),'#E8A33D',2.2);
     }else if(st.kind==='line'&&st.line){
       const tm=new THREE.MeshBasicMaterial({color:0xE8A33D,transparent:true,opacity:.55});tm.userData.co=.55;
       confMats.push(tm);
       conflictLayer.add(new THREE.Mesh(
-        new THREE.TubeGeometry(surfaceArc(st.line[0],st.line[1]),24,.0014,5,false),tm));}});
-  /* ④ 원거리 교전: 점선 진홍 호 — 국경을 안 맞댄 위협선 */
+        new THREE.TubeGeometry(surfaceArc(st.line[0],st.line[1]),24,.0014,5,false),tm));
+      const ml=[(st.line[0][0]+st.line[1][0])/2,(st.line[0][1]+st.line[1][1])/2];
+      addConfLabel('⏸ '+st.name,toV3(ml[0]-1.6,ml[1],R*1.016),'#E8A33D',2.0);}});
+  /* ④ 원거리 교전: 지그재그 스파크 호 — 국경을 안 맞댄 위협선 */
   (C.farpairs||[]).forEach(fp=>{
-    const pts=arcCurve(fp.a,fp.b).getPoints(48);
-    const g=new THREE.BufferGeometry().setFromPoints(pts);
-    const dm=new THREE.LineDashedMaterial({color:0xC0392B,transparent:true,opacity:.55,
-      dashSize:.028,gapSize:.02});dm.userData.co=.55;
-    confMats.push(dm);
-    const ln=new THREE.Line(g,dm);
-    ln.computeLineDistances();
-    conflictLayer.add(ln);});
+    const curve=arcCurve(fp.a,fp.b);
+    const pts=zigzag(curve.getPoints(72),.007);
+    const dm=new THREE.LineBasicMaterial({color:0xD9524B,transparent:true,opacity:.6});
+    dm.userData.co=.6;
+    frontMats.push(dm);
+    conflictLayer.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),dm));
+    const mp=curve.getPoint(.5).clone().multiplyScalar(1.02);
+    const lb=confLabelSprite('⚡ '+fp.name,'#E88A84');
+    lb.position.copy(mp);
+    confLabels.push({s:lb,normal:mp.clone().normalize(),gate:2.6});
+    conflictLayer.add(lb);});
   /* ② 국지 분쟁·내전: 진앙 마커만 — 채움 없음 */
   (C.zones||[]).forEach(c=>{
     if(!c.hot)return;
@@ -589,7 +655,8 @@ function renderConflicts(){
       new THREE.MeshBasicMaterial({color:0xC0392B,transparent:true,side:THREE.DoubleSide,opacity:.7}));
     ring.position.copy(p);orient(ring,p);
     ring.userData={ph:Math.random()*6.28};
-    conflictLayer.add(ring);confPulses.push(ring);});
+    conflictLayer.add(ring);confPulses.push(ring);
+    addConfLabel('✕ '+c.name,toV3(c.hot[0]-2.2,c.hot[1],R*1.014),'#D0685F',1.95);});
   conflictLayer.visible=L.conflicts;}
 function renderShips(){
   if(!shipsGroup)return;
@@ -750,7 +817,14 @@ function applyVisual(){
   const cA=layerAlpha*(1-dimK*.6); /* 분쟁층: ENGINE에서도 흐릿하게 남긴다 — 세계의 배경 상태 */
   confMats.forEach(m=>m.opacity=(m.userData.co??.8)*cA);
   const fp2=.55+.45*Math.sin(performance.now()/260); /* 전선: 빠른 맥동 = 뜨거움 */
-  frontMats.forEach(m=>m.opacity=(m.userData.co??.9)*fp2*cA);}
+  frontMats.forEach(m=>m.opacity=(m.userData.co??.9)*fp2*cA);
+  /* 분쟁 부연 라벨: 줄 게이트 + 수평선 페이드 */
+  {const camDir=camera.position.clone().normalize();
+   const dist=VIEW==='2d'?camera.position.z+1.2:camera.position.length();
+   confLabels.forEach(o=>{
+     const facing=VIEW==='2d'?1:o.normal.dot(camDir);
+     const fade=VIEW==='2d'?1:THREE.MathUtils.smoothstep(facing,.12,.35);
+     o.s.material.opacity=(dist<o.gate?fade*.92:0)*cA;});}}
 
 function updateLabels(){
   const camDir=camera.position.clone().normalize();
