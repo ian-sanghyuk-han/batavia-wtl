@@ -39,7 +39,7 @@
   #toast.show{opacity:1;pointer-events:auto}
   #toast small{color:#5b6b7a;font-family:Consolas,monospace;font-size:9px;margin-right:7px}
   /* 활성 카드 — 상시, 왼쪽 계열색 띠 + 수치 강조 */
-  #activebar{position:fixed;left:12px;top:130px;z-index:9;display:flex;flex-direction:column;gap:8px}
+  #activebar{position:fixed;left:12px;top:142px;z-index:9;display:flex;flex-direction:column;gap:8px}
   .acard{width:min(316px,calc(100vw - 24px));padding:9px 12px 9px 11px;cursor:pointer;
     background:var(--glass2);border-left-width:4px;border-left-style:solid}
   .acard .r1{font:600 12px Consolas,monospace;color:#F4FBFF;letter-spacing:1px}
@@ -52,7 +52,7 @@
   #btnrow{position:fixed;right:12px;bottom:52px;z-index:11;display:flex;gap:8px}
   .pbtn{padding:8px 14px;font:11px Consolas,monospace;color:var(--acc);cursor:pointer;
     letter-spacing:2px;user-select:none}
-  #news,#cards{position:fixed;right:12px;bottom:92px;z-index:11;width:min(348px,calc(100vw - 24px));
+  #news,#cards{position:fixed;right:12px;bottom:100px;z-index:11;width:min(348px,calc(100vw - 24px));
     max-height:46vh;overflow-y:auto;padding:10px 12px;display:none}
   #news.on,#cards.on{display:block}
   #news h3,#cards h3{margin:0 0 8px;font:600 10px Consolas,monospace;letter-spacing:2px;color:var(--acc)}
@@ -77,7 +77,7 @@
   /* 레이어 섹션 */
   #layersbtn{position:fixed;left:12px;bottom:52px;z-index:11;padding:8px 14px;
     font:11px Consolas,monospace;color:var(--acc);cursor:pointer;letter-spacing:2px;user-select:none}
-  #layers{position:fixed;left:12px;bottom:92px;z-index:11;width:214px;padding:10px 12px;display:none}
+  #layers{position:fixed;left:12px;bottom:100px;z-index:11;width:214px;padding:10px 12px;display:none}
   #layers.on{display:block}
   #layers h3{margin:0 0 7px;font:600 10px Consolas,monospace;letter-spacing:2px;color:var(--acc)}
   .lrow{display:flex;align-items:center;gap:7px;padding:5px 2px;font:10.5px Consolas,monospace;
@@ -88,7 +88,7 @@
   .lrow .st{margin-left:auto;color:#5b6b7a;font-size:9px}
   #layers .foot{margin-top:6px;font:9px Consolas,monospace;color:#5b6b7a}
   /* 노드 렌즈 — 도시 탭 → 그 시장의 지수 */
-  #lens{position:fixed;left:12px;bottom:92px;z-index:12;width:262px;padding:11px 13px;display:none}
+  #lens{position:fixed;left:12px;bottom:100px;z-index:12;width:262px;padding:11px 13px;display:none}
   #lens.on{display:block}
   #lens h3{margin:0 0 2px;font:600 12px Consolas,monospace;letter-spacing:2px;color:var(--ink)}
   #lens h3 small{color:#5b6b7a;font-size:9px;margin-left:6px}
@@ -143,7 +143,8 @@
     border-right:1px solid var(--edge);border-bottom:1px solid var(--edge)}
   .lnode h4{margin:0;font:600 11px Consolas,monospace;letter-spacing:1px;color:var(--ink)}
   .lnode .v{font:10.5px/1.7 Consolas,monospace;color:#9fb8cc;margin-top:3px}
-  .lnode .v b{color:#EAF9FF;font-size:11.5px}
+  .lnode .v b{color:var(--fam,#7FD8FF);font-size:12.5px;text-shadow:0 0 8px rgba(127,216,255,.25)}
+  .lspark{display:block;margin-top:6px;opacity:.9}
   .lnode .st{position:absolute;top:9px;right:10px;font:9px Consolas,monospace;color:#5b6b7a}
   .lnode.pass{border-left-color:var(--fam,#7FD8FF)}
   .lnode.pass .st{color:#3FE0A0}
@@ -361,6 +362,15 @@ const L={ships:true,news:true,routes:true,ripples:true,clabels:true,citylabels:t
 
 /* ══ 무대(stage) — 뷰가 바뀌면 전부 재조립 ══ */
 let stage=null,baseMesh=null,innerL=null,coastL=null,cityIM=null,obsIM=null;
+let stageClones=[];
+function refreshClones(){ /* MAP: 좌우에 복제 무대 — 경계 없는 지도 */
+  stageClones.forEach(c=>scene.remove(c));
+  stageClones=[];
+  if(VIEW!=='2d'||!stage)return;
+  [-W2,W2].forEach(off=>{
+    const c=stage.clone(true);
+    c.position.x=off;
+    scene.add(c);stageClones.push(c);});}
 let routesGroup=null,shipsGroup=null,newsLayer=null,rippleGroup=null;
 const labelObjs=[];
 const pulses=[],flows=[];
@@ -696,7 +706,7 @@ function renderConflicts(){
     conflictLayer.add(ring);confPulses.push(ring);
     addConfLabel('UCDP · '+sp.country+' (\uc0ac\ub9dd '+sp.deaths+')',
       toV3(sp.hot[0]-2.4,sp.hot[1],R*1.014),'#C96A5E',2.1);});
-  conflictLayer.visible=L.conflicts;}
+  conflictLayer.visible=L.conflicts;refreshClones();}
 function renderShips(){
   if(!shipsGroup)return;
   shipsGroup.clear();shipMats.length=0;
@@ -711,7 +721,8 @@ function renderShips(){
       d3.position.copy(p);orient(d3,p);
       if(s.cog!=null)d3.rotateZ(-s.cog*D2R);
       d3.updateMatrix();im.setMatrixAt(i,d3.matrix);});
-    im.instanceMatrix.needsUpdate=true;shipsGroup.add(im);});}
+    im.instanceMatrix.needsUpdate=true;shipsGroup.add(im);});
+  refreshClones();}
 function renderNewsPulses(){
   if(!newsLayer)return;
   newsLayer.clear();pulses.length=0;
@@ -722,14 +733,16 @@ function renderNewsPulses(){
       new THREE.MeshBasicMaterial({color:new THREE.Color(toneColor(e)),transparent:true,side:THREE.DoubleSide}));
     ring.position.copy(p);orient(ring,p);
     ring.userData={ph:Math.random()*6.28};
-    newsLayer.add(ring);pulses.push(ring);});}
+    newsLayer.add(ring);pulses.push(ring);});
+  refreshClones();}
 function drawRoutes(){
   if(!routesGroup||!ledCache)return;
   routesGroup.clear();routeMats.length=0;
   (ledCache.routes||[]).forEach(rt=>{
     const m=new THREE.MeshBasicMaterial({color:new THREE.Color(rt.c),transparent:true,opacity:.16});
     routeMats.push(m);
-    routesGroup.add(new THREE.Mesh(new THREE.TubeGeometry(surfaceArc(rt.a,rt.b),40,.0016,5,false),m));});}
+    routesGroup.add(new THREE.Mesh(new THREE.TubeGeometry(surfaceArc(rt.a,rt.b),40,.0016,5,false),m));});
+  refreshClones();}
 function drawFlow(active,idx){
   const col=new THREE.Color(active.card.color);
   let gens=(active.card.spread||[]).map(g=>g.slice());
@@ -757,7 +770,7 @@ function drawRipples(){
   if(!rippleGroup)return;
   rippleGroup.clear();flows.length=0;
   activesCache.forEach((a,i)=>drawFlow(a,i));
-  applyHighlight();}
+  applyHighlight();refreshClones();}
 function applyHighlight(){
   activesCache.forEach((a,i)=>{
     if(!a.flow)return;
@@ -829,7 +842,7 @@ function buildStage(){
   newsLayer=new THREE.Group();stage.add(newsLayer);renderNewsPulses();
   conflictLayer=new THREE.Group();stage.add(conflictLayer);renderConflicts();
   rippleGroup=new THREE.Group();stage.add(rippleGroup);drawRipples();
-  applyLayers();}
+  applyLayers();refreshClones();}
 
 /* ── 레이어 on/off + 로직 감쇠 ── */
 function applyLayers(){
@@ -934,7 +947,7 @@ function configCamera(){
     controls.mouseButtons={LEFT:THREE.MOUSE.ROTATE,MIDDLE:THREE.MOUSE.DOLLY,RIGHT:THREE.MOUSE.ROTATE};
     controls.touches={ONE:THREE.TOUCH.ROTATE,TWO:THREE.TOUCH.DOLLY_PAN};
     controls.autoRotate=(MODE==='3d'||MODE==='logic')&&AUTOROT;
-    controls.autoRotateSpeed=MODE==='logic'?.1:.22; /* 기관실: 느린 자전 */
+    controls.autoRotateSpeed=MODE==='logic'?.45:.22; /* 기관실: 체감되는 자전 */ /* 기관실: 느린 자전 */
     controls.minDistance=1.4;controls.maxDistance=5.5;
     controls.target.set(0,0,0);
     if(camera.position.length()<1.5)camera.position.set(0,.5,3.35);
@@ -976,7 +989,16 @@ function renderLogicView(){
     const card=cardOf(cd.id);
     return `<div id="lc-${cd.id}" class="lnode ${cd.pass?'pass':'wait'}" style="--fam:${card.color};animation-delay:${.45+i*.12}s">`+
       `<h4>${cd.id}</h4><span class="st">${cd.pass?'발동':'대기'}</span>`+
-      `<div class="formula">${cd.f}</div><div class="v">${cd.sub}</div></div>`;}).join('');
+      `<div class="formula">${cd.f}</div><div class="v">${cd.sub}</div>`+
+      `<canvas class="lspark" id="lsp-${cd.id}" width="230" height="30"></canvas></div>`;}).join('');
+  /* 미니 그래프: 실수치 이력 (쌓이는 만큼 길어짐) */
+  drawMini(document.getElementById('lsp-L-MKT-001'),CONVH.map(r=>r.v),'#A79BFF',.55);
+  drawMini(document.getElementById('lsp-L-INF-004'),
+    DAYSH.map(r=>r.mkt&&r.mkt.wti&&r.mkt.wti.v).filter(v=>v!=null),'#FF5D6E',null);
+  drawMini(document.getElementById('lsp-L-INF-001'),
+    DAYSH.map(r=>r.prepricing).filter(v=>v!=null),'#FF5D6E',null);
+  ['L-PHY-004','L-EVT-004'].forEach(id=>{
+    const cv2=document.getElementById('lsp-'+id);if(cv2)cv2.style.display='none';});
   kbox.innerHTML=SHOW.map((cd,i)=>{
     const card=cardOf(cd.id);
     return `<div id="lk-${cd.id}" class="lnode lcard ${cd.pass?'pass':'wait'}" style="--fam:${card.color};animation-delay:${.95+i*.1}s">`+
@@ -985,6 +1007,8 @@ function renderLogicView(){
   document.querySelectorAll('#lstage > div:first-child .lnode').forEach((n,i)=>
     n.style.animationDelay=(i*.1)+'s');
   document.getElementById('ls-out').style.animationDelay='1.5s';
+  document.querySelectorAll('#lstage .lnode').forEach(n=>{
+    n.style.animation='none';void n.offsetWidth;n.style.animation='';});
   kbox.querySelectorAll('.lcard').forEach(n=>n.addEventListener('click',()=>
     openPop(n.id.replace('lk-',''))));
   const act=SHOW.filter(cd=>cd.pass);
@@ -1149,7 +1173,26 @@ function applyRegime(d){
   document.getElementById('rgval').textContent=`동조도 ${v.toFixed(3)}${dtxt} (긴장 ${th.tension} · 경보 ${th.alert})`;
   document.getElementById('rgprov').textContent=d.conv.provenance||'';
   drawRegimeSpark(t.acc,th);}
-let CONVH=[];
+let CONVH=[],DAYSH=[];
+function drawMini(cv,vals,color,th){
+  if(!cv)return;
+  const g=cv.getContext('2d');g.clearRect(0,0,cv.width,cv.height);
+  if(vals.length<2){cv.style.display='none';return;}
+  cv.style.display='block';
+  const W=cv.width,H=cv.height,pad=3;
+  let mn=Math.min(...vals),mx=Math.max(...vals);
+  if(th!=null){mn=Math.min(mn,th);mx=Math.max(mx,th);}
+  const rg2=(mx-mn)||1;
+  const Y=v=>H-pad-(v-mn)/rg2*(H-pad*2);
+  if(th!=null){g.strokeStyle='#FF6A6E';g.globalAlpha=.5;g.setLineDash([3,3]);
+    g.beginPath();g.moveTo(pad,Y(th));g.lineTo(W-pad,Y(th));g.stroke();
+    g.setLineDash([]);g.globalAlpha=1;}
+  g.strokeStyle=color;g.lineWidth=1.4;g.beginPath();
+  vals.forEach((v,i)=>{const x=pad+i/(vals.length-1)*(W-pad*2);
+    i?g.lineTo(x,Y(v)):g.moveTo(x,Y(v));});
+  g.stroke();
+  const lx=W-pad,ly=Y(vals[vals.length-1]);
+  g.fillStyle='#fff';g.beginPath();g.arc(lx-1,ly,2,0,6.29);g.fill();}
 function drawRegimeSpark(acc,th){
   const cv=document.getElementById('rgspark');if(!cv)return;
   const g=cv.getContext('2d');g.clearRect(0,0,cv.width,cv.height);
@@ -1250,9 +1293,11 @@ Promise.all([
   fetch('data/regime.json').then(r=>r.json()).catch(()=>null),
   fetch('data/event_card.json').then(r=>r.json()).catch(()=>null),
   fetch('data/lens.json').then(r=>r.json()).catch(()=>null),
-  fetch('data/history/conv.csv').then(r=>r.text()).catch(()=>'')
-]).then(([led,news,mkt,rg,ev,ln,cvh])=>{
+  fetch('data/history/conv.csv').then(r=>r.text()).catch(()=>''),
+  fetch('data/history/days.jsonl').then(r=>r.text()).catch(()=>'')
+]).then(([led,news,mkt,rg,ev,ln,cvh,dj])=>{
   engineLastRun=Date.now();
+  DAYSH=dj.trim()?dj.trim().split(/\r?\n/).map(l=>{try{return JSON.parse(l);}catch(e){return null;}}).filter(Boolean):[];
   if(ln)LENSD=ln;
   CONVH=cvh.trim()?cvh.trim().split(/\r?\n/).map(l=>{const p=l.split(',');return {d:p[0],v:+p[1]};}).filter(r=>!isNaN(r.v)).slice(-60):[];
   ledCache=led;
@@ -1544,17 +1589,11 @@ function loop(now){
   /* 2D 자동 흐름 */
   {const dt=Math.min(100,now-lastNow);lastNow=now;
    if(VIEW==='2d'&&MODE==='2d'&&!morphAnim&&!camAnim&&now>drift2dPause){
-     camera.position.x+=.00004*dt*camera.position.z; /* 한 방향 무한 흐름 */
-     if(camera.position.x>1.7&&!wrap2d){
-       wrap2d=true;
-       const cv2=renderer.domElement;
-       cv2.style.opacity=.12;
-       setTimeout(()=>{
-         camera.position.x-=3.4;controls.target.x=camera.position.x;
-         cv2.style.opacity=1;
-         setTimeout(()=>{wrap2d=false;},400);},180);}
-     controls.target.x=Math.min(controls.target.x+0,camera.position.x);
-     controls.target.x=camera.position.x;controls.target.y=camera.position.y;}}
+     camera.position.x+=.00012*dt*camera.position.z; /* 한 방향, 끊김 없음 */
+     controls.target.x=camera.position.x;controls.target.y=camera.position.y;}
+   if(VIEW==='2d'&&!morphAnim){ /* 정확 주기 무음 점프 — 복제 무대 덕분 화면은 동일 */
+     if(camera.position.x>W2/2){camera.position.x-=W2;controls.target.x-=W2;}
+     else if(camera.position.x<-W2/2){camera.position.x+=W2;controls.target.x+=W2;}}}
   updateLabels();
   pulses.forEach(rg=>{const s=1+.9*((now/1400+rg.userData.ph)%1);
     rg.scale.set(s,s,s);
