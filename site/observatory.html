@@ -25,12 +25,11 @@
   #brand{font:600 13px/1.2 Consolas,monospace;letter-spacing:3px;color:var(--ink);white-space:nowrap}
   #brand small{display:block;font-weight:400;font-size:9px;letter-spacing:5px;color:var(--acc);margin-top:2px}
   #regimechip{margin-left:auto;padding:7px 12px;font:11px/1.5 Consolas,monospace;color:var(--dim);
-    text-align:right}
+    text-align:right;flex:none}
   #regimechip b{color:var(--acc);letter-spacing:2px}
   #regimechip .prov{font-size:9px;color:#5b6b7a}
-  /* 뉴스 토스트 — 더 맑은 유리, 왼쪽 논조 띠 */
-  #toast{position:fixed;top:88px;left:50%;transform:translateX(-50%);z-index:9;
-    max-width:min(560px,calc(100vw - 24px));padding:9px 16px 9px 13px;cursor:pointer;
+  /* 뉴스 토스트 — 최상단(브랜드 옆) 상시 영역, 맑은 유리, 왼쪽 논조 띠 */
+  #toast{flex:1 1 auto;min-width:0;margin:0 14px;padding:8px 14px 8px 12px;cursor:pointer;
     background:rgba(7,11,17,.42);border-left-width:3px;border-left-style:solid;
     font:12px/1.5 'Segoe UI',sans-serif;color:var(--ink);white-space:nowrap;overflow:hidden;
     text-overflow:ellipsis;opacity:0;transition:opacity 1.1s ease;pointer-events:none}
@@ -166,8 +165,9 @@
     #brand{font-size:11px;letter-spacing:2px}
     #regimechip{max-width:60vw;font-size:9px;padding:5px 9px}
     #regimechip .prov{display:none}
-    #toast{top:78px}
-    #activebar{top:118px}
+    #topbar{flex-wrap:wrap}
+    #toast{order:3;flex-basis:100%;margin:6px 0 0;font-size:11px}
+    #activebar{top:136px}
     .acard{width:min(262px,calc(100vw - 24px))}
     #modebar{bottom:94px}
   }
@@ -176,10 +176,10 @@
 <body>
 <div id="topbar">
   <div id="brand">BATAVIA PROJECT<small>OBSERVATORY</small></div>
+  <div id="toast" class="glass"></div>
   <div id="regimechip" class="glass">국면 <b id="rgname">—</b><br>
     <span id="rgval">—</span><br><span class="prov" id="rgprov"></span></div>
 </div>
-<div id="toast" class="glass"></div>
 <div id="activebar"></div>
 <div id="modebar" class="glass">
   <span class="mbtn on" data-v="3d">3D</span>
@@ -263,9 +263,15 @@ const W2=4,H2=2; /* 평면 지도의 폭·높이 */
 let VIEW='3d',logicOn=false,MODE='3d';
 function sphV3(la,lo,r){const phi=(90-la)*D2R,th=(lo+180)*D2R;
   return new THREE.Vector3(-r*Math.sin(phi)*Math.cos(th),r*Math.cos(phi),r*Math.sin(phi)*Math.sin(th));}
-function toV3(la,lo,r){
-  if(VIEW==='2d')return new THREE.Vector3(lo/180*(W2/2),la/90*(H2/2),(r-R)*2.2);
-  return sphV3(la,lo,r);}
+function flatV3(la,lo,r){return new THREE.Vector3(lo/180*(W2/2),la/90*(H2/2),(r-R)*2.2);}
+function toV3(la,lo,r){return VIEW==='2d'?flatV3(la,lo,r):sphV3(la,lo,r);}
+function blendV3(la,lo,r,k){return sphV3(la,lo,r).lerp(flatV3(la,lo,r),k);} /* 모핑: 구↔평면 */
+let MORPH=0; /* 0=구 · 1=평면 */
+function setLerpGeo(geo,p0,p1,k){
+  const a=geo.attributes.position.array;
+  for(let i=0;i<a.length;i++)a[i]=p0[i]+(p1[i]-p0[i])*k;
+  geo.attributes.position.needsUpdate=true;
+  geo.computeBoundingSphere();}
 function fitCamera(){
   if(VIEW!=='3d')return;
   const fovY=camera.fov*Math.PI/180;
@@ -345,16 +351,21 @@ function fillCanvasTexture(){ /* 등장방형 채움 — 구·평면 공용 */
   t.anisotropy=renderer.capabilities.getMaxAnisotropy();
   return t;}
 
-function meshToSegs(mesh,r){
-  const verts=[];
+function meshToSegs(mesh,r){ /* 구·평면 두 좌표를 함께 저장 — 모핑 재료 */
+  const v0=[],v1=[];
   const lines=mesh.type==='MultiLineString'?mesh.coordinates:[mesh.coordinates];
   lines.forEach(line=>{for(let i=0;i<line.length-1;i++){
     if(line[i][1]<-82.8&&line[i+1][1]<-82.8)continue;
-    if(VIEW==='2d'&&Math.abs(line[i][0]-line[i+1][0])>180)continue; /* 평면: 날짜변경선 관통 선 제거 */
-    const a=toV3(line[i][1],line[i][0],r),b=toV3(line[i+1][1],line[i+1][0],r);
-    verts.push(a.x,a.y,a.z,b.x,b.y,b.z);}});
+    if(Math.abs(line[i][0]-line[i+1][0])>180)continue; /* 날짜변경선 관통 선 제외(양 뷰 공통) */
+    const a0=sphV3(line[i][1],line[i][0],r),b0=sphV3(line[i+1][1],line[i+1][0],r);
+    const a1=flatV3(line[i][1],line[i][0],r),b1=flatV3(line[i+1][1],line[i+1][0],r);
+    v0.push(a0.x,a0.y,a0.z,b0.x,b0.y,b0.z);
+    v1.push(a1.x,a1.y,a1.z,b1.x,b1.y,b1.z);}});
   const g=new THREE.BufferGeometry();
-  g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(verts),3));
+  const P0=new Float32Array(v0),P1=new Float32Array(v1);
+  g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(P0),3));
+  g.userData={p0:P0,p1:P1};
+  setLerpGeo(g,P0,P1,VIEW==='2d'?1:0);
   return g;}
 
 const T1=new Set(['united states of america','china','japan','germany','india',
@@ -396,7 +407,7 @@ function labelSprite(txt,tier){
 function addLabel(txt,la,lo,tier){
   const s=labelSprite(txt,tier);
   s.position.copy(toV3(la,lo,R*1.012));
-  labelObjs.push({s,tier,normal:VIEW==='2d'?new THREE.Vector3(0,0,1):s.position.clone().normalize()});
+  labelObjs.push({s,tier,la,lo,normal:VIEW==='2d'?new THREE.Vector3(0,0,1):s.position.clone().normalize()});
   stage.add(s);}
 
 const CITY4=[['SEOUL',37.5,127],['TOKYO',35.7,139.7],['NEW YORK',40.7,-74],['LONDON',51.5,-.1],
@@ -542,11 +553,22 @@ function buildStage(){
     stage.traverse(o=>{if(o.geometry&&o.geometry.dispose)o.geometry.dispose();});}
   labelObjs.length=0;
   stage=new THREE.Group();scene.add(stage);
-  /* 바탕 */
-  const mat=fillTex?new THREE.MeshBasicMaterial({map:fillTex,transparent:true})
-                   :new THREE.MeshBasicMaterial({color:0x0c141d,transparent:true});
-  baseMesh=VIEW==='2d'?new THREE.Mesh(new THREE.PlaneGeometry(W2,H2),mat)
-                      :new THREE.Mesh(new THREE.SphereGeometry(R,96,96),mat);
+  /* 바탕 — 통합 그리드: 같은 정점들이 구로 감기고 평면으로 펼쳐진다 (모핑의 심장) */
+  MORPH=VIEW==='2d'?1:0;
+  const mat=fillTex?new THREE.MeshBasicMaterial({map:fillTex,transparent:true,side:THREE.DoubleSide})
+                   :new THREE.MeshBasicMaterial({color:0x0c141d,transparent:true,side:THREE.DoubleSide});
+  {const geo=new THREE.PlaneGeometry(W2,H2,192,96);
+   const pos=geo.attributes.position;
+   const bp0=new Float32Array(pos.count*3),bp1=new Float32Array(pos.count*3);
+   for(let i=0;i<pos.count;i++){
+     const x=pos.getX(i),y=pos.getY(i);
+     const lo=x/(W2/2)*180,la=y/(H2/2)*90;
+     const s=sphV3(la,lo,R);
+     bp0[i*3]=s.x;bp0[i*3+1]=s.y;bp0[i*3+2]=s.z;
+     bp1[i*3]=x;bp1[i*3+1]=y;bp1[i*3+2]=0;}
+   baseMesh=new THREE.Mesh(geo,mat);
+   baseMesh.userData={bp0,bp1};
+   setLerpGeo(geo,bp0,bp1,MORPH);}
   stage.add(baseMesh);
   /* 경계 + 라벨 */
   innerL=coastL=null;
@@ -616,6 +638,36 @@ function updateLabels(){
     const fade=VIEW==='2d'?1:THREE.MathUtils.smoothstep(facing,.12,.35);
     o.s.material.opacity=tierOn?fade*.95:0;});}
 
+/* ── 모핑: 지구본이 펼쳐지고(→평면) 접힌다(→구) ── */
+let morphAnim=null;
+function setStageMorph(k){
+  MORPH=k;
+  if(baseMesh&&baseMesh.userData.bp0)
+    setLerpGeo(baseMesh.geometry,baseMesh.userData.bp0,baseMesh.userData.bp1,k);
+  [innerL,coastL].forEach(l=>{
+    if(l&&l.geometry.userData&&l.geometry.userData.p0)
+      setLerpGeo(l.geometry,l.geometry.userData.p0,l.geometry.userData.p1,k);});
+  labelObjs.forEach(o=>o.s.position.copy(blendV3(o.la,o.lo,R*1.012,k)));
+  const d3=new THREE.Object3D();
+  if(cityIM){const all=[...CITY4,...CITY5];
+    all.forEach((c2,i)=>{d3.position.copy(blendV3(c2[1],c2[2],R*1.0025,k));
+      d3.updateMatrix();cityIM.setMatrixAt(i,d3.matrix);});
+    cityIM.instanceMatrix.needsUpdate=true;}
+  if(obsIM){OBS.forEach((c2,i)=>{d3.position.copy(blendV3(c2[0],c2[1],R*1.003,k));
+    d3.updateMatrix();obsIM.setMatrixAt(i,d3.matrix);});
+    obsIM.instanceMatrix.needsUpdate=true;}}
+function startMorph(k1,vFinal){
+  /* 지도(채움·국경·라벨·점)만 함께 접히고, 데이터 레이어는 잠시 물러났다 도착 후 재등장 */
+  if(rippleGroup)rippleGroup.visible=false;
+  if(routesGroup)routesGroup.visible=false;
+  if(shipsGroup)shipsGroup.visible=false;
+  if(newsLayer)newsLayer.visible=false;
+  atmMesh.visible=false;rimMesh.visible=false;
+  controls.enabled=false;camAnim=null;
+  morphAnim={k0:MORPH,k1,t0:performance.now(),dur:1200,vFinal,
+    camFrom:camera.position.clone(),
+    camTo:k1===1?new THREE.Vector3(0,0,2.6):new THREE.Vector3(0,.5,2.9)};}
+
 /* ── 카메라: 뷰별 조작 + 활공 ── */
 let camAnim=null,autoT=null;
 function rotateTo(la,lo){
@@ -632,17 +684,23 @@ function rotateTo(la,lo){
 function configCamera(){
   if(VIEW==='2d'){
     controls.enableRotate=false;controls.enablePan=true;controls.screenSpacePanning=true;
+    /* 왼쪽 드래그 = 끌기(팬) — 회전만 꺼서는 왼쪽 버튼이 죽어 있게 됨 */
+    controls.mouseButtons={LEFT:THREE.MOUSE.PAN,MIDDLE:THREE.MOUSE.DOLLY,RIGHT:THREE.MOUSE.PAN};
+    controls.touches={ONE:THREE.TOUCH.PAN,TWO:THREE.TOUCH.DOLLY_PAN};
     controls.autoRotate=false;
     controls.minDistance=.6;controls.maxDistance=4;
-    controls.target.set(0,0,0);
-    camera.position.set(0,0,2.4);camera.lookAt(0,0,0);
+    controls.target.set(camera.position.x,camera.position.y,0);
+    if(Math.abs(camera.position.z)<0.5)camera.position.set(0,0,2.4);
+    camera.position.z=Math.max(camera.position.z,1.2);
+    camera.lookAt(controls.target);
   }else{
     controls.enableRotate=true;controls.enablePan=false;
+    controls.mouseButtons={LEFT:THREE.MOUSE.ROTATE,MIDDLE:THREE.MOUSE.DOLLY,RIGHT:THREE.MOUSE.ROTATE};
+    controls.touches={ONE:THREE.TOUCH.ROTATE,TWO:THREE.TOUCH.DOLLY_PAN};
     controls.autoRotate=MODE==='3d'&&AUTOROT;
     controls.minDistance=1.4;controls.maxDistance=5.5;
     controls.target.set(0,0,0);
-    if(Math.abs(camera.position.z-2.4)<.01&&Math.abs(camera.position.x)<2.1&&Math.abs(camera.position.y)<1.1)
-      camera.position.set(0,.5,2.9);
+    if(camera.position.length()<1.5)camera.position.set(0,.5,2.9);
     fitCamera();}}
 
 /* ══ 로직 뷰: 살아있는 계산의 플로우차트 ══ */
@@ -782,24 +840,25 @@ document.getElementById('popclose').addEventListener('click',()=>{
 document.getElementById('pop').addEventListener('click',e=>{
   if(e.target.id==='pop')document.getElementById('popclose').click();});
 
-/* ── 뷰 전환: 스르륵(페이드) → 재조립 ── */
+/* ── 뷰 전환: 구↔평면은 모핑, 3D↔로직은 짧은 페이드 ── */
 function setView(v){
-  if(v===MODE)return;
+  if(v===MODE||morphAnim)return;
   MODE=v;
   document.querySelectorAll('#modebar .mbtn').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  const lv=document.getElementById('logicview');
+  logicOn=v==='logic';
+  document.getElementById('activebar').style.display=logicOn?'none':'flex';
+  const crossing=(v==='2d')!==(VIEW==='2d');
+  if(crossing){ /* 지구본이 펼쳐진다/접힌다 */
+    lv.classList.remove('on');
+    startMorph(v==='2d'?1:0,v);
+    return;}
   const cv=renderer.domElement;
   cv.style.opacity=0;
   setTimeout(()=>{
-    logicOn=v==='logic';
-    const want=(v==='2d')?'2d':'3d';
-    if(VIEW!==want){VIEW=want;buildStage();}
-    else applyLogic();
-    configCamera();
-    const lv=document.getElementById('logicview');
+    applyLogic();configCamera();
     if(logicOn){lv.classList.add('on');renderLogicView();}
     else lv.classList.remove('on');
-    /* 로직 모드: 상시 카드는 플로우차트 안에 있으므로 겹침 방지 */
-    document.getElementById('activebar').style.display=logicOn?'none':'flex';
     cv.style.opacity=1;
   },370);}
 document.querySelectorAll('#modebar .mbtn').forEach(b=>
@@ -1061,6 +1120,20 @@ window.__dbg={get labelObjs(){return labelObjs;},camera,setView,get L(){return L
 
 function loop(now){
   controls.update();
+  /* 모핑 진행: 무대와 카메라가 함께 접히고 펼쳐진다 */
+  if(morphAnim){
+    const u=Math.min(1,(now-morphAnim.t0)/morphAnim.dur);
+    const e2=u<.5?4*u*u*u:1-Math.pow(-2*u+2,3)/2;
+    setStageMorph(morphAnim.k0+(morphAnim.k1-morphAnim.k0)*e2);
+    camera.position.lerpVectors(morphAnim.camFrom,morphAnim.camTo,e2);
+    camera.lookAt(0,0,0);
+    if(u>=1){
+      const vF=morphAnim.vFinal;morphAnim=null;
+      VIEW=(vF==='2d')?'2d':'3d';
+      buildStage();configCamera();controls.enabled=true;applyLogic();
+      const lv=document.getElementById('logicview');
+      if(logicOn){lv.classList.add('on');renderLogicView();}
+      else lv.classList.remove('on');}}
   if(camAnim){
     const u=Math.min(1,(now-camAnim.t0)/900);
     const e2=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
