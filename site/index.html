@@ -794,7 +794,7 @@ function resampleLine(pts,step){ /* 등간격 재표집 — 지그재그 꺾임 
     need-=len;}
   out.push(pts[pts.length-1].clone());
   return out;}
-const ZDENS=110; /* 스파크 표집점 밀도(단위 길이당) — 전 스파크 선 공통 */
+const ZDENS=175; /* 스파크 표집점 밀도(단위 길이당) — 전 스파크 선 공통 */
 const confLabels=[];
 function confLabelSprite(txt,color){
   const c=document.createElement('canvas');c.width=640;c.height=96;
@@ -880,13 +880,13 @@ function renderConflicts(){
   (C.farpairs||[]).forEach(fp=>{
     const curve=arcCurve(fp.a,fp.b);
     const n=Math.max(24,Math.round(curve.getLength()*ZDENS));
-    const pts=zigzag(curve.getPoints(n),.005); /* 길이 비례 표집 = 균일 밀도 */
-    const dm=new THREE.LineBasicMaterial({color:0xD9524B,transparent:true,opacity:.6});
-    dm.userData.co=.6;
+    const pts=zigzag(curve.getPoints(n),.0068); /* 길이 비례 표집 = 균일 밀도 */
+    const dm=new THREE.LineBasicMaterial({color:0xD6336C,transparent:true,opacity:.88});
+    dm.userData.co=.88;
     frontMats.push(dm);
     conflictLayer.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),dm));
     const mp=curve.getPoint(.5).clone().multiplyScalar(1.02);
-    const lb=confLabelSprite('⚡ '+fp.name,'#E88A84');
+    const lb=confLabelSprite('⚡ '+fp.name,'#E85C8A');
     lb.position.copy(mp);
     confLabels.push({s:lb,normal:mp.clone().normalize(),gate:2.6});
     conflictLayer.add(lb);});

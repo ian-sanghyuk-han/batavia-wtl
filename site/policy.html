@@ -116,5 +116,42 @@
     <a href="account.html" style="color:var(--acc);text-decoration:none">계정(준비 중) →</a></p>
   </section>
 </main>
+<script>
+(function(){
+const L=localStorage.getItem('bp-lang')||'en';
+document.documentElement.lang=L;
+if(L!=='en')return;
+document.querySelector('header').innerHTML=
+ '<a href="./">← OBSERVATORY</a><b>BATAVIA PROJECT</b> · POLICY — data &amp; principles'+
+ '<small>what this observatory takes in, from where, how it shows it, and how it gets graded</small>';
+const S=document.querySelectorAll('main section');
+S[0].innerHTML='<h2>WHAT WE DO</h2><p>We build a theory of how the world\'s markets are connected (the Ledger), and let a machine grade that theory <span class="hl">in public</span> against real data. No sentence on this screen is an instruction to trade — every signal speaks only as a <span class="hl">positive / neutral / negative observation</span>.</p>';
+S[1].innerHTML='<h2>DATA SOURCES &amp; CADENCE</h2><table>'+
+ '<tr><th>LAYER</th><th>SOURCE</th><th>CADENCE</th></tr>'+
+ '<tr><td><b>News · epicenters</b></td><td><a href="https://www.gdeltproject.org/" target="_blank" rel="noopener">GDELT Project</a> 2.0 — globally reported events</td><td>15 min</td></tr>'+
+ '<tr><td><b>Market prices</b> (indices · FX · commodities · crypto)</td><td>Yahoo Finance</td><td>2× daily</td></tr>'+
+ '<tr><td><b>Rates · credit · liquidity</b></td><td><a href="https://fred.stlouisfed.org/" target="_blank" rel="noopener">FRED</a> (St. Louis Fed)</td><td>2× daily</td></tr>'+
+ '<tr><td><b>Ships (AIS)</b></td><td><a href="https://aisstream.io" target="_blank" rel="noopener">aisstream.io</a> — coastal reception</td><td>2 h</td></tr>'+
+ '<tr><td><b>Armed conflict</b></td><td><a href="https://ucdp.uu.se" target="_blank" rel="noopener">UCDP</a> (Uppsala Conflict Data Program) candidate events</td><td>weekly</td></tr>'+
+ '<tr><td><b>Conflict coverage density</b></td><td>14-day accumulation of GDELT conflict-code coverage (in-house)</td><td>15 min</td></tr>'+
+ '<tr><td><b>Map</b></td><td>Natural Earth (world-atlas 110m)</td><td>static</td></tr>'+
+ '<tr><td><b>Regime (convergence)</b></td><td>in-house — avg |ρ| of an asset-basket correlation (theory core 5.1–5.2)</td><td>2× daily</td></tr>'+
+ '</table><p style="margin-top:10px">All collection and processing runs as automated pipelines in a public repository; every number is recorded with its collection time.</p>';
+S[2].innerHTML='<h2>LABELING PRINCIPLES</h2><ul>'+
+ '<li><span class="tag">live data</span> Values from the sources above are shown unprocessed, or only through stated formulas.</li>'+
+ '<li><span class="tag">link rules v0</span> The rules for "which event wakes which card" are an early version — the rules themselves get graded over time.</li>'+
+ '<li><span class="tag">reconstruction</span> Past replays (2008 · 2020) use real event timelines, but the gauge values are approximate reconstructions — replaced by real-record playback as the daily archive grows.</li>'+
+ '<li><span class="tag">formulas public</span> Every judgment formula is published in IF→THEN form in the ledger. Mathematical formulas — our own and published academic ones (Sahm rule, Kelly, Hurst, Taylor rule) — are not subject to copyright or patents and need no license. Black-Scholes is not used directly (volatility gauges use provider-computed values). Data follows each source\'s terms of use.</li>'+
+ '<li><span class="tag">manually registered</span> Structural relations of the conflict grammar (fronts · standoffs) are registered by a human and reviewed periodically.</li></ul>';
+S[3].innerHTML='<h2>CONFLICT-LAYER CRITERIA</h2>'+
+ '<p>The conflict layer uses a four-tier grammar: <span class="hl">full war</span> (the belligerents\' shared border — spark line) · <span class="hl">local conflict · civil war</span> (epicenter markers) · <span class="hl">standoff · armistice</span> (amber hold-line — e.g. the Korean DMZ) · <span class="hl">distant engagement</span> (zigzag threat line — e.g. US↔Iran).</p>'+
+ '<p>The map draws <span class="hl">armed conflict only</span>. Economic and trade disputes (tariffs, sanctions) have blurry boundaries and are hard to track — they are described in country-level notes instead of being drawn.</p>'+
+ '<p>UCDP auto-marking shows <span class="hl">only the top entries by economic impact</span> (death toll × economy size · gate-proximity weighting). This is not a ranking of the world\'s suffering — it is a cut for signals meaningful through the lens of markets, and the criterion is public on this page.</p>'+
+ '<p>Intensity is expressed by <span class="hl">pulse speed</span>, not color. Sources: UCDP · GDELT.</p>';
+S[4].innerHTML='<h2>THE GRADING PROMISE</h2><p>Every card\'s observation is preregistered; when the outcome arrives, <span class="hl">a machine grades it automatically</span> and the record stays — right days and wrong days alike, never deleted. Verdict pages are free forever on every plan.</p>';
+S[5].innerHTML='<h2>WHAT THIS IS NOT</h2><p>This service is not investment advice and provides no buy or sell signals. There is no trading feature, no brokerage link, no promise of returns — and none will be added.</p>';
+S[6].innerHTML='<h2>RELATED</h2><p><a href="pricing.html" style="color:var(--acc);text-decoration:none">Pricing (draft) →</a> · <a href="refund.html" style="color:var(--acc);text-decoration:none">Refund policy (draft) →</a> · <a href="account.html" style="color:var(--acc);text-decoration:none">Account (in preparation) →</a></p>';
+})();
+</script>
 </body>
 </html>

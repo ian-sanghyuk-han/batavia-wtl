@@ -56,5 +56,18 @@
     </div>
   </div>
 </main>
+<script>
+(function(){
+const L=localStorage.getItem('bp-lang')||'en';
+document.documentElement.lang=L;
+if(L!=='en')return;
+document.querySelector('#card h1').textContent='Observatory account';
+document.querySelector('#card .sub').innerHTML='Alongside email sign-up, <b>one-tap Google sign-in</b> is in preparation. Every free feature of the Observatory works without an account for now.';
+document.getElementById('cta2').textContent='Sign up with email — in preparation';
+document.querySelectorAll('#card span').forEach(s=>{if(s.textContent.trim()==='또는')s.textContent='or';});
+var g=document.getElementById('cta');g.lastChild.textContent=' Continue with Google — in preparation';
+document.querySelector('.foot').innerHTML='At open, the <a href="pricing.html">pricing</a> · <a href="policy.html">data &amp; principles</a> · <a href="refund.html">refund policy</a> apply together';
+})();
+</script>
 </body>
 </html>

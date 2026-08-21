@@ -157,6 +157,47 @@ const R20OPPS=[
   kf:[[0,-0.2],[3.5,-0.6],[7,-0.9],[10.5,-1.2],[14,2.8],[18,3.2]],
   note:'무제한 QE — 밀물의 방향 전환 감지',verdT:14.2,verd:'반전 포착 ✓'}];
 const SC={R08:{ev:R08,opps:R08OPPS},R20:{ev:R20,opps:R20OPPS}};
+const EN=(localStorage.getItem('bp-lang')||'en')==='en';
+document.documentElement.lang=EN?'en':'ko';
+if(EN){
+ document.querySelector('header').innerHTML=
+  '<a href="./">← OBSERVATORY</a><b>BATAVIA PROJECT</b> · REPLAY — that day, replayed'+
+  '<small>reconstructed replay v0.2 · events are the real timeline — gauge values &amp; impact are approximate reconstructions (est.) · to be replaced by real-record playback</small>';
+ document.querySelector('.sc[data-s="R08"]').textContent='2008 Financial Crisis';
+ document.querySelector('.sc[data-s="R20"]').textContent='2020 Pandemic';
+ document.querySelector('#deck .lbl').textContent='Click the bar = jump in time · ticks = events · epicenters land on the globe';
+ document.querySelector('#gwrap small').textContent="that day's epicenters — it turns on its own, no dragging";
+ document.querySelector('#events h3').textContent='EVENTS — they wake as time reaches them';
+ document.querySelector('#gauges h3').textContent="THE GAUGES OF THAT DAY — that day's values into the formulas";
+ document.querySelector('footer').textContent='A replay is the playback of observations — no sentence is an instruction to act · FIRED badge = the moment a formula crossed its threshold · ✓ = an observation verified after the fact';
+ const E8=[
+  ['Lehman Brothers collapses','all markets','A persistent event opens — credit & liquidity breakdown','The credit early-warning had been lit since D-5 (core 2.6) — a window to turn defensive'],
+  ['AIG bailout','financials · credit','The state absorbs systemic risk','Volatility regime shift — the half-Kelly shrink zone (core 6.5)'],
+  ['House rejects the bailout','all markets','Political risk → second crash','Political events reprice — holding cash becomes an observation itself (core 1.2)'],
+  ['Six central banks cut in concert','all markets','Every liquidity channel mobilized','The policy reaction function engages — bottom-search observation begins (core 6.1)'],
+  ['EM currencies plunge','EM · FX','The dollar channel at its extreme — correlation nears 1.0','Crowding at the extreme — seeds of a contrarian candidate (core 2.7)']];
+ const E20=[
+  ['Wuhan lockdown — a persistent event opens','supply chains','First hit to the supply-chain channel','Supply chains lead — watch air cargo & freight gauges (core 2.8)'],
+  ['Global spread recognized — the plunge begins','all markets','The risk-appetite channel ignites','Convergence spikes = diversification-death alarm (core 5.2)'],
+  ['Oil war — the cut deal collapses','energy · credit',"Prisoner's dilemma breaks — oil −24%",'Cartel game breakdown (core 7.5) — energy volatility at maximum (core 1.4)'],
+  ['Circuit breakers — everything but cash falls','all markets','Correlation at its limit — even gold falls','The hour of forced selling = the hour of horizon advantage (core 1.2)'],
+  ['Unlimited QE declared','all markets','The liquidity channel at full power — origin of the great rebound','The liquidity tide turns in — the high-beta front line goes first (core 3.5)']];
+ const G8=[
+  ['Credit leads — HY spread','HY OAS ≥ 500bp → credit alarm','Lit before Lehman — the coward who is half a beat early','Lead confirmed ✓'],
+  ['Convergence alarm — avg |ρ|','avg |ρ| ≥ 0.55 → diversification-death alarm','Crossing 0.55 = diversification starts dying','Alarm confirmed ✓'],
+  ['Dollar squeeze — DXY strength','Dollar strength ≥ 2.0σ → squeeze alarm','The dollar channel at its extreme — EM under pressure','Channel confirmed ✓'],
+  ['Survival rule — observation intensity','Suggested intensity ≤ 0.20× → storm protocol','In a storm, size matters more than direction','Survival rule engaged ✓']];
+ const G20=[
+  ['Supply chains lead — air cargo & freight','supply-chain z ≥ 2.0 → physical lead alarm','The physical world moved before the balance sheets','Lead confirmed ✓'],
+  ['Convergence alarm — avg |ρ|','avg |ρ| ≥ 0.55 → diversification-death alarm','0.95 — "everything but cash falls", written in math','Alarm confirmed ✓'],
+  ['Volatility premium — IV−RV','IV−RV ≥ 20p → fear-premium extreme','The price of fear insurance hits an all-time high','Structure observed ✓'],
+  ['Liquidity switch — net liquidity Δ','net liquidity Δ ≥ +2σ → the tide turns','Unlimited QE — the tide reversal detected','Reversal caught ✓']];
+ R08.forEach((e,i)=>{[e.name,e.reach,e.cx,e.opp]=E8[i];});
+ R20.forEach((e,i)=>{[e.name,e.reach,e.cx,e.opp]=E20[i];});
+ R08OPPS.forEach((o,i)=>{[o.name,o.f,o.note,o.verd]=G8[i];});
+ R20OPPS.forEach((o,i)=>{[o.name,o.f,o.note,o.verd]=G20[i];});
+ R08OPPS[3].core='6.5 half-Kelly';
+}
 const T_END=18;
 let cur='R08',t=0,playing=false,speed=1,lastF=null;
 const BASE_RATE=.42; /* 더 느리게 — 1×에서 전체 약 43초 */
@@ -180,13 +221,13 @@ function build(){
     `<div class="ev" id="ev${i}" style="border-left-color:${e.c}">`+
     `<b>${e.name}</b><div class="d">${e.d}</div>`+
     `<div class="cx">${e.cx}</div>`+
-    `<span class="imp">파급력 ${impDots(e.imp,e.c)} ${e.imp}/5 · ${e.reach} <span style="color:#5b6b7a">(재구성·추정)</span></span>`+
+    `<span class="imp">${EN?'impact':'파급력'} ${impDots(e.imp,e.c)} ${e.imp}/5 · ${e.reach} <span style="color:#5b6b7a">(${EN?'reconstructed · est.':'재구성·추정'})</span></span>`+
     `<div class="opp">☞ ${e.opp}</div></div>`).join('');
   $('gglist').innerHTML=SC[cur].opps.map((o,i)=>
-    `<div class="gg"><div class="h">${o.name}<span class="core">코어 ${o.core}</span></div>`+
+    `<div class="gg"><div class="h">${o.name}<span class="core">${EN?'core':'코어'} ${o.core}</span></div>`+
     `<div class="fx">${o.f}</div>`+
-    `<div class="sub">지금 <b id="gv${i}">—</b>${o.unit} <span id="gc${i}"></span>`+
-    `<span class="st" id="gs${i}">대기</span></div>`+
+    `<div class="sub">${EN?'now':'지금'} <b id="gv${i}">—</b>${o.unit} <span id="gc${i}"></span>`+
+    `<span class="st" id="gs${i}">${EN?'STANDBY':'대기'}</span></div>`+
     `<span class="tr2"><i id="gb${i}"></i><em style="left:${Math.min(100,Math.abs(o.th)/o.max*100)}%"></em></span>`+
     `<div class="nt">${o.note}</div><span class="vd" id="vd${i}">${o.verd}</span></div>`).join('');
   $('ticks').innerHTML=SC[cur].ev.map(e=>
@@ -201,7 +242,7 @@ function paint(){
     const hit=o.dir==='le'?v<=o.th:v>=o.th;
     $('gv'+i).textContent=v.toFixed(o.dec);
     $('gc'+i).textContent=(o.dir==='le'?'≤':'≥')+' '+o.th+o.unit+' ?';
-    const st=$('gs'+i);st.textContent=hit?'발동':'대기';st.classList.toggle('on',hit);
+    const st=$('gs'+i);st.textContent=hit?(EN?'FIRED':'발동'):(EN?'STANDBY':'대기');st.classList.toggle('on',hit);
     $('gb'+i).style.width=Math.min(100,Math.abs(v)/o.max*100)+'%';
     $('vd'+i).classList.toggle('on',t>=o.verdT);});
   window.__rp={t,cur,list:SC[cur].ev};}

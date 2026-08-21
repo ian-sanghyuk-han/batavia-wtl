@@ -57,16 +57,36 @@
 <footer id="foot"></footer>
 <script>
 const $=id=>document.getElementById(id);
+const EN=(localStorage.getItem('bp-lang')||'en')==='en';
+document.documentElement.lang=EN?'en':'ko';
+const FAM_EN={'고용':'Jobs','금리':'Rates','물가':'Inflation','물리':'Physical','성장':'Growth',
+ '시장구조':'Market structure','유동성':'Liquidity','이벤트':'Events','포지셔닝':'Positioning'};
+const fam=f=>EN&&FAM_EN[f]||f;
+const coreT=s=>EN?String(s||'').replace('코어','core'):s;
+if(EN){
+  document.querySelector('header').innerHTML=
+   '<a href="./">← OBSERVATORY</a><b>BATAVIA PROJECT</b> · LOGIC LEDGER <small id="cnt">Loading…</small>';
+  document.getElementById('q').placeholder='Search — name · ID · description (e.g. copper, CPI, gate)';
+  document.querySelector('.fchip').textContent='All';
+  const H=document.querySelectorAll('main h2');
+  H[0].firstChild.nodeValue='Base cards ';
+  H[1].firstChild.nodeValue='Interaction cards ';H[1].lastChild.nodeValue=' — when two cards overlap';
+  H[2].firstChild.nodeValue='Gates ';H[2].lastChild.nodeValue=' — multipliers over every card';
+}
 let D=null,FQ='',FF='';
 fetch('logic/ledger-full.json').then(r=>r.json()).then(d=>{
   D=d;
-  $('cnt').textContent=`기본 ${d.counts.base} · 상호작용 ${d.counts.interaction} · 게이트 ${d.counts.gates} — 총 ${d.counts.total}장 · ${d.label}`;
-  $('foot').textContent=`출처: ${d.source} · 판정 가동(실시간 발동 판정이 연결된 카드): ${d.judgeable.join(', ')} — 나머지는 데이터 피드 연결 시 가동됩니다`;
+  $('cnt').textContent=EN
+    ?`base ${d.counts.base} · interaction ${d.counts.interaction} · gates ${d.counts.gates} — ${d.counts.total} total · grades & probabilities are estimates until live grading`
+    :`기본 ${d.counts.base} · 상호작용 ${d.counts.interaction} · 게이트 ${d.counts.gates} — 총 ${d.counts.total}장 · ${d.label}`;
+  $('foot').textContent=EN
+    ?`Source: ${d.source} · judging live (cards wired to real-time fire judgment): ${d.judgeable.join(', ')} — the rest activate as data feeds connect`
+    :`출처: ${d.source} · 판정 가동(실시간 발동 판정이 연결된 카드): ${d.judgeable.join(', ')} — 나머지는 데이터 피드 연결 시 가동됩니다`;
   const fams=[...new Set(d.cards.map(c=>c.family))];
   const bar=$('bar');
   fams.forEach(f=>{
     const ch=document.createElement('span');
-    ch.className='fchip';ch.dataset.f=f;ch.textContent=f;
+    ch.className='fchip';ch.dataset.f=f;ch.textContent=fam(f);
     bar.appendChild(ch);});
   bar.addEventListener('click',e=>{
     if(!e.target.classList.contains('fchip'))return;
@@ -86,21 +106,21 @@ function render(){
   $('base').innerHTML=B.map(c=>
     `<div class="cd glass" style="border-left-color:${c.color}">`+
     `<div class="r1">${c.id} ${c.name}<span class="gr">${c.grade||''}</span>`+
-    `${jd.has(c.id)?'<span class="live">● 판정 가동</span>':''}</div>`+
-    `<div class="meta">${c.family} · ${c.core}${c.note?' · '+c.note:''}</div>`+
-    (c.desc?`<div class="ds">${c.desc}</div>`:'')+`</div>`).join('')||'<div style="color:#5b6b7a;font-size:11px">검색 결과 없음</div>';
+    `${jd.has(c.id)?'<span class="live">'+(EN?'● judging live':'● 판정 가동')+'</span>':''}</div>`+
+    `<div class="meta">${fam(c.family)} · ${coreT(c.core)}${c.note?' · '+c.note:''}</div>`+
+    (c.desc?`<div class="ds">${c.desc}</div>`:'')+`</div>`).join('')||`<div style="color:#5b6b7a;font-size:11px">${EN?'No results':'검색 결과 없음'}</div>`;
   const I=FF?[]:D.interactions.filter(match);
   $('ninter').textContent=`${I.length}/${D.interactions.length}`;
   $('inter').innerHTML=I.map(c=>
     `<div class="cd glass" style="border-left-color:#EAF9FF">`+
     `<div class="r1">${c.id} ${c.name}</div>`+
-    `<div class="fx">${c.formula}</div></div>`).join('')||(FF?'<div style="color:#5b6b7a;font-size:11px">계열 필터 중 — 전체에서 표시됩니다</div>':'');
+    `<div class="fx">${c.formula}</div></div>`).join('')||(FF?`<div style="color:#5b6b7a;font-size:11px">${EN?'Family filter active — shown under All':'계열 필터 중 — 전체에서 표시됩니다'}</div>`:'');
   const G=FF?[]:D.gates.filter(match);
   $('ngate').textContent=`${G.length}/${D.gates.length}`;
   $('gate').innerHTML=G.map(c=>
     `<div class="cd glass" style="border-left-color:#93a7b8">`+
     `<div class="r1">${c.id} ${c.name}</div>`+
-    `<div class="ds">${c.desc}</div></div>`).join('')||(FF?'<div style="color:#5b6b7a;font-size:11px">계열 필터 중 — 전체에서 표시됩니다</div>':'');}
+    `<div class="ds">${c.desc}</div></div>`).join('')||(FF?`<div style="color:#5b6b7a;font-size:11px">${EN?'Family filter active — shown under All':'계열 필터 중 — 전체에서 표시됩니다'}</div>`:'');}
 </script>
 </body>
 </html>

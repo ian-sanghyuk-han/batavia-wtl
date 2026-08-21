@@ -72,5 +72,34 @@
     결제 기능은 각국 투자자문 규제 검토(글로벌) 완료 후에만 열립니다.
   </div>
 </main>
+<script>
+(function(){
+const L=localStorage.getItem('bp-lang')||'en';
+document.documentElement.lang=L;
+if(L!=='en')return;
+document.querySelector('header').innerHTML='<a href="./">← OBSERVATORY</a><b>BATAVIA PROJECT</b> · PLANS <small>draft v0 · prices &amp; billing finalize after the regulatory review</small>';
+document.querySelector('.tier.free').innerHTML=
+ '<h2>OBSERVER</h2><div class="pr">Free<small> · forever</small></div><ul>'+
+ '<li>The whole Observatory (3D · MAP · ENGINE)</li>'+
+ '<li>Event Card — today\'s observation</li>'+
+ '<li><b>Verdict archive — every grading record, free forever</b></li>'+
+ '<li>Ledger browsing · Replay</li>'+
+ '<li>Card evaluations &amp; briefings — free for everyone <b>3 days later</b></li>'+
+ '</ul><span class="cta">Everything on this screen is already free</span>';
+document.querySelector('#tiers .tier:not(.free)').innerHTML=
+ '<h2>ESSENTIAL</h2><div class="pr">TBD<small> /mo · in preparation</small></div><ul>'+
+ '<li><b>Card evaluations on the same day</b> — with fire-moment alerts</li>'+
+ '<li>Morning briefing — lands on Telegram <b>before the open</b></li>'+
+ '<li>Observation detail — full calculations for every card</li>'+
+ '<li>The verdict archive is free here too</li>'+
+ '</ul><span class="cta">In preparation — announced at open</span>';
+document.querySelector('.note').innerHTML=
+ 'Paid sees evaluations the same day; free sees everything 3 days later. Verdict records (the archive) are always free. '+
+ 'A subscription pays for the <b>delivery of observations</b> — not predictions for sale, not trading signals. '+
+ 'What counts as an observation and how it is graded lives in <a href="policy.html">Data &amp; principles</a>; '+
+ 'refund terms in the <a href="refund.html">refund policy (draft)</a>. '+
+ 'Payments open only after the multi-jurisdiction advisory-regulation review is complete.';
+})();
+</script>
 </body>
 </html>

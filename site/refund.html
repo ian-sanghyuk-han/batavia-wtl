@@ -51,5 +51,17 @@
     영업일 5일 안에 결제 수단으로 환불합니다. (세부 절차는 결제 수단 확정 시 게시)</p>
   </section>
 </main>
+<script>
+(function(){
+const L=localStorage.getItem('bp-lang')||'en';
+document.documentElement.lang=L;
+if(L!=='en')return;
+document.querySelector('header small').textContent='draft v0 — finalized and takes effect when payments open';
+const S=document.querySelectorAll('main section');
+S[0].innerHTML='<h2>PRINCIPLE</h2><p>A subscription pays for the delivery of observations and promises no returns. So refunds stay simple — you can only trust an observatory you can leave easily.</p>';
+S[1].innerHTML='<h2>TERMS (DRAFT)</h2><ol><li><b>First 7 days: full refund</b> — no questions asked.</li><li>After that, a <b>pro-rated refund</b> for the remaining days.</li><li>Even after a refund, <b>the verdict archive stays free to read</b> — grading records were never for sale.</li><li>Annual plans are computed the same way on a monthly basis.</li></ol>';
+S[2].innerHTML='<h2>PROCESS</h2><p>One button on the account screen or a single email — counted from the day received, refunded to your payment method within 5 business days. (Details published when the payment method is finalized.)</p>';
+})();
+</script>
 </body>
 </html>
