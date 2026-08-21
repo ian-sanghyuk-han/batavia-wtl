@@ -61,6 +61,11 @@
   html[data-theme="gundam"] .lf.on{background:#2c52b3;color:#fff}
   html[data-theme="gundam"] #zoomfill{background:#fb2f38}
   html[data-theme="gundam"] .pbtn{color:#2c52b3}
+  html[data-theme="gundam"] .rth span:nth-child(1){color:#1f9d63!important}
+  html[data-theme="gundam"] .rth span:nth-child(2){color:#0e8ba8!important}
+  html[data-theme="gundam"] .rth span:nth-child(3){color:#c99700!important}
+  html[data-theme="gundam"] .rth span:nth-child(4){color:#d95d0e!important}
+  html[data-theme="gundam"] .rth span:nth-child(5){color:#fb2f38!important}
   html[data-theme="gundam"] #zoompct{color:#2c52b3;font-weight:600}
   html[data-theme="gundam"] #rgtick,html[data-theme="gundam"] #ltick b{color:#c99700}
   html[data-theme="gundam"] .rlive{color:#c99700}
@@ -460,7 +465,7 @@ function famC(c){
   if(!TH.soft)return c;
   try{const h={};new THREE.Color(c).getHSL(h);const d=h.h*360;
     if(h.s<.15)return '#5a5b6d';
-    if(d<45||d>=330)return '#fb2f38';
+    if(d<30||d>=330)return '#fb2f38';
     if(d<75)return '#c99700';
     if(d<170)return '#1f9d63';
     if(d<210)return '#0e8ba8';
@@ -773,6 +778,23 @@ function zigzag(pts,amp){ /* 스파크 선: 경로의 홀수 점을 접선면 �
       p.add(perp.multiplyScalar(amp*(((i>>1)%2===0)?1:-1)));}
     out.push(p);}
   return out;}
+function resampleLine(pts,step){ /* 등간격 재표집 — 지그재그 꺾임 밀도를 길이당 일정하게 */
+  if(pts.length<2)return pts;
+  const out=[pts[0].clone()];
+  let need=step;
+  for(let i=1;i<pts.length;i++){
+    const cur=new THREE.Vector3().copy(pts[i-1]);
+    const b=pts[i];
+    let len=cur.distanceTo(b);
+    while(len>=need&&len>1e-9){
+      cur.addScaledVector(b.clone().sub(cur).normalize(),need);
+      out.push(cur.clone());
+      len=cur.distanceTo(b);
+      need=step;}
+    need-=len;}
+  out.push(pts[pts.length-1].clone());
+  return out;}
+const ZDENS=110; /* 스파크 표집점 밀도(단위 길이당) — 전 스파크 선 공통 */
 const confLabels=[];
 function confLabelSprite(txt,color){
   const c=document.createElement('canvas');c.width=640;c.height=96;
@@ -831,7 +853,7 @@ function renderConflicts(){
       conflictLayer.add(new THREE.Line(
         new THREE.BufferGeometry().setFromPoints(pts),glowM));
       conflictLayer.add(new THREE.Line(
-        new THREE.BufferGeometry().setFromPoints(zigzag(pts,.006)),coreM));});
+        new THREE.BufferGeometry().setFromPoints(zigzag(resampleLine(pts,1/ZDENS),.006)),coreM));});
     const mid=meshMid(m);
     const boom=emojiSprite('💥', .05);
     boom.position.copy(toV3(mid.la,mid.lo,R*1.012));
@@ -857,7 +879,8 @@ function renderConflicts(){
   /* ④ 원거리 교전: 지그재그 스파크 호 — 국경을 안 맞댄 위협선 */
   (C.farpairs||[]).forEach(fp=>{
     const curve=arcCurve(fp.a,fp.b);
-    const pts=zigzag(curve.getPoints(150),.005); /* 춘춘한 스파크 */
+    const n=Math.max(24,Math.round(curve.getLength()*ZDENS));
+    const pts=zigzag(curve.getPoints(n),.005); /* 길이 비례 표집 = 균일 밀도 */
     const dm=new THREE.LineBasicMaterial({color:0xD9524B,transparent:true,opacity:.6});
     dm.userData.co=.6;
     frontMats.push(dm);
@@ -1362,19 +1385,19 @@ document.querySelectorAll('.lrow').forEach(rw=>rw.addEventListener('click',()=>{
 
 /* ── 국면 자동 테마 ── */
 const REGIMES5=[
-  {max:.25,en:'CALM',ko:'안정',acc:'#3FE0A0',atm:0x77d9b0,
+  {max:.25,en:'CALM',ko:'안정',acc:'#3FE0A0',accL:'#1f9d63',atm:0x77d9b0,
    easy:'자산들이 제각각 — 분산이 살아있는 시장',
    easyEn:'Assets moving apart — diversification alive'},
-  {max:.38,en:'STEADY',ko:'평온',acc:'#7FD8FF',atm:0x9fc7e0,
+  {max:.38,en:'STEADY',ko:'평온',acc:'#7FD8FF',accL:'#0e8ba8',atm:0x9fc7e0,
    easy:'낮은 동조 — 평소의 호흡',
    easyEn:'Low convergence — the usual rhythm'},
-  {max:.47,en:'WATCH',ko:'주의',acc:'#E8D44D',atm:0xd9c95a,
+  {max:.47,en:'WATCH',ko:'주의',acc:'#E8D44D',accL:'#c99700',atm:0xd9c95a,
    easy:'연결이 늘어나는 중 — 동조 상승',
    easyEn:'Connections growing — convergence rising'},
-  {max:.55,en:'TENSION',ko:'긴장',acc:'#E8A33D',atm:0xE8A33D,
+  {max:.55,en:'TENSION',ko:'긴장',acc:'#E8A33D',accL:'#d95d0e',atm:0xE8A33D,
    easy:'같이 움직이기 시작 — 분산이 얇아짐',
    easyEn:'Moving together — diversification thinning'},
-  {max:9,en:'ALERT',ko:'경보',acc:'#FF6A6E',atm:0xFF6A6E,
+  {max:9,en:'ALERT',ko:'경보',acc:'#FF6A6E',accL:'#fb2f38',atm:0xFF6A6E,
    easy:'한 몸처럼 움직임 — 분산 소멸',
    easyEn:'Moving as one — diversification gone'}];
 function applyRegime(d){
@@ -1382,8 +1405,9 @@ function applyRegime(d){
   const v=d.conv.value, th=d.conv.thresholds||{tension:.38,alert:.55};
   const t=REGIMES5.find(r=>v<r.max)||REGIMES5[REGIMES5.length-1];
   REGIX=REGIMES5.indexOf(t);LASTRG=d;
-  document.documentElement.style.setProperty('--acc',t.acc);
-  {const ac=new THREE.Color(t.atm);
+  const acc=(TH.soft&&t.accL)?t.accL:t.acc; /* 라이트 = 건담 국면색 */
+  document.documentElement.style.setProperty('--acc',acc);
+  {const ac=new THREE.Color(TH.soft&&t.accL?t.accL:t.atm);
    if(TH.soft)ac.lerp(new THREE.Color(0xffffff),.55); /* soft themes: pale tinted glow */
    atmMat.uniforms.c.value.copy(ac);
    rimMat.uniforms.c.value.copy(ac);}
@@ -1391,7 +1415,7 @@ function applyRegime(d){
   document.getElementById('rgko').textContent=LANG==='en'?'':t.ko;
   document.getElementById('rgeasy').textContent=LANG==='en'?t.easyEn:t.easy;
   document.getElementById('regimecard').title=d.conv.provenance||'';
-  document.getElementById('regimecard').style.borderLeftColor=t.acc;
+  document.getElementById('regimecard').style.borderLeftColor=acc;
   {const de=document.getElementById('rgdelta');
    if(CONVH.length>1){
      const dv=v-CONVH[CONVH.length-2].v;
@@ -1407,7 +1431,7 @@ function applyRegime(d){
      el.textContent=(from+(to-from)*u).toFixed(3);
      if(u<1)requestAnimationFrame(stepFn);};
    requestAnimationFrame(stepFn);}
-  drawRegimeSpark(t.acc,th);}
+  drawRegimeSpark(acc,th);}
 let CONVH=[],DAYSH=[];
 function drawMini(cv,vals,color,th){
   if(!cv)return;
@@ -1419,7 +1443,7 @@ function drawMini(cv,vals,color,th){
   if(th!=null){mn=Math.min(mn,th);mx=Math.max(mx,th);}
   const rg2=(mx-mn)||1;
   const Y=v=>H-pad-(v-mn)/rg2*(H-pad*2);
-  if(th!=null){g.strokeStyle='#FF6A6E';g.globalAlpha=.5;g.setLineDash([3,3]);
+  if(th!=null){g.strokeStyle=famC('#FF6A6E');g.globalAlpha=.5;g.setLineDash([3,3]);
     g.beginPath();g.moveTo(pad,Y(th));g.lineTo(W-pad,Y(th));g.stroke();
     g.setLineDash([]);g.globalAlpha=1;}
   g.strokeStyle=color;g.lineWidth=1.4;g.beginPath();
@@ -1435,7 +1459,7 @@ function drawRegimeSpark(acc,th){
   const ymax=Math.max(.6,...CONVH.map(r=>r.v))+.05;
   const Y=v=>H-pad-(v/ymax)*(H-pad*2);
   /* 기준선: 긴장·경보 */
-  [[.25,'#3FE0A0'],[.38,'#7FD8FF'],[.47,'#E8D44D'],[.55,'#FF6A6E']].forEach(([v,c])=>{
+  [[.25,'#3FE0A0'],[.38,'#7FD8FF'],[.47,'#E8D44D'],[.55,'#FF6A6E']].forEach(([v,c0])=>{const c=famC(c0);
     g.strokeStyle=c;g.globalAlpha=.45;g.setLineDash([3,3]);
     g.beginPath();g.moveTo(pad,Y(v));g.lineTo(W-pad,Y(v));g.stroke();g.setLineDash([]);g.globalAlpha=1;});
   if(CONVH.length>1){
