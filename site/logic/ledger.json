@@ -1,6 +1,6 @@
 {
-  "version": "v0",
-  "note": "Machine-readable subset of docs/BATAVIA-LOGIC-LEDGER-v1.md — only cards whose activation can be judged from live feeds today. Trigger rules are v0 heuristics (label: 추정) until graded. Paths are causal display routes through observation nodes, not instructions.",
+  "version": "v0.1",
+  "note": "Machine-readable subset of docs/BATAVIA-LOGIC-LEDGER-v1.md — only cards whose activation can be judged from live feeds today. Trigger rules are v0 heuristics (label: 추정) until graded. 'spread' is a list of generations: every node in generation g radiates to every node in generation g+1 — ripples fan out, no single terminus, no market is the protagonist. Display routes are observations, not instructions.",
   "label": "연결 규칙 v0 · 추정 (실측 채점 전)",
   "chokepoints": {
     "hormuz":   {"name": "호르무즈", "la": 26.6,  "lo": 56.5},
@@ -19,8 +19,12 @@
       "core": "코어 2.3·7.1",
       "grade": "B+",
       "trigger": {"type": "event_upcoming"},
-      "path": [[38.9, -77.04], [40.7, -74.0], [51.5, -0.1], [35.7, 139.7], [37.5, 127.0]],
-      "path_note": "워싱턴(발표) → 뉴욕 → 런던 → 도쿄 → 서울"
+      "spread": [
+        [[38.9, -77.04]],
+        [[40.7, -74.0]],
+        [[51.5, -0.1], [50.1, 8.7], [35.7, 139.7], [37.5, 127.0], [31.2, 121.5], [-33.9, 151.2], [-23.5, -46.6]]
+      ],
+      "path_note": "워싱턴(발표) → 뉴욕 → 전 시장 동시 방사 (런던·프랑크푸르트·도쿄·서울·상하이·시드니·상파울루)"
     },
     {
       "id": "L-PHY-004",
@@ -30,8 +34,10 @@
       "core": "코어 3.7·9.9",
       "grade": "B+",
       "trigger": {"type": "news_cameo_near", "codes": ["18", "19", "20"], "sev_min": 4, "radius_km": 700},
-      "path": [[31.2, 121.5], [37.5, 127.0], [35.7, 139.7]],
-      "path_note": "관문 → 상하이 → 서울 → 도쿄 (에너지 수입 동선)"
+      "spread": [
+        [[31.2, 121.5], [37.5, 127.0], [35.7, 139.7], [19.0, 72.8]]
+      ],
+      "path_note": "관문 → 상하이·서울·도쿄·뭄바이 동시 (에너지 수입 동선)"
     },
     {
       "id": "L-INF-004",
@@ -42,8 +48,10 @@
       "grade": "B+",
       "trigger": {"type": "market_move", "series": "wti", "abs_pct_min": 3.0},
       "anchor": [24.7, 46.7],
-      "path": [[40.7, -74.0], [51.5, -0.1]],
-      "path_note": "리야드(유가) → 뉴욕(금리) → 런던"
+      "spread": [
+        [[40.7, -74.0], [51.5, -0.1], [35.7, 139.7]]
+      ],
+      "path_note": "리야드(유가) → 뉴욕·런던·도쿄 동시 (금리 재점화 관찰)"
     },
     {
       "id": "L-MKT-001",
@@ -53,7 +61,7 @@
       "core": "코어 5.2",
       "grade": "B+",
       "trigger": {"type": "regime_conv", "min": 0.55},
-      "path": [],
+      "spread": [],
       "path_note": "상태 카드 — 무대 전체 조명(경보 테마)으로 표현"
     },
     {
@@ -64,8 +72,10 @@
       "core": "코어 7장",
       "grade": "C+",
       "trigger": {"type": "news_cameo", "codes": ["13", "14"], "sev_min": 4},
-      "path": [[40.7, -74.0]],
-      "path_note": "정치 불확실성 진앙 → 뉴욕(위험 프리미엄)"
+      "spread": [
+        [[40.7, -74.0], [51.5, -0.1]]
+      ],
+      "path_note": "정치 불확실성 진앙 → 뉴욕·런던 동시 (위험 프리미엄 관찰)"
     }
   ]
 }

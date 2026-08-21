@@ -362,41 +362,56 @@ fetch('data/market.json').then(r=>r.json()).then(d=>{
 /* ══ 파급 엔진 (원장 v0): 진앙 → 발동 카드 → 관측 노드 ══
    판정 재료는 전부 실측 피드(뉴스·시장·국면·등록 이벤트) — 연결 규칙은 v0 추정으로 명시 */
 const rippleGroup=new THREE.Group();earth.add(rippleGroup);
-const flows=[]; /* {curves,pulse,ph,group} */
-function arcCurve(a,b,h){
-  const A=toV3(a[0],a[1],R),B=toV3(b[0],b[1],R);
-  const M=A.clone().add(B).multiplyScalar(.5).normalize().multiplyScalar(R*(1+h));
-  return new THREE.QuadraticBezierCurve3(A.clone().multiplyScalar(1.004),M,B.clone().multiplyScalar(1.004));}
+const flows=[]; /* {arcs,pulses,gens,ph,group} */
+/* 대권(great-circle) 호: 구면을 따라가며 고도를 사인 곡선으로 — 장거리도 지구를 관통하지 않음.
+   고도는 거리에 비례 (긴 호일수록 높이 난다). */
+function arcCurve(a,b){
+  const A=toV3(a[0],a[1],1),B=toV3(b[0],b[1],1);
+  const ang=A.angleTo(B);
+  const h=.05+.16*(ang/Math.PI);
+  const pts=[];
+  for(let i=0;i<=32;i++){
+    const t=i/32;
+    const s=Math.sin((1-t)*ang)/Math.sin(ang),c=Math.sin(t*ang)/Math.sin(ang);
+    const p=A.clone().multiplyScalar(s).add(B.clone().multiplyScalar(c)).normalize();
+    p.multiplyScalar(R*(1.004+h*Math.sin(Math.PI*t)));
+    pts.push(p);}
+  return new THREE.CatmullRomCurve3(pts);}
 function havKm(a,b){
   const p1=a[0]*D2R,p2=b[0]*D2R,dp=(b[0]-a[0])*D2R,dl=(b[1]-a[1])*D2R;
   const s=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;
   return 6371*2*Math.atan2(Math.sqrt(s),Math.sqrt(1-s));}
+/* 방사형 파급: spread = 세대 목록 — g세대의 모든 노드가 g+1세대의 모든 노드로 동시에 퍼진다.
+   종점 없음, 특정 시장이 주인공이 되지 않음. 맥동은 세대 순서로 캐스케이드. */
 function drawFlow(active,idx){
   const col=new THREE.Color(active.card.color);
-  const pts=[];
-  if(active.anchor)pts.push(active.anchor);
-  (active.card.path||[]).forEach(p=>pts.push(p));
-  if(pts.length<2)return;
+  let gens=(active.card.spread||[]).map(g=>g.slice());
+  if(active.anchor)gens=[[active.anchor],...gens];
+  if(gens.length<2)return;
   const group=new THREE.Group();
-  const curves=[];
-  for(let i=0;i<pts.length-1;i++){
-    const cv=arcCurve(pts[i],pts[i+1],.09+.05*Math.min(2,i));
-    curves.push(cv);
-    group.add(new THREE.Mesh(new THREE.TubeGeometry(cv,48,.0028,6,false),
-      new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.5})));}
-  const pulse=new THREE.Mesh(new THREE.SphereGeometry(.0075,8,8),
-    new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.95}));
-  group.add(pulse);
+  const arcs=[]; /* {curve,gen} */
+  for(let g=0;g<gens.length-1;g++){
+    gens[g].forEach(from=>{gens[g+1].forEach(to=>{
+      const cv=arcCurve(from,to);
+      arcs.push({curve:cv,gen:g});
+      group.add(new THREE.Mesh(new THREE.TubeGeometry(cv,48,.0026,6,false),
+        new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.45})));});});}
+  const pulses=arcs.map(a=>{
+    const m=new THREE.Mesh(new THREE.SphereGeometry(.0065,8,8),
+      new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.95}));
+    m.visible=false;group.add(m);
+    return {m,arc:a};});
   rippleGroup.add(group);
-  flows.push({curves,pulse,ph:idx*.37,group});
+  flows.push({pulses,nGen:gens.length-1,ph:idx*.37,group});
   active.flow=group;}
 let hlIdx=null;
 function applyHighlight(actives){
   actives.forEach((a,i)=>{
     if(!a.flow)return;
     const dim=hlIdx!==null&&hlIdx!==i;
-    a.flow.traverse(o=>{if(o.material)o.material.opacity=o===a.flow.children[a.flow.children.length-1]
-      ?(dim?.15:.95):(dim?.08:.5);});});}
+    a.flow.traverse(o=>{if(!o.material)return;
+      const isPulse=o.geometry&&o.geometry.type==='SphereGeometry';
+      o.material.opacity=isPulse?(dim?.1:.95):(dim?.08:.45);});});}
 Promise.all([
   fetch('logic/ledger.json').then(r=>r.json()),
   fetch('data/news.json').then(r=>r.json()).catch(()=>({events:[]})),
@@ -474,12 +489,13 @@ function loop(now){
   updateLabels();
   pulses.forEach(rg=>{const s=1+.9*((now/1400+rg.userData.ph)%1);
     rg.scale.set(s,s,s);rg.material.opacity=Math.max(0,1.15-s*.55);});
-  /* 파급 맥동: 경로를 따라 흐르는 빛 */
+  /* 파급 맥동: 세대 캐스케이드 — 진앙 세대가 먼저, 다음 세대가 이어서 동시 방사 */
   flows.forEach(f=>{
-    const u=((now/2600)+f.ph)%1;
-    const n=f.curves.length;
-    const seg=Math.min(n-1,Math.floor(u*n));
-    f.pulse.position.copy(f.curves[seg].getPoint(u*n-seg));});
+    const U=((now/3000)+f.ph)%1;
+    f.pulses.forEach(p=>{
+      const lu=U*f.nGen-p.arc.gen;
+      if(lu>0&&lu<1){p.m.visible=true;p.m.position.copy(p.arc.curve.getPoint(lu));}
+      else p.m.visible=false;});});
   renderer.render(scene,camera);
   requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
