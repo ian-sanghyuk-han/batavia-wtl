@@ -105,6 +105,7 @@
   .sm-r:hover{background:rgba(127,216,255,.08)}
   .sm-r .beta{font-size:9px;color:var(--dim);margin-left:4px}
   .sm-r .on-mark{float:right;color:#3FE0A0}
+  .sm-cap{padding:2px 6px 4px;font:10px 'Segoe UI';color:var(--dim);line-height:1.45}
   /* 국면 카드 — 카드 열 최상단 고정, 살아있는 계산 */
   #regimecard{position:relative;width:min(316px,calc(100vw - 24px));padding:12px 13px 10px;
     margin-bottom:10px;border-left:4px solid var(--acc);background:var(--glass2);
@@ -338,9 +339,10 @@
   <div class="sm-r" data-lg="ko">한국어 <span class="on-mark"></span></div>
   <div class="sm-r" data-lg="en">English <span class="beta">β</span><span class="on-mark"></span></div>
   <div class="sm-h" style="margin-top:8px">시세 색상</div>
-  <div class="sm-r" data-ud="auto">자동 — 언어 관례 따름 <span class="on-mark"></span></div>
-  <div class="sm-r" data-ud="red">빨강 = 상승 <span class="on-mark"></span></div>
-  <div class="sm-r" data-ud="green">초록 = 상승 <span class="on-mark"></span></div>
+  <div class="sm-cap">자동 = 언어 관례 따라감 · 한국어는 빨강 상승, 영어는 초록 상승</div>
+  <div class="sm-r" data-ud="auto">자동 — 언어 따라감 <span class="on-mark"></span></div>
+  <div class="sm-r" data-ud="red"><span style="color:#FF6A6E">▲ 빨강 상승</span> · <span style="color:#5FA8FF">▼ 파랑 하락</span> <span class="on-mark"></span></div>
+  <div class="sm-r" data-ud="green"><span style="color:#31C48D">▲ 초록 상승</span> · <span style="color:#FF6A6E">▼ 빨강 하락</span> <span class="on-mark"></span></div>
   <div class="sm-h" style="margin-top:8px">효과</div>
   <div class="sm-r" data-fx="alert">경보 번쩍임 <span class="on-mark"></span></div>
   <div class="sm-h" style="margin-top:8px">바로가기</div>
@@ -434,17 +436,17 @@ import * as topojson from 'topojson-client';
 /* 테마: 장면 색 팔레트 — 구조상 N개 확장 가능 */
 const THEMES={
   dark:{bg:0x05070c,ocean:'#0b131c',land:[24,34,44],war:[44,26,30],
-    inner:0xBFD9EA,coast:0x9FC0D6,stars:true,glowBoost:.35,obsC:0xEAF9FF,cityC:0x8fa6b8,
+    inner:0xBFD9EA,coast:0x9FC0D6,stars:true,glowBoost:.8,obsC:0xEAF9FF,cityC:0x8fa6b8,
     lb:{t1:'rgba(224,238,248,.95)',t2:'rgba(196,216,232,.88)',t4:'rgba(159,199,224,.95)',
         t5:'rgba(143,178,204,.85)',t3:'rgba(158,180,198,.8)',w6:'rgba(120,162,196,.52)',
         w7:'rgba(127,168,200,.55)',w8:'rgba(151,196,224,.75)',halo:'rgba(4,8,13,.85)'}},
   light:{bg:0xdfe7ee,ocean:'#c9d6e2',land:[238,242,246],war:[236,214,212],
-    inner:0x5b7186,coast:0x7a93a6,stars:false,soft:true,glowBoost:2.1,obsC:0x1c3550,cityC:0x6b8299,
+    inner:0x5b7186,coast:0x7a93a6,stars:false,soft:true,glowBoost:1.5,obsC:0x1c3550,cityC:0x6b8299,
     lb:{t1:'rgba(20,34,48,.95)',t2:'rgba(35,52,70,.88)',t4:'rgba(30,64,96,.95)',
         t5:'rgba(60,88,112,.85)',t3:'rgba(60,80,100,.8)',w6:'rgba(70,110,150,.45)',
         w7:'rgba(70,110,150,.5)',w8:'rgba(40,90,130,.75)',halo:'rgba(255,255,255,.85)'}},
   gundam:{bg:0xe9edf3,ocean:'#c7d2e2',land:[248,250,252],war:[240,206,204],
-    inner:0x2c52b3,coast:0x5a6f96,stars:false,soft:true,glowBoost:2.1,obsC:0xF5C518,cityC:0x5a5b6d,
+    inner:0x2c52b3,coast:0x5a6f96,stars:false,soft:true,glowBoost:1.5,obsC:0xF5C518,cityC:0x5a5b6d,
     lb:{t1:'rgba(20,40,60,.95)',t2:'rgba(35,55,80,.88)',t4:'rgba(44,82,179,.95)',
         t5:'rgba(60,90,130,.85)',t3:'rgba(64,86,110,.8)',w6:'rgba(70,110,160,.45)',
         w7:'rgba(70,110,160,.5)',w8:'rgba(44,82,179,.7)',halo:'rgba(255,255,255,.88)'}}};
@@ -512,7 +514,7 @@ const atmMat=new THREE.ShaderMaterial({
   blending:TH.soft?THREE.NormalBlending:THREE.AdditiveBlending,
   uniforms:{c:{value:new THREE.Color(0x9fc7e0)},a:{value:1}},
   vertexShader:'varying vec3 vN;void main(){vN=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-  fragmentShader:'uniform vec3 c;uniform float a;varying vec3 vN;void main(){float i=pow(.58-dot(vN,vec3(0.,0.,1.)),2.2);gl_FragColor=vec4(c,clamp(i*1.15*a,0.,1.));}'});
+  fragmentShader:'uniform vec3 c;uniform float a;varying vec3 vN;void main(){float d=dot(vN,vec3(0.,0.,1.));float i=pow(.58-d,2.2)*smoothstep(0.,.28,-d);gl_FragColor=vec4(c,clamp(i*1.15*a,0.,1.));}'});
 const atmMesh=new THREE.Mesh(new THREE.SphereGeometry(R*1.09,64,64),atmMat);scene.add(atmMesh);
 const rimMat=new THREE.ShaderMaterial({
   transparent:true,side:THREE.FrontSide,depthWrite:false,
@@ -1811,8 +1813,11 @@ const D={'로그인':'Sign in','시작하기':'Get started','테마':'Theme','�
  '○ 라이트':'○ Light','◈ 건담':'◈ Gundam','지역':'Region','언어':'Language',
  '바로가기':'Shortcuts','원장 열람':'Open the ledger','구독 안내':'Pricing',
  '데이터와 원칙':'Data & principles','시세 색상':'Price colors',
- '자동 — 언어 관례 따름':'Auto — follows language custom','빨강 = 상승':'Red = up',
- '초록 = 상승':'Green = up','효과':'Effects','경보 번쩍임':'Alert pulse',
+ '자동 = 언어 관례 따라감 · 한국어는 빨강 상승, 영어는 초록 상승':'Auto = language custom · Korean red-up, English green-up',
+ '자동 — 언어 따라감':'Auto — follows the language',
+ '▲ 빨강 상승':'▲ Red up','▼ 파랑 하락':'▼ Blue down',
+ '▲ 초록 상승':'▲ Green up','▼ 빨강 하락':'▼ Red down',
+ '효과':'Effects','경보 번쩍임':'Alert pulse',
  'REGIME · 시장 국면':'REGIME · market state',
  'w = 평균 |ρ| · 60일 · 7자산 바스켓':'w = avg |ρ| · 60d · 7-asset basket',
  '안정':'Calm','평온':'Steady','주의':'Watch','긴장':'Tension','경보':'Alert',
