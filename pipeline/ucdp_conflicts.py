@@ -27,44 +27,48 @@ def get(url):
         return json.load(r)
 
 
-def pick_version():
-    """Newest reachable dataset: monthly candidate first, then yearly GED."""
-    today = datetime.date.today()
-    cands = []
-    y, m = today.year, today.month
-    for _ in range(8):  # last 8 months of candidate releases
-        cands.append(("candidateged", f"{y % 100}.0.{m}"))
-        m -= 1
-        if m == 0:
-            y, m = y - 1, 12
-    for v in (f"{today.year % 100}.1", f"{today.year % 100 - 1}.1"):
-        cands.append(("gedevents", v))
-    for res, ver in cands:
-        try:
-            get(f"{BASE}/{res}/{ver}?pagesize=1")
-            return res, ver
-        except Exception:
-            continue
-    return None, None
+# Candidate monthly releases live under the SAME 'gedevents' resource with
+# version strings YY.0.M (verified live: gedevents/26.0.7 = July-2026 events).
+# Walk the last few months and merge; each monthly release is small (~2k events).
+today = datetime.date.today()
+versions = []
+y, m = today.year, today.month
+for _ in range(5):
+    versions.append(f"{y % 100}.0.{m}")
+    m -= 1
+    if m == 0:
+        y, m = y - 1, 12
 
-
-res, ver = pick_version()
-if not res:
-    print("no reachable UCDP version - skip")
-    raise SystemExit(0)
-
-cut = (datetime.date.today() - datetime.timedelta(days=WINDOW_DAYS)).isoformat()
+cut = (today - datetime.timedelta(days=WINDOW_DAYS)).isoformat()
 events = []
-for page in range(MAX_PAGES):
+seen_ids = set()
+used_versions = []
+for ver in versions:
     try:
-        d = get(f"{BASE}/{res}/{ver}?pagesize={PAGESIZE}&page={page}")
-    except Exception as e:
-        print("page fail:", e)
-        break
-    rows = d.get("Result") or []
-    events.extend(rows)
-    if len(rows) < PAGESIZE:
-        break
+        first = get(f"{BASE}/gedevents/{ver}?pagesize={PAGESIZE}")
+    except Exception:
+        continue
+    used_versions.append(ver)
+    rows = first.get("Result") or []
+    total_pages = min(MAX_PAGES, ((first.get("TotalCount") or 0) + PAGESIZE - 1) // PAGESIZE)
+    for page in range(1, total_pages):
+        try:
+            d = get(f"{BASE}/gedevents/{ver}?pagesize={PAGESIZE}&page={page}")
+            rows.extend(d.get("Result") or [])
+        except Exception as e:
+            print("page fail:", ver, page, e)
+            break
+    for e in rows:
+        if e.get("id") in seen_ids:
+            continue
+        seen_ids.add(e.get("id"))
+        events.append(e)
+
+if not used_versions:
+    print("no reachable UCDP candidate version - skip")
+    raise SystemExit(0)
+ver = "+".join(used_versions)
+res = "gedevents(candidate)"
 
 agg = {}
 used = 0
