@@ -95,9 +95,16 @@
   .tk{color:var(--dim);margin-right:26px} .tk b{color:var(--ink);font-weight:600}
   .up{color:#FF6A6E} .dn{color:#5FA8FF} .fl{color:#93a7b8}
   /* ── 로직 뷰: 살아있는 계산의 무대 (유령 지구본 위 오버레이) ── */
-  #logicview{position:fixed;top:60px;bottom:42px;left:0;right:0;z-index:8;display:none;
-    overflow:auto;padding:8px 14px}
-  #logicview.on{display:block}
+  #logicview{position:fixed;top:60px;bottom:42px;left:0;right:0;z-index:8;
+    overflow:auto;padding:8px 14px;visibility:hidden;opacity:0;transform:translateY(16px);
+    transition:opacity .5s ease,transform .5s ease,visibility 0s .5s;pointer-events:none}
+  #logicview.on{visibility:visible;opacity:1;transform:none;pointer-events:auto;
+    transition:opacity .5s ease,transform .5s ease}
+  @keyframes lup{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+  #logicview.on .lnode{animation:lup .55s cubic-bezier(.2,.7,.2,1) backwards}
+  #lfilter{float:right;display:inline-flex;gap:4px}
+  .lf{padding:3px 10px;border-radius:7px;color:#5b6b7a;cursor:pointer;letter-spacing:1px}
+  .lf.on{color:#06121c;background:var(--acc)}
   #lwrap{position:relative;margin:0 auto;max-width:1220px;padding:14px 14px 20px}
   #lhead{font:600 10px Consolas,monospace;letter-spacing:2px;color:var(--acc);margin-bottom:10px}
   #lstage{position:relative;display:grid;grid-template-columns:190px minmax(320px,1fr) 225px 200px;
@@ -205,7 +212,7 @@
   <div id="cardfoot"></div></div>
 <div id="news" class="glass"><h3>NEWS LOG<span id="newsupd" style="color:#5b6b7a"></span></h3><div id="newslist">로드 중…</div></div>
 <div id="logicview"><div id="lwrap" class="glass">
-  <div id="lhead">LOGIC — 살아있는 계산 · 판정 가능 카드의 수식이 실시간으로 평가됩니다</div>
+  <div id="lhead">LOGIC — 살아있는 계산 · 수식이 실시간으로 평가됩니다<span id="lfilter"><span class="lf on" data-f="all">전체</span><span class="lf" data-f="act">활성만</span></span></div>
   <div id="lstage">
     <div>
       <div class="colh">① 데이터 (지금 값)</div>
@@ -244,7 +251,7 @@ import * as topojson from 'topojson-client';
 
 const scene=new THREE.Scene();
 const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,.05,100);
-camera.position.set(0,0.5,2.9);
+camera.position.set(0,0.5,3.35); /* 대형 화면 기준: 지구본이 화면 높이의 ~80%가 되는 거리 */
 const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth,innerHeight);
 renderer.setPixelRatio(Math.min(1.75,devicePixelRatio));
@@ -277,7 +284,7 @@ function fitCamera(){
   const fovY=camera.fov*Math.PI/180;
   const fovX=2*Math.atan(Math.tan(fovY/2)*camera.aspect);
   const half=Math.min(fovY,fovX)/2;
-  const d=Math.max(2.9,1.18/Math.sin(half));
+  const d=Math.max(3.35,1.18/Math.sin(half));
   controls.maxDistance=Math.max(5.5,d+.4);
   if(camera.position.length()<d)camera.position.setLength(d);}
 
@@ -290,16 +297,21 @@ function fitCamera(){
 /* 대기 글로우 (3D 전용) */
 const atmMat=new THREE.ShaderMaterial({
   transparent:true,side:THREE.BackSide,depthWrite:false,
-  uniforms:{c:{value:new THREE.Color(0x9fc7e0)}},
+  uniforms:{c:{value:new THREE.Color(0x9fc7e0)},a:{value:1}},
   vertexShader:'varying vec3 vN;void main(){vN=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-  fragmentShader:'uniform vec3 c;varying vec3 vN;void main(){float i=pow(.58-dot(vN,vec3(0.,0.,1.)),2.2);gl_FragColor=vec4(c,1.)*i*1.15;}'});
+  fragmentShader:'uniform vec3 c;uniform float a;varying vec3 vN;void main(){float i=pow(.58-dot(vN,vec3(0.,0.,1.)),2.2);gl_FragColor=vec4(c,1.)*i*1.15*a;}'});
 const atmMesh=new THREE.Mesh(new THREE.SphereGeometry(R*1.09,64,64),atmMat);scene.add(atmMesh);
 const rimMat=new THREE.ShaderMaterial({
   transparent:true,side:THREE.FrontSide,depthWrite:false,blending:THREE.AdditiveBlending,
-  uniforms:{c:{value:new THREE.Color(0x9fc7e0)}},
+  uniforms:{c:{value:new THREE.Color(0x9fc7e0)},a:{value:1}},
   vertexShader:'varying vec3 vN;void main(){vN=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-  fragmentShader:'uniform vec3 c;varying vec3 vN;void main(){float i=pow(1.-abs(dot(vN,vec3(0.,0.,1.))),3.5);gl_FragColor=vec4(c,1.)*i*.32;}'});
+  fragmentShader:'uniform vec3 c;uniform float a;varying vec3 vN;void main(){float i=pow(1.-abs(dot(vN,vec3(0.,0.,1.))),3.5);gl_FragColor=vec4(c,1.)*i*.32*a;}'});
 const rimMesh=new THREE.Mesh(new THREE.SphereGeometry(R*1.002,96,96),rimMat);scene.add(rimMesh);
+/* 전환의 결: 데이터 레이어 알파(모핑 앞뒤 페이드) · 로직 물들기(dimK) */
+let layerAlpha=1,layerTween=null,dimK=0,dimTween=null;
+function tweenLayer(to,dur,cb){layerTween={from:layerAlpha,to,t0:performance.now(),dur,cb};}
+function tweenDim(to,dur){dimTween={from:dimK,to,t0:performance.now(),dur:dur||450};}
+const shipMats=[],routeMats=[];
 
 /* ══ 데이터 캐시 (뷰 재조립의 재료) ══ */
 let topoCache=null,fillTex=null,ledCache=null,shipsCache=[],activesCache=[];
@@ -485,11 +497,13 @@ function relKo(ts){
 /* ── 레이어 렌더러 (현재 뷰 기준으로 그린다) ── */
 function renderShips(){
   if(!shipsGroup)return;
-  shipsGroup.clear();
+  shipsGroup.clear();shipMats.length=0;
   const hull=new THREE.ConeGeometry(.0055,.018,4);hull.rotateX(Math.PI/2);
   [['tanker',0xFF9A5A],['cargo',0x5FD8E8],['unknown',0x8fa3b3]].forEach(([tt,col])=>{
     const ships=shipsCache.filter(s=>s.t===tt);if(!ships.length)return;
-    const im=new THREE.InstancedMesh(hull,new THREE.MeshBasicMaterial({color:col}),ships.length);
+    const m=new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:layerAlpha});
+    shipMats.push(m);
+    const im=new THREE.InstancedMesh(hull,m,ships.length);
     const d3=new THREE.Object3D();
     ships.forEach((s,i)=>{const p=toV3(s.la,s.lo,R*1.004);
       d3.position.copy(p);orient(d3,p);
@@ -509,10 +523,11 @@ function renderNewsPulses(){
     newsLayer.add(ring);pulses.push(ring);});}
 function drawRoutes(){
   if(!routesGroup||!ledCache)return;
-  routesGroup.clear();
+  routesGroup.clear();routeMats.length=0;
   (ledCache.routes||[]).forEach(rt=>{
-    routesGroup.add(new THREE.Mesh(new THREE.TubeGeometry(surfaceArc(rt.a,rt.b),40,.0016,5,false),
-      new THREE.MeshBasicMaterial({color:new THREE.Color(rt.c),transparent:true,opacity:.16})));});}
+    const m=new THREE.MeshBasicMaterial({color:new THREE.Color(rt.c),transparent:true,opacity:.16});
+    routeMats.push(m);
+    routesGroup.add(new THREE.Mesh(new THREE.TubeGeometry(surfaceArc(rt.a,rt.b),40,.0016,5,false),m));});}
 function drawFlow(active,idx){
   const col=new THREE.Color(active.card.color);
   let gens=(active.card.spread||[]).map(g=>g.slice());
@@ -524,11 +539,13 @@ function drawFlow(active,idx){
     gens[g].forEach(from=>{gens[g+1].forEach(to=>{
       const cv=arcCurve(from,to);
       arcs.push({curve:cv,gen:g});
-      group.add(new THREE.Mesh(new THREE.TubeGeometry(cv,48,.0026,6,false),
-        new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.45})));});});}
+      const tm=new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.45});
+      tm.userData.bo=.45;
+      group.add(new THREE.Mesh(new THREE.TubeGeometry(cv,48,.0026,6,false),tm));});});}
   const ps=arcs.map(a=>{
-    const m=new THREE.Mesh(new THREE.SphereGeometry(.0065,8,8),
-      new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.95}));
+    const pm=new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.95});
+    pm.userData.bo=.95;
+    const m=new THREE.Mesh(new THREE.SphereGeometry(.0065,8,8),pm);
     m.visible=false;group.add(m);
     return {m,arc:a};});
   rippleGroup.add(group);
@@ -545,7 +562,7 @@ function applyHighlight(){
     const dim=hlIdx!==null&&hlIdx!==i;
     a.flow.traverse(o=>{if(!o.material)return;
       const isPulse=o.geometry&&o.geometry.type==='SphereGeometry';
-      o.material.opacity=isPulse?(dim?.1:.95):(dim?.08:.45);});});}
+      o.material.userData.bo=isPulse?(dim?.1:.95):(dim?.08:.45);});});}
 
 /* ── 무대 조립 ── */
 function buildStage(){
@@ -606,37 +623,41 @@ function buildStage(){
   shipsGroup=new THREE.Group();stage.add(shipsGroup);renderShips();
   newsLayer=new THREE.Group();stage.add(newsLayer);renderNewsPulses();
   rippleGroup=new THREE.Group();stage.add(rippleGroup);drawRipples();
-  applyLayers();applyLogic();}
+  applyLayers();}
 
 /* ── 레이어 on/off + 로직 감쇠 ── */
 function applyLayers(){
-  if(shipsGroup)shipsGroup.visible=L.ships&&!logicOn;
-  if(newsLayer)newsLayer.visible=L.news&&!logicOn;
+  if(shipsGroup)shipsGroup.visible=L.ships;
+  if(newsLayer)newsLayer.visible=L.news;
   if(routesGroup)routesGroup.visible=L.routes;
   if(rippleGroup)rippleGroup.visible=L.ripples;}
-function applyLogic(){
-  if(baseMesh)baseMesh.material.opacity=logicOn?.14:1;
-  if(innerL)innerL.material.opacity=logicOn?.08:.55;
-  if(coastL)coastL.material.opacity=logicOn?.05:.38;
-  if(routesGroup)routesGroup.children.forEach(m=>m.material.opacity=logicOn?.06:.16);
-  if(cityIM)cityIM.visible=!logicOn;
-  /* 로직 모드: 반투명 구를 통해 대기광이 비치면 발광구가 되므로 글로우 차단 */
-  atmMesh.visible=VIEW==='3d'&&!logicOn;
-  rimMesh.visible=VIEW==='3d'&&!logicOn;
-  applyLayers();}
+/* 매 프레임: 전환 알파(layerAlpha)와 로직 물들기(dimK)를 재질에 반영 — 모든 전환이 연속적 */
+function applyVisual(){
+  const dataA=layerAlpha*(1-dimK);
+  if(baseMesh)baseMesh.material.opacity=1-(1-.14)*dimK;
+  if(innerL)innerL.material.opacity=.55-(.55-.08)*dimK;
+  if(coastL)coastL.material.opacity=.38-(.38-.05)*dimK;
+  routeMats.forEach(m=>m.opacity=(.16-(.16-.06)*dimK)*layerAlpha);
+  shipMats.forEach(m=>m.opacity=dataA);
+  if(cityIM)cityIM.material.opacity=.8*dataA;
+  const aa=(VIEW==='3d'?1:0)*(1-dimK)*layerAlpha;
+  atmMat.uniforms.a.value=aa;rimMat.uniforms.a.value=aa;
+  atmMesh.visible=aa>.01;rimMesh.visible=aa>.01;
+  if(rippleGroup)rippleGroup.traverse(o=>{
+    if(o.material&&o.material.userData&&o.material.userData.bo!=null)
+      o.material.opacity=o.material.userData.bo*layerAlpha;});}
 
 function updateLabels(){
   const camDir=camera.position.clone().normalize();
   const dist=VIEW==='2d'?camera.position.z+1.2:camera.position.length();
   labelObjs.forEach(o=>{
-    if(logicOn){o.s.material.opacity=0;return;}
     if(o.tier<=3&&!L.clabels){o.s.material.opacity=0;return;}
     if(o.tier>=4&&!L.citylabels){o.s.material.opacity=0;return;}
     const facing=VIEW==='2d'?1:o.normal.dot(camDir);
     const tierOn=o.tier===1||(o.tier===2&&dist<2.5)||(o.tier===3&&dist<1.85)
       ||(o.tier===4&&dist<1.95)||(o.tier===5&&dist<1.6);
     const fade=VIEW==='2d'?1:THREE.MathUtils.smoothstep(facing,.12,.35);
-    o.s.material.opacity=tierOn?fade*.95:0;});}
+    o.s.material.opacity=(tierOn?fade*.95:0)*(1-dimK);});}
 
 /* ── 모핑: 지구본이 펼쳐지고(→평면) 접힌다(→구) ── */
 let morphAnim=null;
@@ -657,16 +678,11 @@ function setStageMorph(k){
     d3.updateMatrix();obsIM.setMatrixAt(i,d3.matrix);});
     obsIM.instanceMatrix.needsUpdate=true;}}
 function startMorph(k1,vFinal){
-  /* 지도(채움·국경·라벨·점)만 함께 접히고, 데이터 레이어는 잠시 물러났다 도착 후 재등장 */
-  if(rippleGroup)rippleGroup.visible=false;
-  if(routesGroup)routesGroup.visible=false;
-  if(shipsGroup)shipsGroup.visible=false;
-  if(newsLayer)newsLayer.visible=false;
-  atmMesh.visible=false;rimMesh.visible=false;
+  /* 지도(채움·국경·라벨·점)가 접히고 펼쳐진다 — 데이터 레이어는 알파로 스르륵 물러났다 재등장 */
   controls.enabled=false;camAnim=null;
   morphAnim={k0:MORPH,k1,t0:performance.now(),dur:1200,vFinal,
     camFrom:camera.position.clone(),
-    camTo:k1===1?new THREE.Vector3(0,0,2.6):new THREE.Vector3(0,.5,2.9)};}
+    camTo:k1===1?new THREE.Vector3(0,0,2.6):new THREE.Vector3(0,.5,3.35)};}
 
 /* ── 카메라: 뷰별 조작 + 활공 ── */
 let camAnim=null,autoT=null;
@@ -700,7 +716,7 @@ function configCamera(){
     controls.autoRotate=MODE==='3d'&&AUTOROT;
     controls.minDistance=1.4;controls.maxDistance=5.5;
     controls.target.set(0,0,0);
-    if(camera.position.length()<1.5)camera.position.set(0,.5,2.9);
+    if(camera.position.length()<1.5)camera.position.set(0,.5,3.35);
     fitCamera();}}
 
 /* ══ 로직 뷰: 살아있는 계산의 플로우차트 ══ */
@@ -720,6 +736,7 @@ const EASY={
     f:'관문 반경 700km 내 심각도≥4 사건',now:c=>`지금 ${c.nearHit||0}건`,path:'관문 → 상하이 · 서울 · 도쿄 · 뭄바이'},
   'L-EVT-004':{plain:'큰 정치 불확실성(시위·위협)은 그 자체보다 "무엇이 나올지 모른다"는 상태가 위험 프리미엄을 키웁니다.',
     f:'심각도≥4 정치 사건(시위·위협)',now:c=>`지금 ${c.polHit||0}건`,path:'진앙 → 뉴욕 · 런던'}};
+let LFILTER='all';
 function renderLogicView(){
   if(!CONDS||!CTX)return;
   const fmt2=(x,d=2)=>x==null?'—':(+x).toFixed(d);
@@ -732,20 +749,24 @@ function renderLogicView(){
     `평균 상관 <b>${fmt2(c.conv,3)}</b><br>기준: 긴장 0.38 · 경보 0.55`;
   document.querySelector('#ld-news .v').innerHTML=
     `최근 <b>${c.evs.length}</b>건 · 최고 심각도 <b>${c.maxSev}/5</b><br>관문 반경 700km: <b>${c.nearHit}</b>건`;
+  const SHOW=LFILTER==='act'?CONDS.filter(cd=>cd.pass):CONDS;
   const cbox=document.getElementById('lcbox'),kbox=document.getElementById('lkbox');
-  cbox.innerHTML=CONDS.map(cd=>{
+  cbox.innerHTML=SHOW.map((cd,i)=>{
     const card=cardOf(cd.id);
-    return `<div id="lc-${cd.id}" class="lnode ${cd.pass?'pass':'wait'}" style="--fam:${card.color}">`+
+    return `<div id="lc-${cd.id}" class="lnode ${cd.pass?'pass':'wait'}" style="--fam:${card.color};animation-delay:${.12+i*.07}s">`+
       `<h4>${cd.id}</h4><span class="st">${cd.pass?'발동':'대기'}</span>`+
       `<div class="formula">${cd.f}</div><div class="v">${cd.sub}</div></div>`;}).join('');
-  kbox.innerHTML=CONDS.map(cd=>{
+  kbox.innerHTML=SHOW.map((cd,i)=>{
     const card=cardOf(cd.id);
-    return `<div id="lk-${cd.id}" class="lnode lcard ${cd.pass?'pass':'wait'}" style="--fam:${card.color}">`+
+    return `<div id="lk-${cd.id}" class="lnode lcard ${cd.pass?'pass':'wait'}" style="--fam:${card.color};animation-delay:${.34+i*.07}s">`+
       `<h4>${card.name} <span style="color:var(--acc)">${card.grade}</span></h4>`+
       `<div class="v">${card.core} · ${cd.pass?'<b>지금 무대에서 파급 중</b>':'조건 충족 시 발동'}</div></div>`;}).join('');
+  document.querySelectorAll('#lstage > div:first-child .lnode').forEach((n,i)=>
+    n.style.animationDelay=(i*.06)+'s');
+  document.getElementById('ls-out').style.animationDelay='.55s';
   kbox.querySelectorAll('.lcard').forEach(n=>n.addEventListener('click',()=>
     openPop(n.id.replace('lk-',''))));
-  const act=CONDS.filter(cd=>cd.pass);
+  const act=SHOW.filter(cd=>cd.pass);
   document.querySelector('#ls-out .spread').innerHTML=act.length?
     act.map(cd=>SPREAD_TXT[cd.id]).join('<hr style="border:none;border-top:1px solid rgba(159,199,224,.1)">')
     :'발동 카드 없음 — 무소식도 기록됩니다';
@@ -773,11 +794,22 @@ function drawLWires(){
       cc.setAttribute('r',3);cc.setAttribute('fill',color);
       svg.appendChild(cc);
       logicPulses.push({path:p,dot:cc,ph:Math.random()});}};
-  CONDS.forEach(cd=>{
+  (LFILTER==='act'?CONDS.filter(c=>c.pass):CONDS).forEach(cd=>{
     const col=cardOf(cd.id).color;
     link(document.getElementById(cd.src),document.getElementById('lc-'+cd.id),col,cd.pass);
     link(document.getElementById('lc-'+cd.id),document.getElementById('lk-'+cd.id),col,cd.pass);
-    if(cd.pass)link(document.getElementById('lk-'+cd.id),document.getElementById('ls-out'),col,true);});}
+    if(cd.pass)link(document.getElementById('lk-'+cd.id),document.getElementById('ls-out'),col,true);});
+  /* 배선이 그려지는 연출: 대시 오프셋을 0으로 풀며 드로잉 */
+  svg.querySelectorAll('path').forEach((p2,i)=>{
+    const L2=p2.getTotalLength();
+    p2.style.strokeDasharray=L2;
+    p2.style.strokeDashoffset=L2;
+    p2.style.transition=`stroke-dashoffset .7s ease ${.35+i*.05}s`;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>p2.style.strokeDashoffset=0));});
+  svg.querySelectorAll('circle').forEach(c2=>{
+    c2.style.opacity=0;
+    c2.style.transition='opacity .3s ease 1.25s';
+    requestAnimationFrame(()=>requestAnimationFrame(()=>c2.style.opacity=1));});}
 
 /* ══ 카드 팝업 — 한 카드의 완전한 이야기 (고유 주소 #카드ID) ══ */
 function gaugeSVG(val,color){
@@ -840,7 +872,7 @@ document.getElementById('popclose').addEventListener('click',()=>{
 document.getElementById('pop').addEventListener('click',e=>{
   if(e.target.id==='pop')document.getElementById('popclose').click();});
 
-/* ── 뷰 전환: 구↔평면은 모핑, 3D↔로직은 짧은 페이드 ── */
+/* ── 뷰 전환: 구↔평면은 모핑, 3D↔로직은 서서히 물들기 — 끊김 없는 연속 전환 ── */
 function setView(v){
   if(v===MODE||morphAnim)return;
   MODE=v;
@@ -849,18 +881,16 @@ function setView(v){
   logicOn=v==='logic';
   document.getElementById('activebar').style.display=logicOn?'none':'flex';
   const crossing=(v==='2d')!==(VIEW==='2d');
-  if(crossing){ /* 지구본이 펼쳐진다/접힌다 */
+  if(crossing){ /* 데이터 레이어 선(先)페이드 → 지도 접힘/펼침 → 도착 후 재등장 */
     lv.classList.remove('on');
-    startMorph(v==='2d'?1:0,v);
+    tweenDim(0,250);
+    tweenLayer(0,230,()=>startMorph(v==='2d'?1:0,v));
     return;}
-  const cv=renderer.domElement;
-  cv.style.opacity=0;
-  setTimeout(()=>{
-    applyLogic();configCamera();
-    if(logicOn){lv.classList.add('on');renderLogicView();}
-    else lv.classList.remove('on');
-    cv.style.opacity=1;
-  },370);}
+  /* 같은 투영: 로직으로 서서히 물들거나 되돌아온다 */
+  tweenDim(logicOn?1:0,480);
+  configCamera();
+  if(logicOn){lv.classList.add('on');renderLogicView();}
+  else lv.classList.remove('on');}
 document.querySelectorAll('#modebar .mbtn').forEach(b=>
   b.addEventListener('click',()=>setView(b.dataset.v)));
 
@@ -1021,15 +1051,18 @@ Promise.all([
    const a2=(pp.assets||{}).us2y||{};
    const dd=ev&&ev.event&&ev.event.release_date?
      Math.max(0,Math.ceil((new Date(ev.event.release_date+'T00:00:00Z')-Date.now())/864e5)):null;
-   let nearHit=0,nearMin=null;
+   let nearHit=0,nearMin=null,nearEv=null;
    evs.forEach(e=>{if(!['18','19','20'].includes(e.code)||(e.sev||0)<4)return;
+     let best=null;
      Object.values(led.chokepoints||{}).forEach(cp=>{
        const d=havKm([e.la,e.lo],[cp.la,cp.lo]);
-       if(d<=700)nearHit++;
-       if(nearMin==null||d<nearMin)nearMin=d;});});
+       if(d<=700&&(!best||d<best.d))best={cp,d};
+       if(nearMin==null||d<nearMin)nearMin=d;});
+     if(best){nearHit++;if(!nearEv)nearEv={e,cp:best.cp,d:best.d};}});
+   const polEv=evs.find(e=>['13','14'].includes(e.code)&&(e.sev||0)>=4)||null;
    const polHit=evs.filter(e=>['13','14'].includes(e.code)&&(e.sev||0)>=4).length;
    const maxSev=evs.length?Math.max(...evs.map(e=>e.sev||0)):0;
-   CTX={evs,wti,wchg,conv,pp,a2,dd,nearHit,nearMin,polHit,maxSev,ev};
+   CTX={evs,wti,wchg,conv,pp,a2,dd,nearHit,nearMin,nearEv,polEv,polHit,maxSev,ev};
    const fmt2=(x,d=2)=>x==null?'—':(+x).toFixed(d);
    CONDS=[
      {id:'L-INF-001',pass:!!(ev&&ev.event),src:'ld-evt',
@@ -1043,10 +1076,12 @@ Promise.all([
       sub:`지금 <b>${fmt2(conv,3)}</b> ${conv>=.55?'≥':'<'} 0.55 → ${conv>=.55?'발동':'대기'}`},
      {id:'L-PHY-004',pass:nearHit>0,src:'ld-news',
       f:'관문 700km 내 심각도≥4 사건 ?',
-      sub:`지금 <b>${nearHit}건</b> → ${nearHit>0?'발동':'대기'}${nearMin?` (가장 가까운 사건↔관문 ${Math.round(nearMin)}km)`:''}`},
+      sub:`지금 <b>${nearHit}건</b> → ${nearHit>0?'발동':'대기'}${nearMin?` (가장 가까운 사건↔관문 ${Math.round(nearMin)}km)`:''}`+
+        (nearEv?`<br><span style="color:#7f95a8">연결 뉴스 · ${nearEv.e.src||''}</span> “${nearEv.e.name.slice(0,52)}…”`:'')},
      {id:'L-EVT-004',pass:polHit>0,src:'ld-news',
       f:'심각도≥4 정치 사건(시위·위협) ?',
-      sub:`지금 <b>${polHit}건</b> → ${polHit>0?'발동':'대기'}`}];
+      sub:`지금 <b>${polHit}건</b> → ${polHit>0?'발동':'대기'}`+
+        (polEv?`<br><span style="color:#7f95a8">연결 뉴스 · ${polEv.src||''}</span> “${polEv.name.slice(0,52)}…”`:'')}];
    if(document.getElementById('logicview').classList.contains('on'))renderLogicView();
    if(!runEngine.hashDone){runEngine.hashDone=true;
      const h=decodeURIComponent(location.hash.slice(1));
@@ -1115,6 +1150,10 @@ document.getElementById('newsbtn').addEventListener('click',()=>{
   newsEl.classList.toggle('on');cardsEl.classList.remove('on');});
 document.getElementById('cardsbtn').addEventListener('click',()=>{
   cardsEl.classList.toggle('on');newsEl.classList.remove('on');});
+document.querySelectorAll('#lfilter .lf').forEach(f=>f.addEventListener('click',()=>{
+  LFILTER=f.dataset.f;
+  document.querySelectorAll('#lfilter .lf').forEach(x=>x.classList.toggle('on',x===f));
+  renderLogicView();}));
 
 window.__dbg={get labelObjs(){return labelObjs;},camera,setView,get L(){return L;}};
 
@@ -1130,9 +1169,10 @@ function loop(now){
     if(u>=1){
       const vF=morphAnim.vFinal;morphAnim=null;
       VIEW=(vF==='2d')?'2d':'3d';
-      buildStage();configCamera();controls.enabled=true;applyLogic();
+      buildStage();configCamera();controls.enabled=true;
+      tweenLayer(1,500);
       const lv=document.getElementById('logicview');
-      if(logicOn){lv.classList.add('on');renderLogicView();}
+      if(logicOn){tweenDim(1,480);lv.classList.add('on');renderLogicView();}
       else lv.classList.remove('on');}}
   if(camAnim){
     const u=Math.min(1,(now-camAnim.t0)/900);
@@ -1145,9 +1185,18 @@ function loop(now){
       camera.position.copy(camAnim.from.clone().lerp(camAnim.to,e2).normalize().multiplyScalar(camAnim.dist));
       camera.lookAt(0,0,0);}
     if(u>=1)camAnim=null;}
+  if(layerTween){const u=Math.min(1,(now-layerTween.t0)/layerTween.dur);
+    layerAlpha=layerTween.from+(layerTween.to-layerTween.from)*u;
+    if(u>=1){const cb=layerTween.cb;layerTween=null;if(cb)cb();}}
+  if(dimTween){const u=Math.min(1,(now-dimTween.t0)/dimTween.dur);
+    const e3=u*u*(3-2*u);
+    dimK=dimTween.from+(dimTween.to-dimTween.from)*e3;
+    if(u>=1)dimTween=null;}
+  applyVisual();
   updateLabels();
   pulses.forEach(rg=>{const s=1+.9*((now/1400+rg.userData.ph)%1);
-    rg.scale.set(s,s,s);rg.material.opacity=Math.max(0,1.15-s*.55);});
+    rg.scale.set(s,s,s);
+    rg.material.opacity=Math.max(0,1.15-s*.55)*layerAlpha*(1-dimK);});
   flows.forEach(f=>{
     const U=((now/3000)+f.ph)%1;
     f.pulses.forEach(p=>{
