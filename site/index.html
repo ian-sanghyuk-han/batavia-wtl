@@ -793,7 +793,7 @@ let lensReal=null; // 지역 렌즈 실데이터 (lens.json)
 fetch('data/lens.json').then(r=>r.json()).then(d=>{lensReal=d.nodes||null;}).catch(()=>{});
 let shipsReal=null; // AIS 실측 선박 (ships.json) — 도착 시 시뮬 선박 자동 대체
 fetch('data/ships.json?t='+Date.now()).then(r=>r.json()).then(d=>{
-  if(d&&d.chokepoints)shipsReal=d;}).catch(()=>{});
+  if(d&&d.fleet&&d.fleet.length)shipsReal=d;}).catch(()=>{}); // 빈 함대 = 수신 공백 → 시뮬 유지
 function sparkline(dataArr){const s=document.getElementById('spark'),c2=s.getContext('2d');
   c2.clearRect(0,0,512,88);
   c2.strokeStyle=theme==='dark'?'#5B8DEF':'#2A4C8F';c2.lineWidth=2.5;c2.beginPath();

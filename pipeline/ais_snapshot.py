@@ -64,6 +64,11 @@ async def run():
 asyncio.run(run())
 print(f"heard: {len(positions)} ships with position, {len(static)} with static data")
 
+# 가드: 수신 0 = 회선/서비스 문제이지 '빈 바다'가 아니다 — 좋은 데이터를 덮어쓰지 않는다
+if not positions:
+    print("WARN: zero reception — keeping last good ships.json (no overwrite)")
+    sys.exit(0)
+
 # --- 선박 명부(registry): 실행마다 선종·목적지 사전을 누적 — '미상'이 점점 줄어든다 ---
 REG = os.path.join(HERE, "ais_registry.json")
 try:

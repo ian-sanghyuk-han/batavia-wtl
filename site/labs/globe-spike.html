@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<!-- STATUS: ENGINE SPIKE (labs, unlinked) — three.js photoreal globe feasibility: real fleet via InstancedMesh, taxonomy arcs, regime lighting. Not a product page; throwaway validation for the 3D Observatory build. -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>LABS — Globe Engine Spike</title>
+<style>
+  body{margin:0;background:#02040a;color:#EAF9FF;font-family:'Segoe UI',sans-serif;overflow:hidden;height:100vh;height:100dvh}
+  #hud{position:fixed;top:10px;left:12px;z-index:5;font:12px/1.7 Consolas,monospace;color:#7fa9c0;
+    background:rgba(5,11,17,.7);border:1px solid rgba(127,216,255,.2);padding:8px 12px}
+  #hud b{color:#7FD8FF}
+  #regime{position:fixed;top:10px;right:12px;z-index:5;display:flex;gap:6px}
+  #regime button{font:11px Consolas,monospace;color:#7fa9c0;background:rgba(5,11,17,.7);
+    border:1px solid rgba(127,216,255,.25);padding:7px 12px;cursor:pointer}
+  #regime button.on{color:#02040a;background:#7FD8FF}
+  #note{position:fixed;bottom:10px;left:12px;right:12px;z-index:5;font:10px Consolas,monospace;color:#4f6b78}
+</style>
+</head>
+<body>
+<div id="hud"><b>ENGINE SPIKE</b> · 검증 항목: 실사 지구 · 실함대(Instanced) · 계열 아크 · 국면 조명<br>
+FPS <b id="fps">—</b> · 배 <b id="nships">—</b>척 · 드래그 회전 / 휠·핀치 줌</div>
+<div id="regime">
+  <button data-r="steady" class="on">STEADY</button>
+  <button data-r="swell">SWELL</button>
+  <button data-r="storm">STORM</button>
+</div>
+<div id="note">labs/globe-spike — 제품 아님 · 엔진 타당성 검증 전용 · 텍스처: three.js 표준 지구(추후 NASA 고해상 교체)</div>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+"three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,.1,100);
+camera.position.set(0,0.6,3.1);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(2,devicePixelRatio));
+document.body.appendChild(renderer.domElement);
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;controls.dampingFactor=.06;
+controls.minDistance=1.6;controls.maxDistance=6;controls.enablePan=false;
+controls.autoRotate=!matchMedia('(prefers-reduced-motion: reduce)').matches;
+controls.autoRotateSpeed=.25;
+
+/* ── 별 ── */
+const starGeo=new THREE.BufferGeometry();
+const starPos=new Float32Array(1200*3);
+for(let i=0;i<1200;i++){const v=new THREE.Vector3().randomDirection().multiplyScalar(40+Math.random()*30);
+  starPos.set([v.x,v.y,v.z],i*3);}
+starGeo.setAttribute('position',new THREE.BufferAttribute(starPos,3));
+scene.add(new THREE.Points(starGeo,new THREE.PointsMaterial({color:0x9ab8d0,size:.06,sizeAttenuation:true,transparent:true,opacity:.7})));
+
+/* ── 지구 (three 표준 행성 텍스처 — 추후 NASA 교체) ── */
+const TEX='https://cdn.jsdelivr.net/gh/mrdoob/three.js@r160/examples/textures/planets/';
+const loader=new THREE.TextureLoader();
+const earthMat=new THREE.MeshPhongMaterial({color:0x8899aa,shininess:14});
+loader.load(TEX+'earth_atmos_2048.jpg',t=>{t.colorSpace=THREE.SRGBColorSpace;earthMat.map=t;earthMat.color.set(0xffffff);earthMat.needsUpdate=true;});
+loader.load(TEX+'earth_normal_2048.jpg',t=>{earthMat.normalMap=t;earthMat.normalScale=new THREE.Vector2(.7,.7);earthMat.needsUpdate=true;});
+loader.load(TEX+'earth_specular_2048.jpg',t=>{earthMat.specularMap=t;earthMat.needsUpdate=true;});
+const R=1;
+const earth=new THREE.Mesh(new THREE.SphereGeometry(R,96,96),earthMat);
+scene.add(earth);
+/* 대기광 — 뒷면 글로우 셸 */
+const atmMat=new THREE.ShaderMaterial({
+  transparent:true,side:THREE.BackSide,depthWrite:false,
+  uniforms:{c:{value:new THREE.Color(0x7FD8FF)}},
+  vertexShader:'varying vec3 vN;void main(){vN=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+  fragmentShader:'uniform vec3 c;varying vec3 vN;void main(){float i=pow(.62-dot(vN,vec3(0.,0.,1.)),2.2);gl_FragColor=vec4(c,1.)*i;}'
+});
+const atmo=new THREE.Mesh(new THREE.SphereGeometry(R*1.12,64,64),atmMat);
+scene.add(atmo);
+
+/* ── 조명 (국면 테마의 골격) ── */
+const key=new THREE.DirectionalLight(0xffffff,2.1);key.position.set(-2,1.2,1.6);scene.add(key);
+const amb=new THREE.AmbientLight(0x24435e,.85);scene.add(amb);
+const rim=new THREE.DirectionalLight(0x7FD8FF,.5);rim.position.set(2.4,-.6,-1.8);scene.add(rim);
+const REGIMES={
+  steady:{key:0xfff4e2,amb:0x24435e,rim:0x7FD8FF,atm:0x7FD8FF,bg:0x02040a},
+  swell:{key:0xffd9a0,amb:0x4a3517,rim:0xE8A33D,atm:0xE8A33D,bg:0x070502},
+  storm:{key:0xffc2c2,amb:0x4e1a20,rim:0xFF6A6E,atm:0xFF6A6E,bg:0x0a0304}};
+function setRegime(r){const t=REGIMES[r];
+  key.color.set(t.key);amb.color.set(t.amb);rim.color.set(t.rim);
+  atmMat.uniforms.c.value.set(t.atm);renderer.setClearColor(t.bg);
+  document.querySelectorAll('#regime button').forEach(b=>b.classList.toggle('on',b.dataset.r===r));}
+setRegime('steady');
+document.querySelectorAll('#regime button').forEach(b=>b.onclick=()=>setRegime(b.dataset.r));
+
+const D2R=Math.PI/180;
+function toV3(la,lo,r){const phi=(90-la)*D2R,th=(lo+180)*D2R;
+  return new THREE.Vector3(-r*Math.sin(phi)*Math.cos(th),r*Math.cos(phi),r*Math.sin(phi)*Math.sin(th));}
+
+/* ── 계열 아크 (성질 = 형태) ── */
+const NODES={SEL:[37.5,127],TYO:[35.7,139.7],NY:[40.7,-74],LDN:[51.5,-.1],SHA:[31.2,121.5],RYD:[24.7,46.7],SIN:[1.35,103.8]};
+function arc(a,b,h,color,dashed){
+  const A=toV3(a[0],a[1],R),B=toV3(b[0],b[1],R);
+  const M=A.clone().add(B).multiplyScalar(.5).normalize().multiplyScalar(R*(1+h));
+  const curve=new THREE.QuadraticBezierCurve3(A.clone().multiplyScalar(1.005),M,B.clone().multiplyScalar(1.005));
+  const geo=new THREE.TubeGeometry(curve,48,.0045,6,false);
+  const mat=new THREE.MeshBasicMaterial({color,transparent:true,opacity:dashed?.5:.75});
+  scene.add(new THREE.Mesh(geo,mat));}
+arc(NODES.NY,NODES.SEL,.22,0xFF5D6E);      /* 자본 — 공중 포물선 */
+arc(NODES.SEL,NODES.NY,.42,0x5FD8E8);      /* 항공화물 — 최고고도 */
+arc(NODES.RYD,NODES.SHA,.03,0xD9A441);     /* 해상 — 수면 */
+arc(NODES.TYO,NODES.LDN,.30,0xA79BFF,true);/* 정보·캐리 — 점선(투명도로 대체) */
+
+/* ── 실함대: ships.json → InstancedMesh 1드로콜 ── */
+const hull=new THREE.ConeGeometry(.006,.02,4);
+hull.rotateX(Math.PI/2);
+const tankMat=new THREE.MeshBasicMaterial({color:0xFF9A5A});
+const cargMat=new THREE.MeshBasicMaterial({color:0x5FD8E8});
+fetch('../data/ships.json').then(r=>r.json()).then(d=>{
+  const fleet=d.fleet||[];
+  document.getElementById('nships').textContent=fleet.length;
+  const groups=[['tanker',tankMat],['cargo',cargMat],['unknown',new THREE.MeshBasicMaterial({color:0x6b7f8f})]];
+  const dummy=new THREE.Object3D();
+  groups.forEach(([t,mat])=>{
+    const ships=fleet.filter(s=>s.t===t);
+    if(!ships.length)return;
+    const im=new THREE.InstancedMesh(hull,mat,ships.length);
+    ships.forEach((s,i)=>{
+      const p=toV3(s.la,s.lo,R*1.008);
+      dummy.position.copy(p);
+      dummy.lookAt(p.clone().multiplyScalar(2)); /* 법선 정렬 */
+      if(s.cog!=null)dummy.rotateZ(-s.cog*D2R);
+      dummy.updateMatrix();
+      im.setMatrixAt(i,dummy.matrix);});
+    im.instanceMatrix.needsUpdate=true;
+    earth.add(im); /* 지구 자전에 따라 함께 회전 */
+  });
+}).catch(()=>{document.getElementById('nships').textContent='0 (데이터 없음)';});
+
+/* ── 실뉴스 진앙 펄스 ── */
+fetch('../data/news.json').then(r=>r.json()).then(d=>{
+  (d.events||[]).slice(0,8).forEach(e=>{
+    const p=toV3(e.la,e.lo,R*1.012);
+    const ring=new THREE.Mesh(new THREE.RingGeometry(.012,.016,32),
+      new THREE.MeshBasicMaterial({color:0xFF5D6E,transparent:true,side:THREE.DoubleSide}));
+    ring.position.copy(p);ring.lookAt(p.clone().multiplyScalar(2));
+    ring.userData.ph=Math.random()*6.28;ring.userData.sev=e.sev||3;
+    earth.add(ring);pulses.push(ring);});
+}).catch(()=>{});
+const pulses=[];
+
+/* ── 루프 + FPS ── */
+let frames=0,fpsT=performance.now();
+const fpsEl=document.getElementById('fps');
+function loop(now){
+  controls.update();
+  pulses.forEach(rg=>{const s=1+.9*((now/1400+rg.userData.ph)%1);
+    rg.scale.set(s,s,s);rg.material.opacity=Math.max(0,1.15-s*.55);});
+  renderer.render(scene,camera);
+  frames++;
+  if(now-fpsT>1000){fpsEl.textContent=frames;frames=0;fpsT=now;}
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);});
+</script>
+</body>
+</html>
