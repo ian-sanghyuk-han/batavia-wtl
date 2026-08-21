@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<!-- STATUS: LOGIC LAB (labs, unlinked) — design study for the Observatory LOGIC view per owner brief:
+     formulas and logic as a living flowchart (neural-net feel), calculation process visible,
+     layperson "aha" infographics, per-card popup with unique hash address. Real data, no sims.
+     If approved: this becomes the 로직 tab + card popups in observatory.html. -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>LABS — Logic Lab</title>
+<style>
+  :root{--acc:#7FD8FF;--ink:#EAF9FF;--dim:#93a7b8;--mut:#5b6b7a;
+    --glass:rgba(7,11,17,.60);--edge:rgba(159,199,224,.20);--bg:#05070c}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,sans-serif}
+  .glass{background:var(--glass);border:1px solid var(--edge);backdrop-filter:blur(9px);
+    -webkit-backdrop-filter:blur(9px);border-radius:11px}
+  header{padding:16px 18px 6px}
+  header b{font:600 13px Consolas,monospace;letter-spacing:3px}
+  header small{display:block;color:var(--mut);font:10px Consolas,monospace;margin-top:4px}
+  /* ── 무대: 살아있는 플로우차트 ── */
+  #stagewrap{position:relative;margin:14px;padding:18px 14px 26px;overflow-x:auto}
+  #stage{position:relative;display:grid;grid-template-columns:190px minmax(320px,1fr) 225px 200px;
+    gap:14px 46px;min-width:1080px}
+  #wires{position:absolute;inset:0;pointer-events:none;overflow:visible}
+  .colh{font:600 9px Consolas,monospace;letter-spacing:2px;color:var(--mut);margin-bottom:2px}
+  .node{position:relative;padding:9px 12px;margin-bottom:10px;border-left:3px solid #3a4a58}
+  .node h4{margin:0;font:600 11px Consolas,monospace;letter-spacing:1px;color:var(--ink)}
+  .node .v{font:10.5px/1.7 Consolas,monospace;color:#9fb8cc;margin-top:3px}
+  .node .v b{color:#EAF9FF;font-size:11.5px}
+  .node .st{position:absolute;top:9px;right:10px;font:9px Consolas,monospace;color:var(--mut)}
+  .node.pass{border-left-color:var(--fam,#7FD8FF)}
+  .node.pass .st{color:#3FE0A0}
+  .node.wait{opacity:.62}
+  .card{cursor:pointer;transition:transform .15s}
+  .card:hover{transform:translateX(2px)}
+  .card .gr{color:var(--acc)}
+  .formula{font:10px Consolas,monospace;background:rgba(159,199,224,.06);
+    border-radius:6px;padding:4px 7px;margin-top:5px;color:#b7cede}
+  .formula b{color:#fff}
+  .spread{font:10px Consolas,monospace;color:#9fb8cc;line-height:1.9}
+  .spread span{display:inline-block;background:rgba(159,199,224,.07);border-radius:5px;
+    padding:1px 7px;margin:1px 2px}
+  /* ── 카드 팝업: 카드 하나의 완전한 이해 ── */
+  #pop{position:fixed;inset:0;z-index:50;background:rgba(3,6,10,.72);display:none;
+    align-items:center;justify-content:center;padding:16px}
+  #pop.on{display:flex}
+  #popin{width:min(620px,96vw);max-height:92vh;overflow-y:auto;padding:18px 20px;
+    border-left:4px solid var(--fam,#FF5D6E)}
+  #popin h2{margin:0;font:600 15px Consolas,monospace;letter-spacing:1px}
+  #popin h2 small{color:var(--acc);float:right;font-size:12px}
+  .plain{font-size:13px;line-height:1.75;color:#d7e6f2;margin:10px 0 4px}
+  .step{display:flex;gap:12px;align-items:flex-start;margin:14px 0;position:relative}
+  .step .no{flex:none;width:22px;height:22px;border-radius:50%;background:rgba(127,216,255,.12);
+    color:var(--acc);font:600 11px Consolas,monospace;display:flex;align-items:center;
+    justify-content:center;margin-top:2px}
+  .step .bd{flex:1}
+  .step h5{margin:0 0 4px;font:600 11px Consolas,monospace;letter-spacing:1px;color:var(--ink)}
+  .step p{margin:0;font-size:11.5px;line-height:1.7;color:#a9becd}
+  .step p b{color:#EAF9FF}
+  /* 인포그래픽 부품 */
+  .barrow{display:flex;align-items:center;gap:8px;margin:7px 0;font:10px Consolas,monospace;color:var(--dim)}
+  .barrow .lbl{width:120px;text-align:right}
+  .barrow .tr{flex:1;height:12px;background:rgba(159,199,224,.08);border-radius:6px;overflow:hidden}
+  .barrow .fl{height:100%;width:0;border-radius:6px;transition:width 1.1s cubic-bezier(.2,.7,.2,1)}
+  .barrow .val{width:64px;font-weight:600;color:#EAF9FF}
+  .gaugewrap{display:flex;align-items:center;gap:16px;margin:8px 0}
+  .gtxt{font:11px/1.7 Consolas,monospace;color:#a9becd}
+  .gtxt b{font-size:15px;color:#fff}
+  .verdictbox{margin-top:6px;padding:9px 12px;border-radius:8px;background:rgba(127,216,255,.07);
+    font-size:12px;line-height:1.7;color:#cfe4f2}
+  .provline{margin-top:12px;font:9px Consolas,monospace;color:var(--mut)}
+  #popclose{position:sticky;top:0;float:right;font:12px Consolas,monospace;color:var(--dim);
+    cursor:pointer;padding:2px 8px}
+  #note{padding:4px 18px 18px;font:10px Consolas,monospace;color:var(--mut)}
+  @media(max-width:900px){#stage{min-width:760px}}
+</style>
+</head>
+<body>
+<header>
+  <b>LOGIC LAB</b> · 로직 뷰 설계 시안 — 살아있는 계산 (실데이터)
+  <small>labs/logic-lab — 제품 아님 · 승인되면 Observatory의 [로직] 탭 + 카드 팝업이 됩니다 · 카드를 클릭해 보세요</small>
+</header>
+<div id="stagewrap" class="glass">
+  <div id="stage">
+    <div>
+      <div class="colh">① 데이터 (지금 값)</div>
+      <div id="d-evt" class="node glass"><h4>일정 · 이벤트</h4><div class="v">로드 중…</div></div>
+      <div id="d-mkt" class="node glass"><h4>시장 · 시세</h4><div class="v">로드 중…</div></div>
+      <div id="d-rgm" class="node glass"><h4>국면 · 동조도</h4><div class="v">로드 중…</div></div>
+      <div id="d-news" class="node glass"><h4>뉴스 · 관찰</h4><div class="v">로드 중…</div></div>
+    </div>
+    <div>
+      <div class="colh">② 판정 — 수식에 지금 값을 대입</div>
+      <div id="c-INF001" class="node glass"></div>
+      <div id="c-INF004" class="node glass"></div>
+      <div id="c-MKT001" class="node glass"></div>
+      <div id="c-PHY004" class="node glass"></div>
+      <div id="c-EVT004" class="node glass"></div>
+    </div>
+    <div>
+      <div class="colh">③ 카드</div>
+      <div id="k-INF001" class="node glass card"></div>
+      <div id="k-INF004" class="node glass card"></div>
+      <div id="k-MKT001" class="node glass card"></div>
+      <div id="k-PHY004" class="node glass card"></div>
+      <div id="k-EVT004" class="node glass card"></div>
+    </div>
+    <div>
+      <div class="colh">④ 파급 (발동 시)</div>
+      <div id="s-out" class="node glass"><div class="spread">—</div></div>
+    </div>
+  </div>
+  <svg id="wires"></svg>
+</div>
+<div id="note">각 판정 상자가 실제 수식과 현재 값을 보여줍니다 — 발동(색)과 대기(흐림) 모두. 대기 카드도 "왜 아직인지"가 수치로 보입니다.
+연결선 위 빛 알갱이 = 지금 흐르고 있는 조건. 카드 클릭 → 그 카드의 전체 이야기(팝업, 고유 주소 #카드ID).</div>
+
+<div id="pop"><div id="popin" class="glass"><span id="popclose">✕ 닫기</span><div id="popbody"></div></div></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const fmt=(x,d=2)=>x==null?'—':(+x).toFixed(d);
+function toneCnt(evs,codes,sevMin){return evs.filter(e=>codes.includes(e.code)&&(e.sev||0)>=sevMin).length;}
+const CHOKES={hormuz:[26.6,56.5],malacca:[1.7,101.0],suez:[30.0,32.5],babelmandeb:[12.6,43.3],panama:[9.0,-79.5],bosporus:[41.1,29.0]};
+function havKm(a,b){const D=Math.PI/180;const p1=a[0]*D,p2=b[0]*D,dp=(b[0]-a[0])*D,dl=(b[1]-a[1])*D;
+  const s=Math.sin(dp/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;
+  return 6371*2*Math.atan2(Math.sqrt(s),Math.sqrt(1-s));}
+
+const FAM={INF001:'#FF5D6E',INF004:'#FF5D6E',MKT001:'#A79BFF',PHY004:'#D9A441',EVT004:'#A79BFF'};
+const NAME={INF001:'CPI 서프라이즈의 하루',INF004:'유가의 2차 점화',MKT001:'수렴도 경보',
+  PHY004:'관문 봉쇄',EVT004:'선거의 불확실성 곡선'};
+const GRADE={INF001:'B+',INF004:'B+',MKT001:'B+',PHY004:'B+',EVT004:'C+'};
+const CORE={INF001:'코어 2.3·7.1',INF004:'코어 3.4',MKT001:'코어 5.2',PHY004:'코어 3.7·9.9',EVT004:'코어 7장'};
+
+let CTX=null; /* 판정 결과 컨텍스트 (팝업이 재사용) */
+
+Promise.all([
+  fetch('../data/news.json').then(r=>r.json()).catch(()=>({events:[]})),
+  fetch('../data/market.json').then(r=>r.json()).catch(()=>({series:{}})),
+  fetch('../data/regime.json').then(r=>r.json()).catch(()=>null),
+  fetch('../data/event_card.json').then(r=>r.json()).catch(()=>null)
+]).then(([news,mkt,rg,ev])=>{
+  const evs=news.events||[];
+  const wti=(mkt.series||{}).wti||{};
+  const wchg=wti.prev?(wti.value/wti.prev-1)*100:0;
+  const conv=rg&&rg.conv?rg.conv.value:null;
+  const pp=(ev&&ev.prepricing)||{};
+  const a2=(pp.assets||{}).us2y||{};
+  const dd=ev&&ev.event&&ev.event.release_date?
+    Math.max(0,Math.ceil((new Date(ev.event.release_date+'T00:00:00Z')-Date.now())/864e5)):null;
+  /* 관문 근접 고심각 뉴스 수 */
+  let nearHit=0,nearMin=null;
+  evs.forEach(e=>{if(!['18','19','20'].includes(e.code)||(e.sev||0)<4)return;
+    Object.values(CHOKES).forEach(cp=>{const d=havKm([e.la,e.lo],cp);
+      if(d<=700)nearHit++;
+      if(nearMin==null||d<nearMin)nearMin=d;});});
+  const polHit=toneCnt(evs,['13','14'],4);
+  const maxSev=evs.length?Math.max(...evs.map(e=>e.sev||0)):0;
+
+  CTX={evs,wti,wchg,conv,rg,ev,pp,a2,dd,nearHit,nearMin,polHit};
+
+  /* ① 데이터 노드 */
+  $('d-evt').querySelector('.v').innerHTML=ev&&ev.event?
+    `${ev.event.name}<br>발표 <b>D-${dd}</b> · ${ev.event.release_kst.slice(5)}`:'등록 이벤트 없음';
+  $('d-mkt').querySelector('.v').innerHTML=`WTI <b>${fmt(wti.value)}</b> (${wchg>=0?'+':''}${fmt(wchg)}%)<br>미2년 이동 <b>${fmt(a2.cur)}%p</b> /5일`;
+  $('d-rgm').querySelector('.v').innerHTML=`평균 상관 <b>${fmt(conv,3)}</b><br>기준: 긴장 0.38 · 경보 0.55`;
+  $('d-news').querySelector('.v').innerHTML=`최근 <b>${evs.length}</b>건 · 최고 심각도 <b>${maxSev}/5</b><br>관문 반경 700km: <b>${nearHit}</b>건`;
+
+  /* ② 판정 노드 — 수식 + 대입 + 결과 */
+  const conds=[
+    {id:'INF001',pass:!!(ev&&ev.event),
+     f:`선반영 지수 = 자산 이동의 역사 대비 위치`,
+     sub:`미2년 <b>${fmt(a2.cur)}%p</b> vs 발표 전 중앙값 ${fmt(a2.hist_median)}%p → 상위 <b>${a2.pctl?Math.round(a2.pctl*100):'—'}%</b> → 지수 <b>${pp.index??'—'}</b>`},
+    {id:'INF004',pass:Math.abs(wchg)>=3,
+     f:`|ΔWTI 하루| ≥ 3% ?`,
+     sub:`지금 <b>${fmt(Math.abs(wchg))}%</b> ${Math.abs(wchg)>=3?'≥':'<'} 3% → ${Math.abs(wchg)>=3?'발동':'대기'}`},
+    {id:'MKT001',pass:conv!=null&&conv>=.55,
+     f:`평균 상관 ≥ 0.55 ?`,
+     sub:`지금 <b>${fmt(conv,3)}</b> ${conv>=.55?'≥':'<'} 0.55 → ${conv>=.55?'발동':'대기'}`},
+    {id:'PHY004',pass:nearHit>0,
+     f:`관문 700km 내 심각도≥4 뉴스 ?`,
+     sub:`지금 <b>${nearHit}건</b> → ${nearHit>0?'발동':'대기'} (가장 가까운 뉴스↔관문 ${nearMin?Math.round(nearMin)+'km':'—'})`},
+    {id:'EVT004',pass:polHit>0,
+     f:`심각도≥4 정치 뉴스(시위·위협) ?`,
+     sub:`지금 <b>${polHit}건</b> → ${polHit>0?'발동':'대기'}`}];
+  conds.forEach(c=>{
+    const n=$('c-'+c.id);
+    n.classList.add(c.pass?'pass':'wait');
+    n.style.setProperty('--fam',FAM[c.id]);
+    n.innerHTML=`<h4>${c.id.replace(/^([A-Z]+)/,'L-$1-').replace('L-INF-001','L-INF-001')}</h4>
+      <span class="st">${c.pass?'발동':'대기'}</span>
+      <div class="formula">${c.f}</div><div class="v">${c.sub}</div>`;
+    n.querySelector('h4').textContent='L-'+c.id.slice(0,3)+'-'+c.id.slice(3);});
+
+  /* ③ 카드 노드 */
+  conds.forEach(c=>{
+    const n=$('k-'+c.id);
+    n.classList.add(c.pass?'pass':'wait');
+    n.style.setProperty('--fam',FAM[c.id]);
+    n.innerHTML=`<h4>${NAME[c.id]} <span class="gr">${GRADE[c.id]}</span></h4>
+      <div class="v">${CORE[c.id]} · ${c.pass?'<b>지금 무대에서 파급 중</b>':'조건 충족 시 발동'}</div>`;
+    n.addEventListener('click',()=>openPop(c.id));});
+
+  /* ④ 파급 */
+  const act=conds.filter(c=>c.pass);
+  $('s-out').querySelector('.spread').innerHTML=act.length?
+    act.map(c=>({INF001:'워싱턴 → 뉴욕 → <span>런던</span><span>프랑크푸르트</span><span>도쿄</span><span>서울</span><span>상하이</span><span>시드니</span><span>상파울루</span>',
+      INF004:'리야드 → <span>뉴욕</span><span>런던</span><span>도쿄</span>',
+      MKT001:'무대 전체 조명 전환',
+      PHY004:'관문 → <span>상하이</span><span>서울</span><span>도쿄</span><span>뭄바이</span>',
+      EVT004:'진앙 → <span>뉴욕</span><span>런던</span>'}[c.id])).join('<hr style="border:none;border-top:1px solid rgba(159,199,224,.1)">')
+    :'발동 카드 없음 — 무소식도 기록됩니다';
+
+  drawWires(conds);
+  addEventListener('resize',()=>drawWires(conds));
+  if(location.hash){const id=location.hash.slice(1).replace(/-/g,'');
+    const m=id.match(/^L?([A-Z]{3}\d{3})$/);if(m&&NAME[m[1]])openPop(m[1]);}
+});
+
+/* ── 연결선 + 흐르는 빛 ── */
+const pulsesW=[];
+function drawWires(conds){
+  const svg=$('wires');
+  const wrap=$('stagewrap');
+  svg.setAttribute('width',wrap.scrollWidth);svg.setAttribute('height',wrap.scrollHeight);
+  svg.innerHTML='';pulsesW.length=0;
+  const box=el=>{const r=el.getBoundingClientRect(),w=wrap.getBoundingClientRect();
+    return {x1:r.left-w.left+wrap.scrollLeft,x2:r.right-w.left+wrap.scrollLeft,
+      y:r.top-w.top+r.height/2};};
+  const link=(a,b,color,on)=>{
+    const A=box(a),B=box(b);
+    const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+    const x1=A.x2,x2=B.x1,mx=(x1+x2)/2;
+    p.setAttribute('d',`M${x1},${A.y} C${mx},${A.y} ${mx},${B.y} ${x2},${B.y}`);
+    p.setAttribute('fill','none');
+    p.setAttribute('stroke',on?color:'#2c3a47');
+    p.setAttribute('stroke-width',on?1.6:1);
+    p.setAttribute('opacity',on?.8:.5);
+    svg.appendChild(p);
+    if(on){const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('r',3);c.setAttribute('fill',color);
+      svg.appendChild(c);
+      pulsesW.push({path:p,dot:c,ph:Math.random()});}};
+  const D={INF001:'d-evt',INF004:'d-mkt',MKT001:'d-rgm',PHY004:'d-news',EVT004:'d-news'};
+  conds.forEach(c=>{
+    link($(D[c.id]),$('c-'+c.id),FAM[c.id],c.pass);
+    link($('c-'+c.id),$('k-'+c.id),FAM[c.id],c.pass);
+    if(c.pass)link($('k-'+c.id),$('s-out'),FAM[c.id],true);});}
+function tick(now){
+  pulsesW.forEach(p=>{
+    const L=p.path.getTotalLength();
+    const t=((now/1800)+p.ph)%1;
+    const pt=p.path.getPointAtLength(L*t);
+    p.dot.setAttribute('cx',pt.x);p.dot.setAttribute('cy',pt.y);});
+  requestAnimationFrame(tick);}
+requestAnimationFrame(tick);
+
+/* ── 카드 팝업: 한 카드의 완전한 이야기 ── */
+function gaugeSVG(val){ /* 0-100 반원 게이지 */
+  const a=Math.PI*(1-val/100);
+  const x=80+70*Math.cos(a),y=86-70*Math.sin(a);
+  return `<svg width="160" height="96" viewBox="0 0 160 96">
+    <path d="M10,86 A70,70 0 0 1 150,86" fill="none" stroke="rgba(159,199,224,.12)" stroke-width="11" stroke-linecap="round"/>
+    <path d="M10,86 A70,70 0 0 1 ${x},${y}" fill="none" stroke="#FF5D6E" stroke-width="11" stroke-linecap="round">
+      <animate attributeName="opacity" from="0" to="1" dur=".6s"/></path>
+    <text x="80" y="78" text-anchor="middle" fill="#fff" font-family="Consolas" font-size="26" font-weight="600">${val}</text>
+    <text x="80" y="93" text-anchor="middle" fill="#5b6b7a" font-family="Consolas" font-size="9">선반영 지수 /100</text></svg>`;}
+function bar(lbl,val,max,color,txt){
+  return `<div class="barrow"><span class="lbl">${lbl}</span>
+    <span class="tr"><span class="fl" data-w="${Math.min(100,val/max*100)}" style="background:${color}"></span></span>
+    <span class="val">${txt}</span></div>`;}
+function openPop(id){
+  const c=CTX||{};
+  const el=$('popbody');
+  document.querySelector('#popin').style.setProperty('--fam',FAM[id]);
+  let html=`<h2>L-${id.slice(0,3)}-${id.slice(3)} ${NAME[id]}<small>${GRADE[id]}</small></h2>`;
+  if(id==='INF001'&&c.ev&&c.ev.event){
+    const a2=c.a2,pp=c.pp;
+    const ratio=a2.hist_median?(a2.cur/a2.hist_median):null;
+    html+=`
+    <div class="plain">${c.ev.event.release_kst.slice(0,10)} 밤, 미국 물가 성적표(CPI)가 나옵니다.
+    이 카드는 한 가지만 잽니다 — <b>"시장이 발표 전에 미리 얼마나 움직여 놓았나?"</b></div>
+    <div class="step"><span class="no">1</span><div class="bd"><h5>재료</h5>
+      ${bar('이번: 미2년 금리 이동',Math.abs(a2.cur||0),0.25,'#FF5D6E',`${fmt(a2.cur)}%p`)}
+      ${bar('평소(44번 중앙값)',Math.abs(a2.hist_median||0),0.25,'#5b6b7a',`${fmt(a2.hist_median)}%p`)}
+      <p>발표를 앞두고 시장 금리가 평소의 <b>약 ${ratio?ratio.toFixed(1):'—'}배</b> 움직였습니다.</p></div></div>
+    <div class="step"><span class="no">2</span><div class="bd"><h5>계산</h5>
+      <div class="gaugewrap">${gaugeSVG(pp.index??0)}
+        <div class="gtxt">과거 발표 ${a2.n||'—'}번과 비교하면<br>역대 <b>상위 ${a2.pctl?Math.round(a2.pctl*100):'—'}%</b>의 사전 움직임<br>→ 판정: <b>${pp.phrase||''}</b></div></div></div></div>
+    <div class="step"><span class="no">3</span><div class="bd"><h5>그래서 무엇을 보나</h5>
+      <div class="verdictbox">기대가 이미 가격에 많이 담긴 상태입니다. 이런 날은 발표 숫자 자체보다
+      <b>"예상과 얼마나 다른가"</b>가 시장을 움직였습니다 — 예상대로면 반응이 작았던 전례가 많습니다.
+      (관찰 기록 n=${a2.n||'—'} · 등급 ${GRADE[id]})</div></div></div>
+    <div class="step"><span class="no">4</span><div class="bd"><h5>파급 경로</h5>
+      <p>워싱턴(발표) → 뉴욕(금리) → 전 시장 동시 방사 — 런던 · 프랑크푸르트 · 도쿄 · 서울 · 상하이 · 시드니 · 상파울루</p></div></div>
+    <div class="step"><span class="no">5</span><div class="bd"><h5>채점</h5>
+      <p>발표(D-${c.dd}) 후 이 관찰이 맞았는지 <b>기계가 자동 채점</b>해 기록에 남깁니다 — 좋은 날도 틀린 날도.</p></div></div>`;
+  }else{
+    const G={
+      INF004:{plain:'기름값이 하루에 크게 뛰면, 그 충격은 며칠 뒤 금리와 물가 기대로 번진 전례가 많습니다. 이 카드는 그 "2차 점화"를 지켜봅니다.',
+        f:'|WTI 하루 변동| ≥ 3%',now:`지금 ${fmt(Math.abs(c.wchg))}%`,path:'리야드 → 뉴욕 · 런던 · 도쿄'},
+      MKT001:{plain:'평소엔 제각각 움직이던 자산들이 한 방향으로 같이 움직이기 시작하면 — 분산이 사라지는 경보입니다. 시장 전체의 "날씨"를 재는 카드입니다.',
+        f:'전 자산 평균 상관 ≥ 0.55',now:`지금 ${fmt(c.conv,3)}`,path:'무대 전체의 조명이 경보색으로 바뀝니다'},
+      PHY004:{plain:'세계 무역의 좁은 문(호르무즈·수에즈·말라카…)이 흔들리면 에너지와 운임이 먼저 반응합니다. 관문 근처의 큰 사건을 지켜보는 카드입니다.',
+        f:'관문 반경 700km 내 심각도≥4 사건',now:`지금 ${c.nearHit||0}건`,path:'관문 → 상하이 · 서울 · 도쿄 · 뭄바이'},
+      EVT004:{plain:'큰 정치 불확실성(시위·위협)은 그 자체보다 "무엇이 나올지 모른다"는 상태가 위험 프리미엄을 키웁니다.',
+        f:'심각도≥4 정치 사건(시위·위협)',now:`지금 ${c.polHit||0}건`,path:'진앙 → 뉴욕 · 런던'}}[id];
+    html+=`<div class="plain">${G.plain}</div>
+    <div class="step"><span class="no">1</span><div class="bd"><h5>발동 조건</h5>
+      <div class="formula">${G.f}</div><p style="margin-top:5px">${G.now} → <b>${$('c-'+id).classList.contains('pass')?'발동':'대기'}</b></p></div></div>
+    <div class="step"><span class="no">2</span><div class="bd"><h5>발동하면</h5><p>${G.path}</p></div></div>
+    <div class="step"><span class="no">3</span><div class="bd"><h5>채점</h5><p>발동 후의 관찰이 맞았는지 자동 채점되어 기록됩니다.</p></div></div>`;}
+  html+=`<div class="provline">${CORE[id]} · 연결 규칙 v0 · 추정 (실측 채점 전) · 고유 주소 #L-${id.slice(0,3)}-${id.slice(3)}</div>`;
+  el.innerHTML=html;
+  $('pop').classList.add('on');
+  history.replaceState(null,'','#L-'+id.slice(0,3)+'-'+id.slice(3));
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    el.querySelectorAll('.fl').forEach(f=>f.style.width=f.dataset.w+'%');}));}
+$('popclose').addEventListener('click',()=>{$('pop').classList.remove('on');
+  history.replaceState(null,'',location.pathname);});
+$('pop').addEventListener('click',e=>{if(e.target.id==='pop')$('popclose').click();});
+</script>
+</body>
+</html>
