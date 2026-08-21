@@ -13,6 +13,14 @@
 <style>
   :root{--acc:#7FD8FF;--ink:#EAF9FF;--dim:#93a7b8;
     --glass:rgba(7,11,17,.60);--glass2:rgba(7,11,17,.74);--edge:rgba(159,199,224,.20)}
+  html[data-theme="light"]{--ink:#16232f;--dim:#4a6076;
+    --glass:rgba(248,250,252,.72);--glass2:rgba(244,248,251,.86);--edge:rgba(30,60,90,.16)}
+  html[data-theme="light"] body{background:#dfe7ee}
+  html[data-theme="light"] .glass{box-shadow:0 2px 14px rgba(30,50,70,.12),inset 0 0 0 transparent}
+  html[data-theme="light"] .tk b{color:#16232f}
+  html[data-theme="light"] .nv{background:rgba(30,60,90,.05)}
+  html[data-theme="light"] .lnode{background:rgba(248,250,252,.8)}
+  html[data-theme="light"] #popin,html[data-theme="light"] #lwrap{background:rgba(246,249,251,.9)}
   *{box-sizing:border-box}
   body{margin:0;background:#05070c;color:var(--ink);font-family:'Segoe UI',system-ui,sans-serif;
     overflow:hidden;height:100vh;height:100dvh}
@@ -26,14 +34,27 @@
     padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top))}
   #brand{font:600 13px/1.2 Consolas,monospace;letter-spacing:3px;color:var(--ink);white-space:nowrap}
   #brand small{display:block;font-weight:400;font-size:9px;letter-spacing:5px;color:var(--acc);margin-top:2px}
+  #acctbtn,#setbtn{flex:none;margin-left:10px;padding:8px 13px;font:11px Consolas,monospace;
+    letter-spacing:1px;color:var(--acc);cursor:pointer;text-decoration:none;user-select:none}
+  #setmenu{position:fixed;top:58px;right:12px;z-index:30;width:180px;padding:10px 12px;display:none}
+  #setmenu.on{display:block}
+  .sm-h{font:600 9px Consolas,monospace;letter-spacing:2px;color:var(--dim);margin-bottom:4px}
+  .sm-r{display:block;padding:6px 6px;font:11px 'Segoe UI';color:var(--ink);cursor:pointer;
+    border-radius:7px;text-decoration:none}
+  .sm-r:hover{background:rgba(127,216,255,.08)}
+  .sm-r .beta{font-size:9px;color:var(--dim);margin-left:4px}
+  .sm-r .on-mark{float:right;color:#3FE0A0}
   /* 국면 카드 — 카드 열 최상단 고정, 살아있는 계산 */
   #regimecard{width:min(316px,calc(100vw - 24px));padding:10px 13px 9px;margin-bottom:8px;
     border-left:4px solid var(--acc)}
   #regimecard .rrow1{font:600 10px Consolas,monospace;letter-spacing:2px;color:var(--dim)}
   #regimecard .rrow1 b{color:var(--acc);margin-left:6px;letter-spacing:3px}
   #regimecard #rgtick{float:right;color:#3FE0A0;font-weight:400}
-  #regimecard .rrow2{margin-top:2px}
-  #regimecard #rgval{font:600 24px Consolas,monospace;color:#F4FBFF;letter-spacing:1px}
+  #regimecard .rrow2{margin-top:3px;display:flex;align-items:baseline;gap:8px}
+  #regimecard #rgname{font:700 21px Consolas,monospace;color:var(--acc);letter-spacing:2px}
+  #regimecard #rgko{font:12px 'Segoe UI';color:var(--dim)}
+  #regimecard #rgval{font:600 19px Consolas,monospace;color:var(--ink);letter-spacing:1px;margin-left:auto}
+  #regimecard .reasy{margin-top:4px;font-size:11.5px;line-height:1.5;color:var(--ink);opacity:.85}
   #regimecard #rgdelta{margin-left:8px;font:600 12px Consolas,monospace}
   #regimecard .rformula{margin-top:3px;font:9.5px Consolas,monospace;color:#7f95a8;
     background:rgba(159,199,224,.06);border-radius:6px;padding:3px 7px;display:inline-block}
@@ -237,15 +258,30 @@
 <div id="topbar">
   <div id="brand">BATAVIA PROJECT<small>OBSERVATORY</small></div>
   <div id="toast" class="glass"></div>
-
+  <a id="acctbtn" class="glass" href="account.html">계정</a>
+  <div id="setbtn" class="glass">⚙</div>
+</div>
+<div id="setmenu" class="glass">
+  <div class="sm-h">테마</div>
+  <div class="sm-r" data-th="dark">● 다크 <span class="on-mark">✓</span></div>
+  <div class="sm-r" data-th="light">○ 라이트 <span class="beta">β</span><span class="on-mark"></span></div>
+  <div class="sm-h" style="margin-top:8px">바로가기</div>
+  <a class="sm-r" href="ledger.html">원장 열람</a>
+  <a class="sm-r" href="replay.html">REPLAY</a>
+  <a class="sm-r" href="pricing.html">구독 안내</a>
+  <a class="sm-r" href="policy.html">데이터와 원칙</a>
 </div>
 <div id="activebar">
   <div id="regimecard" class="glass">
-    <div class="rrow1">REGIME <b id="rgname">—</b><span id="rgtick"></span></div>
-    <div class="rrow2"><span id="rgval">—</span><span id="rgdelta"></span></div>
+    <div class="rrow1">REGIME · 시장 국면<span id="rgtick"></span></div>
+    <div class="rrow2"><b id="rgname">—</b><span id="rgko"></span><span id="rgval">—</span><span id="rgdelta"></span></div>
+    <div class="reasy" id="rgeasy"></div>
     <div class="rformula">w = 평균 |ρ| · 60일 · 7자산 바스켓 <span class="rlive">●</span></div>
-    <canvas id="rgspark" width="288" height="46"></canvas>
-    <div class="rth"><span style="color:#E8A33D">–– 긴장 0.38</span><span style="color:#FF6A6E">–– 경보 0.55</span></div>
+    <canvas id="rgspark" width="292" height="62"></canvas>
+    <div class="rth">
+      <span style="color:#3FE0A0">안정</span><span style="color:#7FD8FF">평온</span>
+      <span style="color:#E8D44D">주의</span><span style="color:#E8A33D">긴장</span>
+      <span style="color:#FF6A6E">경보</span></div>
   </div>
   <div id="accards"></div>
 </div>
@@ -316,13 +352,29 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import * as topojson from 'topojson-client';
 
+/* 테마: 장면 색 팔레트 — 구조상 N개 확장 가능 */
+const THEMES={
+  dark:{bg:0x05070c,ocean:'#0b131c',land:[24,34,44],war:[44,26,30],
+    inner:0xBFD9EA,coast:0x9FC0D6,stars:true,
+    lb:{t1:'rgba(224,238,248,.95)',t2:'rgba(196,216,232,.88)',t4:'rgba(159,199,224,.95)',
+        t5:'rgba(143,178,204,.85)',t3:'rgba(158,180,198,.8)',w6:'rgba(120,162,196,.52)',
+        w7:'rgba(127,168,200,.55)',w8:'rgba(151,196,224,.75)',halo:'rgba(4,8,13,.85)'}},
+  light:{bg:0xdfe7ee,ocean:'#c9d6e2',land:[238,242,246],war:[236,214,212],
+    inner:0x5b7186,coast:0x7a93a6,stars:false,
+    lb:{t1:'rgba(20,34,48,.95)',t2:'rgba(35,52,70,.88)',t4:'rgba(30,64,96,.95)',
+        t5:'rgba(60,88,112,.85)',t3:'rgba(60,80,100,.8)',w6:'rgba(70,110,150,.45)',
+        w7:'rgba(70,110,150,.5)',w8:'rgba(40,90,130,.75)',halo:'rgba(255,255,255,.85)'}}};
+let THN=localStorage.getItem('bp-theme')||'dark';
+if(!THEMES[THN])THN='dark';
+let TH=THEMES[THN];
+document.documentElement.dataset.theme=THN;
 const scene=new THREE.Scene();
 const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,.05,100);
 camera.position.set(0,0.5,3.8); /* 대형 화면 기준: 지구본이 화면 높이의 ~80%가 되는 거리 */
 const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(innerWidth,innerHeight);
 renderer.setPixelRatio(Math.min(1.75,devicePixelRatio));
-renderer.setClearColor(0x05070c);
+renderer.setClearColor(TH.bg);
 document.body.appendChild(renderer.domElement);
 const controls=new OrbitControls(camera,renderer.domElement);
 controls.enableDamping=true;controls.dampingFactor=.06;
@@ -359,7 +411,10 @@ function fitCamera(){
 {const g=new THREE.BufferGeometry();const p=new Float32Array(900*3);
  for(let i=0;i<900;i++){const v=new THREE.Vector3().randomDirection().multiplyScalar(42+Math.random()*26);p.set([v.x,v.y,v.z],i*3);}
  g.setAttribute('position',new THREE.BufferAttribute(p,3));
- scene.add(new THREE.Points(g,new THREE.PointsMaterial({color:0x6d8296,size:.05,transparent:true,opacity:.5})));}
+ var starsPts=new THREE.Points(g,new THREE.PointsMaterial({color:0x6d8296,size:.05,transparent:true,opacity:.5}));
+ starsPts.visible=TH.stars;
+ window.__stars=starsPts;
+ scene.add(starsPts);}
 
 /* 대기 글로우 (3D 전용) */
 const atmMat=new THREE.ShaderMaterial({
@@ -408,15 +463,15 @@ function fillCanvasTexture(){ /* 등장방형 채움 — 구·평면 공용 */
   const feats=topojson.feature(topoCache,topoCache.objects.countries).features;
   const c=document.createElement('canvas');c.width=4096;c.height=2048;
   const x=c.getContext('2d');
-  x.fillStyle='#0b131c';x.fillRect(0,0,4096,2048);
+  x.fillStyle=TH.ocean;x.fillRect(0,0,4096,2048);
   const px=(lo)=>(lo+180)/360*4096,py=(la)=>(90-la)/180*2048;
   const warSet=new Set(((CONFL&&CONFL.wars)||[]).flatMap(w=>w.pair)); /* 전면전 당사국만 옅게 */
   feats.forEach((f,fi)=>{
     const shade=0.85+((fi*2654435761)%1000)/1000*0.3;
     const nm2=(f.properties.name||'').toLowerCase();
     x.fillStyle=warSet.has(nm2)
-      ?`rgb(${Math.round(44*shade)},${Math.round(26*shade)},${Math.round(30*shade)})` /* 교전 당사국: 옅은 적갈 */
-      :`rgb(${Math.round(24*shade)},${Math.round(34*shade)},${Math.round(44*shade)})`;
+      ?`rgb(${Math.round(TH.war[0]*shade)},${Math.round(TH.war[1]*shade)},${Math.round(TH.war[2]*shade)})` /* 교전 당사국 */
+      :`rgb(${Math.round(TH.land[0]*shade)},${Math.round(TH.land[1]*shade)},${Math.round(TH.land[2]*shade)})`;
     const polys=f.geometry.type==='Polygon'?[f.geometry.coordinates]:f.geometry.coordinates;
     if((f.properties.name||'').toLowerCase()==='antarctica'){
       polys.forEach(poly=>{x.beginPath();
@@ -490,11 +545,11 @@ function labelSprite(txt,tier){
   x.font=`${water?'italic ':''}600 ${size}px Consolas,monospace`;
   x.textAlign='center';x.textBaseline='middle';
   x.letterSpacing=tier===1?'5px':water?'4px':'3px';
-  if(!water){x.lineWidth=7;x.strokeStyle='rgba(4,8,13,.85)';x.strokeText(txt,320,48);}
-  x.fillStyle=tier===1?'rgba(224,238,248,.95)':tier===2?'rgba(196,216,232,.88)'
-    :tier===4?'rgba(159,199,224,.95)':tier===5?'rgba(143,178,204,.85)'
-    :tier===6?'rgba(120,162,196,.52)':tier===7?'rgba(127,168,200,.55)'
-    :tier===8?'rgba(151,196,224,.75)':'rgba(158,180,198,.8)';
+  if(!water){x.lineWidth=7;x.strokeStyle=TH.lb.halo;x.strokeText(txt,320,48);}
+  x.fillStyle=tier===1?TH.lb.t1:tier===2?TH.lb.t2
+    :tier===4?TH.lb.t4:tier===5?TH.lb.t5
+    :tier===6?TH.lb.w6:tier===7?TH.lb.w7
+    :tier===8?TH.lb.w8:TH.lb.t3;
   x.fillText(txt,320,48);
   const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;
   const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthTest:false,opacity:0}));
@@ -853,11 +908,11 @@ function buildStage(){
   if(topoCache){
     const inner=topojson.mesh(topoCache,topoCache.objects.countries,(a,b)=>a!==b);
     innerL=new THREE.LineSegments(meshToSegs(inner,R*1.0018),
-      new THREE.LineBasicMaterial({color:0xBFD9EA,transparent:true,opacity:.55}));
+      new THREE.LineBasicMaterial({color:TH.inner,transparent:true,opacity:.55}));
     stage.add(innerL);
     const coast=topojson.mesh(topoCache,topoCache.objects.countries,(a,b)=>a===b);
     coastL=new THREE.LineSegments(meshToSegs(coast,R*1.0015),
-      new THREE.LineBasicMaterial({color:0x9FC0D6,transparent:true,opacity:.38}));
+      new THREE.LineBasicMaterial({color:TH.coast,transparent:true,opacity:.38}));
     stage.add(coastL);
     topojson.feature(topoCache,topoCache.objects.countries).features.forEach(f=>{
       const nm=f.properties&&f.properties.name;if(!nm)return;
@@ -1199,19 +1254,27 @@ document.querySelectorAll('.lrow').forEach(rw=>rw.addEventListener('click',()=>{
   applyLayers();}));
 
 /* ── 국면 자동 테마 ── */
-const REGIMES={
-  steady:{en:'STEADY',name:'평온',acc:'#7FD8FF',atm:0x9fc7e0},
-  tension:{en:'TENSION',name:'긴장',acc:'#E8A33D',atm:0xE8A33D},
-  alert:{en:'ALERT',name:'경보',acc:'#FF6A6E',atm:0xFF6A6E}};
+const REGIMES5=[
+  {max:.25,en:'CALM',ko:'안정',acc:'#3FE0A0',atm:0x77d9b0,
+   easy:'자산들이 제각각 — 분산이 살아있는 시장'},
+  {max:.38,en:'STEADY',ko:'평온',acc:'#7FD8FF',atm:0x9fc7e0,
+   easy:'낮은 동조 — 평소의 호흡'},
+  {max:.47,en:'WATCH',ko:'주의',acc:'#E8D44D',atm:0xd9c95a,
+   easy:'연결이 늘어나는 중 — 동조 상승'},
+  {max:.55,en:'TENSION',ko:'긴장',acc:'#E8A33D',atm:0xE8A33D,
+   easy:'같이 움직이기 시작 — 분산이 얇아짐'},
+  {max:9,en:'ALERT',ko:'경보',acc:'#FF6A6E',atm:0xFF6A6E,
+   easy:'한 몸처럼 움직임 — 분산 소멸'}];
 function applyRegime(d){
   if(!d||!d.conv)return;
   const v=d.conv.value, th=d.conv.thresholds||{tension:.38,alert:.55};
-  const state=v>=th.alert?'alert':v>=th.tension?'tension':'steady';
-  const t=REGIMES[state];
+  const t=REGIMES5.find(r=>v<r.max)||REGIMES5[REGIMES5.length-1];
   document.documentElement.style.setProperty('--acc',t.acc);
   atmMat.uniforms.c.value.set(t.atm);
   rimMat.uniforms.c.value.set(t.atm);
-  document.getElementById('rgname').textContent=t.en+' · '+t.name;
+  document.getElementById('rgname').textContent=t.en;
+  document.getElementById('rgko').textContent=t.ko;
+  document.getElementById('rgeasy').textContent=t.easy;
   document.getElementById('regimecard').title=d.conv.provenance||'';
   document.getElementById('regimecard').style.borderLeftColor=t.acc;
   {const de=document.getElementById('rgdelta');
@@ -1257,7 +1320,7 @@ function drawRegimeSpark(acc,th){
   const ymax=Math.max(.6,...CONVH.map(r=>r.v))+.05;
   const Y=v=>H-pad-(v/ymax)*(H-pad*2);
   /* 기준선: 긴장·경보 */
-  [[th.tension,'#E8A33D'],[th.alert,'#FF6A6E']].forEach(([v,c])=>{
+  [[.25,'#3FE0A0'],[.38,'#7FD8FF'],[.47,'#E8D44D'],[.55,'#FF6A6E']].forEach(([v,c])=>{
     g.strokeStyle=c;g.globalAlpha=.45;g.setLineDash([3,3]);
     g.beginPath();g.moveTo(pad,Y(v));g.lineTo(W-pad,Y(v));g.stroke();g.setLineDash([]);g.globalAlpha=1;});
   if(CONVH.length>1){
@@ -1356,7 +1419,7 @@ Promise.all([
   engineLastRun=Date.now();
   DAYSH=dj.trim()?dj.trim().split(/\r?\n/).map(l=>{try{return JSON.parse(l);}catch(e){return null;}}).filter(Boolean):[];
   if(ln)LENSD=ln;
-  CONVH=cvh.trim()?cvh.trim().split(/\r?\n/).map(l=>{const p=l.split(',');return {d:p[0],v:+p[1]};}).filter(r=>!isNaN(r.v)).slice(-60):[];
+  CONVH=cvh.trim()?cvh.trim().split(/\r?\n/).map(l=>{const p=l.split(',');return {d:p[0],v:+p[1]};}).filter(r=>!isNaN(r.v)).slice(-90):[];
   ledCache=led;
   applyRegime(rg);renderTicker(mkt);renderNews(news);
   drawRoutes();
@@ -1596,6 +1659,29 @@ controls.addEventListener('end',()=>{drift2dPause=performance.now()+12000;});
  zb.addEventListener('pointerdown',e=>{zdrag=true;setFromY(e);e.preventDefault();});
  addEventListener('pointermove',e=>{if(zdrag)setFromY(e);});
  addEventListener('pointerup',()=>{zdrag=false;});}
+
+/* 테마 전환 */
+function setTheme(n){
+  if(!THEMES[n]||n===THN)return;
+  THN=n;TH=THEMES[n];
+  localStorage.setItem('bp-theme',n);
+  document.documentElement.dataset.theme=n;
+  renderer.setClearColor(TH.bg);
+  if(window.__stars)window.__stars.visible=TH.stars;
+  if(topoCache)fillTex=fillCanvasTexture();
+  buildStage();
+  document.querySelectorAll('#setmenu .sm-r[data-th]').forEach(r=>{
+    const m=r.querySelector('.on-mark');if(m)m.textContent=r.dataset.th===n?'✓':'';});}
+document.getElementById('setbtn').addEventListener('click',()=>{
+  document.getElementById('setmenu').classList.toggle('on');});
+document.querySelectorAll('#setmenu .sm-r[data-th]').forEach(r=>
+  r.addEventListener('click',()=>{setTheme(r.dataset.th);}));
+document.querySelectorAll('#setmenu .sm-r[data-th]').forEach(r=>{
+  const m=r.querySelector('.on-mark');if(m)m.textContent=r.dataset.th===THN?'✓':'';});
+addEventListener('click',e=>{
+  const sm=document.getElementById('setmenu');
+  if(sm.classList.contains('on')&&!sm.contains(e.target)&&e.target.id!=='setbtn')
+    sm.classList.remove('on');});
 
 /* 패널 토글 */
 const newsEl=document.getElementById('news');
