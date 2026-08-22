@@ -262,6 +262,13 @@
   .lnode .nlnk{margin-top:5px;padding:3px 7px;border-left:2px solid var(--fam,#7FD8FF);border-radius:0 5px 5px 0;
     background:rgba(159,199,224,.06);font:10px/1.45 'Segoe UI';color:var(--ink);opacity:.92}
   .lnode .nlnk small{display:block;font:9px Consolas,monospace;color:var(--mut)}
+  .lnode .nlnk{display:none}
+  .lnode.xp .nlnk{display:block}
+  .lnode .nlinks{margin-top:5px;display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+  .nchip{font:9px Consolas,monospace;letter-spacing:.5px;padding:1px 7px;border:1px solid;border-radius:6px}
+  .nchip.wait{opacity:.42}
+  .nlinks .hint{font:9px Consolas,monospace;color:var(--mut);margin-left:auto}
+  #ld-news{cursor:pointer}
   .lnode.pass .st{color:#3FE0A0}
   .lnode.wait{opacity:.6}
   .lcard{cursor:pointer}
@@ -1249,14 +1256,19 @@ function renderLogicView(){
     `평균 상관 <b>${fmt2(c.conv,3)}</b><br>기준: 긴장 0.38 · 경보 0.55`;
   document.querySelector('#ld-news .v').innerHTML=
     `최근 <b>${c.evs.length}</b>건 · 최고 심각도 <b>${c.maxSev}/5</b><br>관문 반경 700km: <b>${c.nearHit}</b>건`+
-    /* the specific news that wakes a card gets its own line - wires start HERE, not at the node */
+    /* collapsed: which judgments this node feeds, lit only when that judgment is ACTIVE */
+    `<div class="nlinks">`+CONDS.filter(cd=>cd.src==='ld-news').map(cd=>{const col=famC(cardOf(cd.id).color);
+      return `<span class="nchip ${cd.pass?'':'wait'}" style="border-color:${col};color:${col}">→ ${cd.id} ${cd.pass?'●':'○'}</span>`;}).join('')+
+      `<span class="hint">${LANG==='en'?'click: linked news':'클릭: 연결 뉴스'}</span></div>`+
+    /* expanded: the specific article that wakes a card - wires start at this line */
     [['L-PHY-004',c.nearEv&&c.nearEv.e],['L-EVT-004',c.polEv]].filter(x=>x[1]).map(([id,e])=>
       `<div class="nlnk" id="nl-${id}" style="border-left-color:${famC(cardOf(id).color)}">`+
       `<small>📰 ${e.src||''} → ${id}</small>${String(e.name).slice(0,70)}${e.name.length>70?'…':''}</div>`).join('');
   /* data nodes wear the colors of the cards they feed (stacked when several) */
   ['ld-evt','ld-mkt','ld-rgm','ld-news'].forEach(id=>{
     const n=document.getElementById(id);if(!n)return;
-    const cols=[...new Set(CONDS.filter(cd=>cd.src===id).map(cd=>famC(cardOf(cd.id).color)))];
+    const cols=[...new Map(CONDS.filter(cd=>cd.src===id).map(cd=>{const c0=famC(cardOf(cd.id).color);
+      return [c0+(cd.pass?'':'w'), cd.pass?c0:c0+'4d'];})).values()]; /* hex+4d ≈ 30% alpha = waiting */
     let bar=n.querySelector('.fambar');
     if(!bar){bar=document.createElement('i');bar.className='fambar';n.appendChild(bar);}
     if(cols.length){n.style.borderLeftColor='transparent';
@@ -1296,6 +1308,8 @@ function renderLogicView(){
     act.map(cd=>SPREAD_TXT[cd.id]).join('<hr style="border:none;border-top:1px solid rgba(159,199,224,.1)">')
     :'발동 카드 없음 — 무소식도 기록됩니다';
   requestAnimationFrame(drawLWires);}
+document.getElementById('ld-news').addEventListener('click',()=>{
+  document.getElementById('ld-news').classList.toggle('xp');requestAnimationFrame(drawLWires);});
 function drawLWires(){
   const svg=document.getElementById('lwires');
   const wrap=document.getElementById('lwrap');
@@ -1321,7 +1335,8 @@ function drawLWires(){
       logicPulses.push({path:p,dot:cc,ph:Math.random()});}};
   (LFILTER==='act'?CONDS.filter(c=>c.pass):CONDS).forEach(cd=>{
     const col=famC(cardOf(cd.id).color);
-    link(document.getElementById('nl-'+cd.id)||document.getElementById(cd.src),
+    link((document.getElementById(cd.src)&&document.getElementById(cd.src).classList.contains('xp')
+          &&document.getElementById('nl-'+cd.id))||document.getElementById(cd.src),
          document.getElementById('lc-'+cd.id),col,cd.pass);
     link(document.getElementById('lc-'+cd.id),document.getElementById('lk-'+cd.id),col,cd.pass);
     if(cd.pass)link(document.getElementById('lk-'+cd.id),document.getElementById('ls-out'),col,true);});
