@@ -406,6 +406,60 @@ $('bar').addEventListener('click',e=>{
   t=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*T_END;
   paint();});
 build();
+/* ══ FREE REPLAY: ?d=YYYY-MM-DD — 잔디의 어떤 주라도 무대가 된다 ══ */
+const FREEQ=new URLSearchParams(location.search).get('d');
+if(FREEQ&&/^\d{4}-\d{2}-\d{2}$/.test(FREEQ)){
+ const NOC={cache:'no-store'};
+ Promise.all([
+  fetch('data/backtest/fires.jsonl',NOC).then(r=>r.text()),
+  fetch('data/backtest/series-lite.json',NOC).then(r=>r.json()),
+  fetch('logic/ledger-full.json',NOC).then(r=>r.json())
+ ]).then(([ftxt,lite,led])=>{
+  const FIRES=ftxt.trim().split(/\r?\n/).map(l=>JSON.parse(l));
+  const CARD={};led.cards.forEach(c=>CARD[c.id]=c);
+  const FAMC={'성장':'#4FD8C0','고용':'#7FD8FF','물가':'#FF5D6E','금리':'#FF8A93',
+   '유동성':'#5B8DEF','포지셔닝':'#C79BFF','물리':'#D9A441','시장구조':'#A79BFF','이벤트':'#E8A33D'};
+  const ctr=new Date(FREEQ+'T00:00:00Z');
+  const start=new Date(ctr.getTime()-90*864e5);
+  const iso=d=>d.toISOString().slice(0,10);
+  const endIso=iso(new Date(ctr.getTime()+90*864e5));
+  const t_of=ds=>Math.max(0,Math.min(18,(new Date(ds+'T00:00:00Z')-start)/864e5/10));
+  const wf=FIRES.filter(f=>f.date>=iso(start)&&f.date<=endIso);
+  const ev=wf.map(f=>{const c=CARD[f.card]||{};
+    const nm=(EN&&c.name_en)?c.name_en:(c.name||f.card);
+    const vd=f.hit===true?(EN?'verified hit ✓':'적중 확인 ✓')
+      :f.hit===false?(EN?'missed ✗':'빗나감 ✗'):(EN?'observation only':'관찰만');
+    const rv=f.ret==null?'':' · '+((String(f.tgt).indexOf('fred')===0)
+      ?(100*f.ret).toFixed(0)+'bp':(100*f.ret).toFixed(1)+'%');
+    return {t:t_of(f.date),d:f.date,name:f.card+' · '+nm,
+      c:FAMC[c.family]||'#7FD8FF',imp:f.hit===true?4:3,
+      reach:(EN?'window ':'창 ')+f.w[1]+'d',cx:f.note,opp:vd+rv};});
+  const opps=Object.keys(lite).map(k=>{const L=lite[k];
+    const kf=L.data.filter(p=>p[0]>=iso(start)&&p[0]<=endIso).map(p=>[t_of(p[0]),p[1]]);
+    if(kf.length<2)return null;
+    const mx=Math.max(...kf.map(p=>Math.abs(p[1])),Math.abs(L.th))*1.15||1;
+    return {name:EN?L.label:L.label_ko,core:'',unit:L.unit,dec:L.dec,max:mx,
+      th:L.th,dir:L.dir,f:(EN?L.label:L.label_ko)+' '+(L.dir==='ge'?'≥':'≤')+' '+L.th+L.unit,
+      kf,note:'',verdT:1e9,verd:''};}).filter(Boolean);
+  SC.FREE={ev,opps};
+  const _dOf=dOf;
+  dOf=tt=>cur==='FREE'?iso(new Date(start.getTime()+tt*10*864e5)):_dOf(tt);
+  const chip=document.createElement('span');
+  chip.className='sc glass on';chip.dataset.s='FREE';
+  chip.textContent=(EN?'FREE · ':'자유 · ')+FREEQ;
+  document.querySelectorAll('.sc').forEach(x=>x.classList.remove('on'));
+  const scen=document.getElementById('scen');
+  scen.insertBefore(chip,scen.firstChild);
+  chip.addEventListener('click',()=>{cur='FREE';playing=false;$('play').textContent='▶';
+    document.querySelectorAll('.sc').forEach(x=>x.classList.toggle('on',x===chip));
+    document.getElementById('gwrap').style.display='none';build();});
+  document.getElementById('gwrap').style.display='none'; /* 좌표 없는 발동 — 지구본은 쉼 */
+  cur='FREE';build();
+  /* 프리롤 자동 재생: 클릭한 순간이 "다가오도록" 3주 전에서 출발 */
+  t=t_of(iso(new Date(ctr.getTime()-21*864e5)));
+  playing=true;$('play').textContent='❚❚';paint();
+ }).catch(e=>console.warn('free replay data missing',e));
+}
 </script>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",

@@ -289,7 +289,8 @@ wa, tg, rr = SER["fred_WALCL"], SER["fred_WTREGEN"], SER["fred_RRPONTSYD"]
 nl = []
 for i in range(len(wa.d)):
     t = tg.asof(wa.d[i]); r = rr.asof(wa.d[i]) or 0
-    if t is not None: nl.append((wa.d[i], wa.v[i]/1000 - t - r))
+    # units: WALCL & WTREGEN in $M, RRPONTSYD in $B -> net liquidity in $B
+    if t is not None: nl.append((wa.d[i], wa.v[i]/1000 - t/1000 - r))
 chg = [(nl[i][0], nl[i][1]-nl[i-4][1]) for i in range(4, len(nl))]
 cand = []
 for i in range(52, len(chg)):
@@ -478,6 +479,59 @@ DEFER = {
    "L-PHY-002": "BDRY ETF proxy (2018+) instead of licensed Baltic index"},
  "blocked_by_data": ["L-GRO-001","L-GRO-002","L-GRO-003","L-GRO-004",
    "L-RAT-004","L-LIQ-004","L-PHY-003","L-MKT-004","L-EVT-002","L-EVT-005"]}
+
+# ── series-lite: weekly gauge pack for the free-replay stage ────────
+def _weekly_dates():
+    d, out = D("1998-01-05"), []
+    end = datetime.date.today()
+    while d <= end: out.append(d); d = add(d, 7)
+    return out
+
+def _pack(fn):
+    out = []
+    for d in _weekly_dates():
+        v = fn(d)
+        if v is not None: out.append([d.isoformat(), round(v, 3)])
+    return out
+
+hyg, tlt = SER["yh_HYG"], SER["yh_TLT"]
+def _credit(d):
+    i, j = hyg._i(d), tlt._i(d)
+    if i < 20 or j < 20: return None
+    return ((hyg.v[i]/hyg.v[i-20]) - (tlt.v[j]/tlt.v[j-20])) * 100
+def _series_chg(s, n, mul):
+    def f(d):
+        i = s._i(d)
+        return None if i < n else (s.v[i]-s.v[i-n]) * mul
+    return f
+def _series_ret(s, n):
+    def f(d):
+        i = s._i(d)
+        return None if i < n or s.v[i-n] == 0 else (s.v[i]/s.v[i-n]-1)*100
+    return f
+_nlmap = dict((x[0], x[1]) for x in nl)
+_nld = sorted(_nlmap)
+def _netliq4w(d):
+    ks = [k for k in _nld if k <= d]
+    if len(ks) < 5: return None
+    return _nlmap[ks[-1]] - _nlmap[ks[-5]]
+
+LITE = {
+ "conv":  {"label":"Convergence — avg |ρ|","label_ko":"수렴도 — 평균 |ρ|","unit":"","dec":2,
+           "th":0.55,"dir":"ge","data":[[d.isoformat(),round(v,3)] for d,v in CONV]},
+ "credit":{"label":"Credit — HYG vs TLT 20d","label_ko":"크레딧 — HYG-TLT 20일","unit":"%","dec":1,
+           "th":-4.0,"dir":"le","data":_pack(_credit)},
+ "vix":   {"label":"Fear — VIX","label_ko":"공포 — VIX","unit":"","dec":1,
+           "th":30,"dir":"ge","data":_pack(lambda d: SER["yh__VIX"].asof(d))},
+ "wti60": {"label":"Oil — 60d change","label_ko":"유가 — 60일 변화","unit":"%","dec":1,
+           "th":25,"dir":"ge","data":_pack(_series_ret(SER["fred_DCOILWTICO"], 42))},
+ "y10":   {"label":"10Y — 20d change","label_ko":"미10년 — 20일 변화","unit":"bp","dec":0,
+           "th":50,"dir":"ge","data":_pack(_series_chg(SER["fred_DGS10"], 20, 100))},
+ "netliq":{"label":"Net liquidity — 4w Δ","label_ko":"순유동성 — 4주 Δ","unit":"$B","dec":0,
+           "th":0,"dir":"ge","data":_pack(_netliq4w)},
+}
+with io.open(os.path.join(OUTD, "series-lite.json"), "w", encoding="utf-8") as f:
+    json.dump(LITE, f, ensure_ascii=False)
 
 # ── outputs ─────────────────────────────────────────────────────────
 FIRES.sort(key=lambda r: (r["date"], r["card"]))

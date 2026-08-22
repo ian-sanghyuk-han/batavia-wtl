@@ -189,9 +189,9 @@ Promise.all([
    $('daylist').innerHTML=rows.join('');
    const era=ERAS.find(e=>days[0]>=e[0]&&days[0]<=e[1]);
    const rp=$('rplink');
-   if(era){rp.style.display='';rp.href='replay.html';
-     rp.textContent=(EN?'▶ REPLAY THIS ERA':'▶ 이 시기 리플레이')+' ('+era[2]+')';}
-   else rp.style.display='none';
+   rp.style.display='';
+   rp.href='replay.html?d='+days[0];
+   rp.textContent=(EN?'▶ REPLAY THIS WEEK':'▶ 이 주간 리플레이')+(era?' · '+era[2]:'');
    $('day').scrollIntoView({behavior:'smooth',block:'nearest'});}
  /* ── family barcode lanes ── */
  const fams=[...new Set(FIRES.map(f=>famOf(f.card)))].filter(Boolean);
