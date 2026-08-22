@@ -367,6 +367,32 @@
    },
    "rate": 0.511
   },
+  "L-EVT-001": {
+   "n": 208,
+   "hits": 111,
+   "graded": 208,
+   "era": {
+    "pre2015": [
+     120,
+     67
+    ],
+    "post2015": [
+     88,
+     44
+    ]
+   },
+   "gate": {
+    "conv_hi": [
+     5,
+     2
+    ],
+    "conv_lo": [
+     175,
+     93
+    ]
+   },
+   "rate": 0.534
+  },
   "L-EVT-004": {
    "n": 7,
    "hits": 7,
@@ -601,6 +627,32 @@
    },
    "rate": 0.739
   },
+  "L-EVT-003": {
+   "n": 9,
+   "hits": 6,
+   "graded": 9,
+   "era": {
+    "pre2015": [
+     1,
+     1
+    ],
+    "post2015": [
+     8,
+     5
+    ]
+   },
+   "gate": {
+    "conv_hi": [
+     0,
+     0
+    ],
+    "conv_lo": [
+     9,
+     6
+    ]
+   },
+   "rate": 0.667
+  },
   "L-RAT-006": {
    "n": 3,
    "hits": 2,
@@ -764,9 +816,7 @@
   "L-POS-003": "CBOE put/call history endpoint unstable",
   "L-POS-004": "ICI flow scrape",
   "L-PHY-001": "NOAA degree-day harvest + KRBN short history",
-  "L-PHY-005": "EIA API needs free key (EIA_API_KEY)",
-  "L-EVT-001": "needs verified FOMC meeting-date table",
-  "L-EVT-003": "hand-curated OPEC outcome table pending"
+  "L-PHY-005": "code ready - activates once the free EIA_API_KEY is set"
  },
  "substitutions_note": {
   "L-MKT-002": "FRED serves ICE HY OAS only ~3y back (licensing); stress proxied as HYG underperforming TLT by 4%+/20 obs",

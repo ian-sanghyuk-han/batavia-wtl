@@ -421,6 +421,35 @@ for dt in monthly:
     if rv_fwd is None: continue
     emit("L-MKT-007", dt, f"IV-RV={iv-rv:.1f}p", [21, 21], "IV vs fwd RV",
          "harvest", round(iv - rv_fwd, 2), iv > rv_fwd)
+# EVT-001 FOMC pre-drift (official meeting dates scraped from the Fed)
+fomc = S("manual_fomc")
+spyS = SER["yh_SPY"]
+for i in range(len(fomc.d)):
+    T = fomc.d[i]
+    if T > datetime.date.today(): break
+    r = spyS.ret_cal(add(T, -2), add(T, -1))     # the pre-announcement drift day
+    if r is None: continue
+    emit("L-EVT-001", add(T, -1), f"FOMC {T.isoformat()}", [0, 1], "yh_SPY", "up", r, r > 0)
+# EVT-003 OPEC prisoner's dilemma (curated event table, sources in CSV)
+op = os.path.join(HERE, "manual_opec.csv")
+if os.path.exists(op):
+    for row in csv.DictReader(io.open(op, encoding="utf-8")):
+        dt = D(row["date"]); direction = "down" if row["type"] == "bear" else "up"
+        r, up = grade(("ret", "yh_CL_F"), dt, 5)
+        hit = None if up is None else (up if direction == "up" else (not up))
+        emit("L-EVT-003", dt, row["type"] + ": " + row["event"][:46], [0, 5], "yh_CL_F",
+             direction, r, hit)
+# PHY-005 inventory floor (activates when EIA_API_KEY fetched the series)
+eia = S("eia_WCESTUS1")
+if eia.ok():
+    cand = []
+    for i in range(260, len(eia.d)):
+        woy = eia.d[i].isocalendar()[1]
+        band = [eia.v[j] for j in range(max(0, i-52*5), i)
+                if abs(eia.d[j].isocalendar()[1] - woy) <= 2]
+        if band and eia.v[i] < min(band):
+            cand.append((eia.d[i], f"stocks below 5y band"))
+    run_simple("L-PHY-005", cand, ("ret", "yh_CL_F"), "up", 28)
 # EVT-004 election uncertainty (US presidential)
 ELEC = ["2000-11-07","2004-11-02","2008-11-04","2012-11-06","2016-11-08","2020-11-03","2024-11-05"]
 for e in ELEC:
@@ -440,9 +469,7 @@ DEFER = {
    "L-POS-003": "CBOE put/call history endpoint unstable",
    "L-POS-004": "ICI flow scrape",
    "L-PHY-001": "NOAA degree-day harvest + KRBN short history",
-   "L-PHY-005": "EIA API needs free key (EIA_API_KEY)",
-   "L-EVT-001": "needs verified FOMC meeting-date table",
-   "L-EVT-003": "hand-curated OPEC outcome table pending"},
+   "L-PHY-005": "code ready - activates once the free EIA_API_KEY is set"},
  "substitutions_note": {
    "L-MKT-002": "FRED serves ICE HY OAS only ~3y back (licensing); stress proxied as HYG underperforming TLT by 4%+/20 obs",
    "L-EMP-002/L-INF-001/L-GRO-005": "surprise vs naive forecast (no free consensus history); release dates approximated",

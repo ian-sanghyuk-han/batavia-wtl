@@ -156,6 +156,60 @@ def fetch_portwatch():
     except Exception as e:
         print(f"  portwatch FAILED: {e}")
 
+# ── FOMC scheduled-meeting decision days (Fed website, official) ────
+MONTHS = {m: i+1 for i, m in enumerate(["January","February","March","April","May","June",
+          "July","August","September","October","November","December"])}
+
+def fetch_fomc():
+    import re
+    rows = []
+    # historical per-year pages (scheduled Meetings only; skip conference calls)
+    for yr in range(2000, 2022):
+        try:
+            r = requests.get(f"https://www.federalreserve.gov/monetarypolicy/"
+                             f"fomchistorical{yr}.htm", headers=UA, timeout=30)
+            if r.status_code != 200: continue
+            for h in re.findall(r"<h5[^>]*>(.*?)</h5>", r.text):
+                m = re.match(r"([A-Za-z]+)(?:/([A-Za-z]+))?\s+(\d+)(?:-(\d+))?\s+Meeting", h)
+                if not m: continue
+                mon = MONTHS.get(m.group(2) or m.group(1))
+                day = int(m.group(4) or m.group(3))
+                if mon: rows.append((f"{yr}-{mon:02d}-{day:02d}", 1.0))
+            time.sleep(0.3)
+        except Exception as e:
+            print(f"  fomc {yr} FAILED: {e}")
+    # recent years live on the calendars page, one panel per year
+    try:
+        r = requests.get("https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+                         headers=UA, timeout=30)
+        import re as _re
+        for blk_yr, blk in _re.findall(r"(\d{4}) FOMC Meetings(.*?)(?=\d{4} FOMC Meetings|$)",
+                                       r.text, _re.S):
+            for mon_s, day_s in _re.findall(
+                r'fomc-meeting__month[^>]*>\s*(?:<strong>)?([A-Za-z/]+)(?:</strong>)?\s*<'
+                r'.*?fomc-meeting__date[^>]*>([^<]+)<', blk, _re.S):
+                mon = MONTHS.get(mon_s.split("/")[-1])
+                d = _re.findall(r"\d+", day_s)
+                if mon and d:
+                    rows.append((f"{blk_yr}-{mon:02d}-{int(d[-1]):02d}", 1.0))
+    except Exception as e:
+        print(f"  fomc calendars FAILED: {e}")
+    rows = sorted(set(rows))
+    save("manual_fomc", rows)
+
+# ── EIA crude stocks (needs free key: env EIA_API_KEY) ──────────────
+def fetch_eia():
+    key = os.environ.get("EIA_API_KEY")
+    if not key:
+        print("EIA: no EIA_API_KEY - skipped (PHY-005 stays deferred)"); return
+    try:
+        r = requests.get("https://api.eia.gov/v2/seriesid/PET.WCESTUS1.W",
+                         params={"api_key": key}, timeout=45)
+        data = r.json()["response"]["data"]
+        save("eia_WCESTUS1", [(o["period"], float(o["value"])) for o in data])
+    except Exception as e:
+        print(f"  eia FAILED: {e}")
+
 if __name__ == "__main__":
     print("fetching FRED...");   fetch_fred()
     print("fetching Yahoo...");  fetch_yahoo()
@@ -163,4 +217,6 @@ if __name__ == "__main__":
     print("fetching funding..."); fetch_funding()
     print("fetching COT...");    fetch_cot()
     print("fetching PortWatch..."); fetch_portwatch()
+    print("fetching FOMC dates..."); fetch_fomc()
+    print("fetching EIA...");       fetch_eia()
     print("done ->", OUT)
