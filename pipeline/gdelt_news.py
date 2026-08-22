@@ -67,13 +67,13 @@ OUT = os.path.join(HERE, "..", "site", "data", "news.json")
 LASTUPDATE = "http://data.gdeltproject.org/gdeltv2/lastupdate.txt"
 NONLATIN = re.compile(r"[Ѐ-ӿ؀-ۿऀ-ॿ฀-๿぀-ヿ㐀-鿿가-힣]")
 
-# CAMEO event root codes -> Korean labels
-ROOT_KO = {
-    "01": "공식 성명", "02": "호소·요청", "03": "협력 의사", "04": "협의·회담",
-    "05": "외교 협력", "06": "물질 협력", "07": "원조 제공", "08": "양보·완화",
-    "09": "조사·수사", "10": "요구", "11": "비난·불승인", "12": "거부",
-    "13": "위협", "14": "시위", "15": "무력 과시", "16": "관계 축소",
-    "17": "강압", "18": "폭행·공격", "19": "전투", "20": "대량 폭력",
+# CAMEO event root codes -> English labels (product base locale; clients localize via "code")
+ROOT_EN = {
+    "01": "public statement", "02": "appeal", "03": "intent to cooperate", "04": "talks",
+    "05": "diplomatic cooperation", "06": "material cooperation", "07": "aid", "08": "concession",
+    "09": "investigation", "10": "demand", "11": "disapproval", "12": "rejection",
+    "13": "threat", "14": "protest", "15": "show of force", "16": "reduced relations",
+    "17": "coercion", "18": "assault", "19": "fighting", "20": "mass violence",
 }
 
 txt = urllib.request.urlopen(LASTUPDATE, timeout=30).read().decode()
@@ -111,7 +111,7 @@ for line in lines:
     score = min(1.0, abs(goldstein) / 10) * 0.5 + min(1.0, arts / 60) * 0.35 \
         + min(1.0, abs(tone) / 10) * 0.15
     sev = max(1, min(5, 1 + round(score * 4)))
-    label = ROOT_KO.get(root, "이벤트")
+    label = ROOT_EN.get(root, "event")
     name = f"{actor + ' — ' if actor else ''}{label}"
     dom = urlparse(f[60]).netloc.lower()
     dom = dom[4:] if dom.startswith("www.") else dom
