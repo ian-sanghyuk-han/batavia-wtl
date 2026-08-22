@@ -1,4 +1,4 @@
-# Daily market pipeline (P2 v1): FRED + Yahoo Finance -> /site/data/market.json
+# Daily market pipeline (P2 v2): FRED-first (official/licensed daily closes) + Yahoo fallback -> /site/data/market.json
 # The frontend reads ONLY this JSON. Key comes from env FRED_API_KEY (never hardcoded).
 import datetime
 import json
@@ -59,7 +59,26 @@ if FRED_KEY:
 else:
     print("WARN: FRED_API_KEY missing - FRED series skipped")
 
-# --- Yahoo Finance: index/FX/commodity/crypto closes ---
+# --- FRED daily closes for what FRED publishes (S&P 500, Nikkei 225, WTI, VIX, broad USD, BTC) ---
+# Provenance upgrade: these six move off Yahoo to FRED-hosted official/licensed series.
+FRED_TICKERS = {
+    "spx":    ("SP500",      "S&P"),
+    "nikkei": ("NIKKEI225",  "닛케이"),
+    "vix":    ("VIXCLS",     "VIX"),
+    "btc":    ("CBBTCUSD",   "BTC"),      # Coinbase BTC/USD daily close
+}
+# WTI (DCOILWTICO) and the broad dollar (DTWEXBGS) lag 3-7 days on FRED - too stale
+# for a live ticker, so they stay on Yahoo until a fresher official feed exists.
+if FRED_KEY:
+    for key, (sid, label) in FRED_TICKERS.items():
+        try:
+            v = fred_series(sid, 6)
+            series[key] = {"label": label, "value": round(v[0][1], 2), "prev": round(v[1][1], 2),
+                           "unit": "", "delta_kind": "pct", "asof": v[0][0], "src": "FRED"}
+        except Exception as e:
+            print(key, "FRED fail:", e)
+
+# --- Yahoo Finance: only the exchanges/commodities FRED does not publish (fallback for the rest) ---
 # Index order = economic size (T1 tiers of the label system): US, CN, JP, DE, IN, UK, KR.
 # The stage is global — no market is the protagonist.
 TICKERS = {
@@ -79,13 +98,15 @@ TICKERS = {
 data = yf.download([t[0] for t in TICKERS.values()], period="7d", interval="1d",
                    progress=False, group_by="ticker", threads=True, auto_adjust=True)
 for key, (tk, label) in TICKERS.items():
+    if key in series:          # FRED already delivered it
+        continue
     try:
         closes = data[tk]["Close"].dropna()
         series[key] = {"label": label,
                        "value": round(float(closes.iloc[-1]), 2),
                        "prev": round(float(closes.iloc[-2]), 2),
                        "unit": "", "delta_kind": "pct",
-                       "asof": str(closes.index[-1].date())}
+                       "asof": str(closes.index[-1].date()), "src": "Yahoo"}
     except Exception as e:
         print(key, "fail:", e)
 
@@ -93,7 +114,7 @@ out = {
     "updated_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
     "series": series,
     "extras": extras,
-    "source": "FRED + Yahoo Finance (free tiers)",
+    "source": "FRED (S&P500 · Nikkei · VIX · BTC · rates · liquidity) + Yahoo Finance (DAX · FTSE · SENSEX · KOSPI · Shanghai · WTI · DXY · copper)",
 }
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 json.dump(out, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
