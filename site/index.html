@@ -378,7 +378,7 @@
 <div id="layersbtn" class="glass">레이어 ▤</div>
 <div id="layers" class="glass">
   <h3>LAYERS</h3>
-  <div class="lrow" data-l="ships"><span class="sw"><span class="dot" style="background:#FF9A5A"></span><span class="dot" style="background:#5FD8E8"></span></span>선박 · AIS<span class="st">ON</span></div>
+  <div class="lrow" data-l="ships"><span class="sw"><span class="dot" style="background:#FF9A5A"></span><span class="dot" style="background:#5FD8E8"></span></span>선박<span class="st">ON</span></div>
   <div class="lrow" data-l="news"><span class="sw"><span class="dot" style="background:#3FE0A0"></span><span class="dot" style="background:#D9A441"></span><span class="dot" style="background:#FF5D6E"></span></span>뉴스 진앙<span class="st">ON</span></div>
   <div class="lrow" data-l="routes"><span class="sw"><span class="dot" style="background:#D9A441"></span><span class="dot" style="background:#FF5D6E"></span><span class="dot" style="background:#5FD8E8"></span><span class="dot" style="background:#A79BFF"></span></span>관측 동선<span class="st">ON</span></div>
   <div class="lrow" data-l="ripples"><span class="sw"><span class="dot" style="background:var(--acc)"></span></span>활성 파급<span class="st">ON</span></div>
@@ -807,6 +807,8 @@ function resampleLine(pts,step){ /* 등간격 재표집 — 지그재그 꺾임 
   out.push(pts[pts.length-1].clone());
   return out;}
 const ZDENS=175; /* 스파크 표집점 밀도(단위 길이당) — 전 스파크 선 공통 */
+const cnm=o=>(LANG==='en'&&o.name_en)?o.name_en:o.name; /* 분쟁 라벨: 언어별 이름 */
+const capW=x=>String(x).replace(/\b[a-z]/g,ch=>ch.toUpperCase());
 const confLabels=[];
 function confLabelSprite(txt,color){
   const c=document.createElement('canvas');c.width=640;c.height=96;
@@ -871,7 +873,7 @@ function renderConflicts(){
     boom.position.copy(toV3(mid.la,mid.lo,R*1.012));
     boom.material.userData.co=.95;frontMats.push(boom.material);
     conflictLayer.add(boom);
-    addConfLabel('💥'+' '+w.name,toV3(mid.la-2.6,mid.lo,R*1.016),'#FF6A6E',2.6);});
+    addConfLabel('💥 '+cnm(w),toV3(mid.la-2.6,mid.lo,R*1.016),'#FF6A6E',2.6);});
   /* ③ 대치·휴전: 가는 호박색 정지선 — 맥동 없음 (긴장은 있으나 교전 아님) */
   (C.standoffs||[]).forEach(st=>{
     if(st.kind==='border'&&st.pair){
@@ -880,14 +882,14 @@ function renderConflicts(){
       const ln=new THREE.LineSegments(meshToSegs(m,R*1.0024),lm);
       confMats.push(lm);conflictLayer.add(ln);
       const md=meshMid(m);
-      addConfLabel('⏸ '+st.name,toV3(md.la-1.8,md.lo,R*1.016),'#E8A33D',2.2);
+      addConfLabel('⏸ '+cnm(st),toV3(md.la-1.8,md.lo,R*1.016),'#E8A33D',2.2);
     }else if(st.kind==='line'&&st.line){
       const tm=new THREE.MeshBasicMaterial({color:0xE8A33D,transparent:true,opacity:.55});tm.userData.co=.55;
       confMats.push(tm);
       conflictLayer.add(new THREE.Mesh(
         new THREE.TubeGeometry(surfaceArc(st.line[0],st.line[1]),24,.0014,5,false),tm));
       const ml=[(st.line[0][0]+st.line[1][0])/2,(st.line[0][1]+st.line[1][1])/2];
-      addConfLabel('⏸ '+st.name,toV3(ml[0]-1.6,ml[1],R*1.016),'#E8A33D',2.0);}});
+      addConfLabel('⏸ '+cnm(st),toV3(ml[0]-1.6,ml[1],R*1.016),'#E8A33D',2.0);}});
   /* ④ 원거리 교전: 지그재그 스파크 호 — 국경을 안 맞댄 위협선 */
   (C.farpairs||[]).forEach(fp=>{
     const curve=arcCurve(fp.a,fp.b);
@@ -898,7 +900,7 @@ function renderConflicts(){
     frontMats.push(dm);
     conflictLayer.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),dm));
     const mp=curve.getPoint(.5).clone().multiplyScalar(1.02);
-    const lb=confLabelSprite('⚡ '+fp.name,'#E85C8A');
+    const lb=confLabelSprite('⚡ '+cnm(fp),'#E85C8A');
     lb.position.copy(mp);
     confLabels.push({s:lb,normal:mp.clone().normalize(),gate:2.6});
     conflictLayer.add(lb);});
@@ -915,7 +917,7 @@ function renderConflicts(){
     ring.position.copy(p);orient(ring,p);
     ring.userData={ph:Math.random()*6.28,per:3500};
     conflictLayer.add(ring);confPulses.push(ring);
-    addConfLabel('✕ '+c.name,toV3(c.hot[0]-2.2,c.hot[1],R*1.014),'#D0685F',1.95);});
+    addConfLabel('✕ '+cnm(c),toV3(c.hot[0]-2.2,c.hot[1],R*1.014),'#D0685F',1.95);});
   /* 자동 핫스팟: GDELT 분쟁 보도 밀집(14일) — 강도 = 맥동 속도 */
   (((CONFLAUTO||{}).spots)||[]).forEach(sp=>{
     if(sp.intensity<2)return;
@@ -925,7 +927,7 @@ function renderConflicts(){
     ring.position.copy(p);orient(ring,p);
     ring.userData={ph:Math.random()*6.28,per:4400-620*sp.intensity};
     conflictLayer.add(ring);confPulses.push(ring);
-    addConfLabel('\uD83D\uDCE1 \ubcf4\ub3c4 \ubc00\uc9d1: '+sp.country+' ('+sp.n+'\uac74/14\uc77c)',
+    addConfLabel((LANG==='en'?'\uD83D\uDCE1 coverage: ':'\uD83D\uDCE1 \ubcf4\ub3c4 \ubc00\uc9d1: ')+capW(sp.country)+' ('+sp.n+(LANG==='en'?'/14d)':'\uac74/14\uc77c)'),
       toV3(sp.hot[0]-1.8,sp.hot[1],R*1.014),'#E09A70',1.8);});
   /* UCDP: 경제적 파급력 상위만 표기 — 사망자 × 경제 규모 가중 (기준은 policy 공개) */
   {const UNAME={'dr congo (zaire)':'dem. rep. congo','united states of america':'united states of america',
@@ -946,18 +948,33 @@ function renderConflicts(){
     ring.position.copy(p);orient(ring,p);
     ring.userData={ph:Math.random()*6.28,per:4600-650*sp.intensity};
     conflictLayer.add(ring);confPulses.push(ring);
-    addConfLabel('UCDP · '+sp.country+' (\uc0ac\ub9dd '+sp.deaths+')',
+    addConfLabel(capW(sp.country)+(LANG==='en'?' \u00b7 '+sp.deaths+' deaths':' \u00b7 \uc0ac\ub9dd '+sp.deaths),
       toV3(sp.hot[0]-2.4,sp.hot[1],R*1.014),'#C96A5E',2.1);});}
     conflictLayer.visible=L.conflicts;refreshClones();}
+const shipTexCache={};
+function shipTex(tt,col){ /* 뱃머리 오른쪽 실루엣 — 침로 회전과 정합 */
+  const k=tt+col;
+  if(shipTexCache[k])return shipTexCache[k];
+  const c=document.createElement('canvas');c.width=64;c.height=32;
+  const x=c.getContext('2d');x.fillStyle=col;
+  x.beginPath();x.moveTo(4,19);x.lineTo(52,19);x.lineTo(62,24);x.lineTo(52,29);x.lineTo(10,29);
+  x.closePath();x.fill();
+  if(tt==='tanker'){for(let i=0;i<3;i++){x.beginPath();x.arc(24+i*11,18,4.5,Math.PI,0);x.fill();}
+    x.fillRect(6,8,9,11);}
+  else if(tt==='cargo'){for(let i=0;i<4;i++)x.fillRect(18+i*9,11,7,8);x.fillRect(6,7,9,12);}
+  else{x.fillRect(26,13,12,6);}
+  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;
+  shipTexCache[k]=t;return t;}
 function renderShips(){
   if(!shipsGroup)return;
   shipsGroup.clear();shipMats.length=0;
-  const hull=new THREE.ConeGeometry(.0055,.018,4);hull.rotateX(Math.PI/2);
-  [['tanker',0xFF9A5A],['cargo',0x5FD8E8],['unknown',0x8fa3b3]].forEach(([tt,col])=>{
+  const plane=new THREE.PlaneGeometry(.028,.014);
+  [['tanker','#FF9A5A'],['cargo','#5FD8E8'],['unknown','#8fa3b3']].forEach(([tt,col])=>{
     const ships=shipsCache.filter(s=>s.t===tt);if(!ships.length)return;
-    const m=new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:layerAlpha});
+    const m=new THREE.MeshBasicMaterial({map:shipTex(tt,col),transparent:true,
+      opacity:layerAlpha,side:THREE.DoubleSide,depthWrite:false});
     shipMats.push(m);
-    const im=new THREE.InstancedMesh(hull,m,ships.length);
+    const im=new THREE.InstancedMesh(plane,m,ships.length);
     const d3=new THREE.Object3D();
     ships.forEach((s,i)=>{const p=toV3(s.la,s.lo,R*1.004);
       d3.position.copy(p);orient(d3,p);
@@ -1710,9 +1727,9 @@ fitCamera();  /* 세로(폰) 화면 초기 맞춤 */
 Promise.all([
   fetch(COUNTRIES).then(r=>r.json()).catch(()=>null),
   fetch('data/ships.json').then(r=>r.json()).catch(()=>null),
-  fetch('logic/conflicts.json').then(r=>r.json()).catch(()=>null),
-  fetch('data/conflicts-auto.json').then(r=>r.json()).catch(()=>null),
-  fetch('data/conflicts-ucdp.json').then(r=>r.json()).catch(()=>null)
+  fetch('logic/conflicts.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null),
+  fetch('data/conflicts-auto.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null),
+  fetch('data/conflicts-ucdp.json',{cache:'no-store'}).then(r=>r.json()).catch(()=>null)
 ]).then(([topo,sh,cf,ca,cu])=>{
   if(cf)CONFL=cf;
   if(ca)CONFLAUTO=ca;
@@ -1871,7 +1888,7 @@ const D={'로그인':'Sign in','시작하기':'Get started','테마':'Theme','�
  'REGIME · 시장 국면':'REGIME · market state',
  'w = 평균 |ρ| · 60일 · 7자산 바스켓':'w = avg |ρ| · 60d · 7-asset basket',
  '안정':'Calm','평온':'Steady','주의':'Watch','긴장':'Tension','경보':'Alert',
- '레이어 ▤':'Layers ▤','선박 · AIS':'Ships · AIS','뉴스 진앙':'News epicenters',
+ '레이어 ▤':'Layers ▤','선박':'Ships','뉴스 진앙':'News epicenters',
  '관측 동선':'Observation routes','활성 파급':'Active spread','분쟁 지역':'Conflicts',
  '(수동 v0)':'(manual v0)','국가 라벨':'Country labels','도시 라벨':'City labels',
  '바다·해협 라벨':'Sea & strait labels',
@@ -1942,6 +1959,9 @@ const RX=[
  [/직전 CPI/g,'previous CPI'],[/인근/g,'near'],
  [/호르무즈/g,'Hormuz'],[/말라카/g,'Malacca'],[/수에즈/g,'Suez'],
  [/바브엘만데브/g,'Bab-el-Mandeb'],[/파나마/g,'Panama'],[/보스포루스/g,'Bosporus'],
+ [/무력 과시/g,'show of force'],[/관계 축소/g,'reduced relations'],[/강압/g,'coercion'],
+ [/폭행·공격/g,'assault·attack'],[/대량 폭력/g,'mass violence'],[/전투/g,'combat'],
+ [/전쟁/g,'war'],[/시위/g,'protest'],[/위협/g,'threat'],
  [/관문/g,'gates'],[/무대/g,'stage'],[/채점/g,'grading'],
  [/워싱턴/g,'Washington'],[/뉴욕/g,'New York'],[/런던/g,'London'],
  [/프랑크푸르트/g,'Frankfurt'],[/도쿄/g,'Tokyo'],[/서울/g,'Seoul'],[/상하이/g,'Shanghai'],

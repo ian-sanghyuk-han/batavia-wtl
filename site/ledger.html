@@ -87,8 +87,11 @@ if(EN){
   H[2].firstChild.nodeValue='Gates ';H[2].lastChild.nodeValue=' — multipliers over every card';
 }
 let D=null,FQ='',FF='';
-fetch('logic/ledger-full.json').then(r=>r.json()).then(d=>{
+fetch('logic/ledger-full.json',{cache:'no-store'}).then(r=>r.json()).then(d=>{
   D=d;
+  if(EN){const sw=o=>{['name','desc','note','formula'].forEach(k=>{if(o[k+'_en'])o[k]=o[k+'_en'];});};
+    d.cards.forEach(sw);d.interactions.forEach(sw);d.gates.forEach(sw);
+    if(d.source_en)d.source=d.source_en;}
   $('cnt').textContent=EN
     ?`base ${d.counts.base} · interaction ${d.counts.interaction} · gates ${d.counts.gates} — ${d.counts.total} total · grades & probabilities are estimates until live grading`
     :`기본 ${d.counts.base} · 상호작용 ${d.counts.interaction} · 게이트 ${d.counts.gates} — 총 ${d.counts.total}장 · ${d.label}`;

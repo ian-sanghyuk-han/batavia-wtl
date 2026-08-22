@@ -1,38 +1,233 @@
 {
-  "version": "v1",
-  "note": "Conflict grammar v1 (owner-approved 4-tier taxonomy). MANUALLY curated, 기준 2026-08. wars: belligerent PAIRS sharing a border -> the shared border burns (fast red pulse) + light fill on both. zones: localized conflict/civil war -> epicenter marker only, NO country fill. standoffs: armistice/tension lines -> thin static amber (no pulse) — tension without combat (Korea DMZ insight). farpairs: belligerents without shared border -> dashed crimson arc. Intensity = pulse speed, not color. Upgrade path: UCDP/GDELT auto-maintenance.",
-  "label": "분쟁 문법 v1 · 수동 관리 · 기준 2026-08",
-  "wars": [
-    {"pair": ["ukraine", "russia"], "name": "러시아-우크라이나 전쟁", "since": 2022}
-  ],
-  "zones": [
-    {"hot": [48.5, 37.9],  "name": "돈바스 전선",            "type": "전면전 진앙"},
-    {"hot": [31.4, 34.4],  "name": "가자 전쟁",              "type": "무장 분쟁"},
-    {"hot": [33.3, 35.4],  "name": "이스라엘-헤즈볼라",       "type": "무장 분쟁"},
-    {"hot": [15.3, 44.2],  "name": "예멘 내전·홍해 위협",     "type": "내전"},
-    {"hot": [15.6, 32.5],  "name": "수단 내전(SAF-RSF)",     "type": "내전"},
-    {"hot": [21.9, 96.1],  "name": "미얀마 내전",            "type": "내전"},
-    {"hot": [16.3, -3.0],  "name": "사헬 반군(말리)",         "type": "무장 반군"},
-    {"hot": [13.0, -1.5],  "name": "사헬 반군(부르키나파소)",  "type": "무장 반군"},
-    {"hot": [13.5, 2.1],   "name": "사헬 반군(니제르)",       "type": "무장 반군"},
-    {"hot": [2.0, 45.3],   "name": "소말리아 알샤바브",       "type": "내전"},
-    {"hot": [-1.7, 29.2],  "name": "동부 콩고 M23",          "type": "무장 분쟁"},
-    {"hot": [11.6, 37.4],  "name": "에티오피아 암하라",       "type": "무장 분쟁"},
-    {"hot": [35.0, 38.0],  "name": "시리아 불안정",          "type": "내전 여파"},
-    {"hot": [18.5, -72.3], "name": "아이티 갱 위기",         "type": "무장 갱 분쟁"}
-  ],
-  "standoffs": [
-    {"pair": ["south korea", "north korea"], "name": "한반도 휴전선(DMZ)", "kind": "border"},
-    {"pair": ["india", "pakistan"],          "name": "인도-파키스탄 LoC",  "kind": "border"},
-    {"line": [[25.6, 121.9], [22.7, 118.2]], "name": "대만해협 대치",      "kind": "line"}
-  ],
-  "farpairs": [
-    {"a": [31.4, 34.4], "b": [15.3, 44.2], "name": "이스라엘 ↔ 후티(예멘)"},
-    {"a": [31.8, 35.2], "b": [35.7, 51.4], "name": "이란 ↔ 이스라엘 긴장"},
-    {"a": [38.9, -77.04], "b": [35.7, 51.4], "name": "미국 ↔ 이란 교전"}
-  ],
-  "econ_notes": [
-    {"countries": ["united states of america", "china"], "note": "미-중 관세·통상 분쟁 — 지도 미표기, 국가 정보용"},
-    {"countries": ["united states of america", "russia"], "note": "대러시아 제재 — 지도 미표기, 국가 정보용"}
-  ]
+ "version": "v1",
+ "note": "Conflict grammar v1 (owner-approved 4-tier taxonomy). MANUALLY curated, 기준 2026-08. wars: belligerent PAIRS sharing a border -> the shared border burns (fast red pulse) + light fill on both. zones: localized conflict/civil war -> epicenter marker only, NO country fill. standoffs: armistice/tension lines -> thin static amber (no pulse) — tension without combat (Korea DMZ insight). farpairs: belligerents without shared border -> dashed crimson arc. Intensity = pulse speed, not color. Upgrade path: UCDP/GDELT auto-maintenance.",
+ "label": "분쟁 문법 v1 · 수동 관리 · 기준 2026-08",
+ "wars": [
+  {
+   "pair": [
+    "ukraine",
+    "russia"
+   ],
+   "name": "러시아-우크라이나 전쟁",
+   "since": 2022,
+   "name_en": "Russia-Ukraine War"
+  }
+ ],
+ "zones": [
+  {
+   "hot": [
+    48.5,
+    37.9
+   ],
+   "name": "돈바스 전선",
+   "type": "전면전 진앙",
+   "name_en": "Donbas front"
+  },
+  {
+   "hot": [
+    31.4,
+    34.4
+   ],
+   "name": "가자 전쟁",
+   "type": "무장 분쟁",
+   "name_en": "Gaza war"
+  },
+  {
+   "hot": [
+    33.3,
+    35.4
+   ],
+   "name": "이스라엘-헤즈볼라",
+   "type": "무장 분쟁",
+   "name_en": "Israel-Hezbollah"
+  },
+  {
+   "hot": [
+    15.3,
+    44.2
+   ],
+   "name": "예멘 내전·홍해 위협",
+   "type": "내전",
+   "name_en": "Yemen civil war · Red Sea threat"
+  },
+  {
+   "hot": [
+    15.6,
+    32.5
+   ],
+   "name": "수단 내전(SAF-RSF)",
+   "type": "내전",
+   "name_en": "Sudan civil war (SAF-RSF)"
+  },
+  {
+   "hot": [
+    21.9,
+    96.1
+   ],
+   "name": "미얀마 내전",
+   "type": "내전",
+   "name_en": "Myanmar civil war"
+  },
+  {
+   "hot": [
+    16.3,
+    -3.0
+   ],
+   "name": "사헬 반군(말리)",
+   "type": "무장 반군",
+   "name_en": "Sahel insurgency (Mali)"
+  },
+  {
+   "hot": [
+    13.0,
+    -1.5
+   ],
+   "name": "사헬 반군(부르키나파소)",
+   "type": "무장 반군",
+   "name_en": "Sahel insurgency (Burkina Faso)"
+  },
+  {
+   "hot": [
+    13.5,
+    2.1
+   ],
+   "name": "사헬 반군(니제르)",
+   "type": "무장 반군",
+   "name_en": "Sahel insurgency (Niger)"
+  },
+  {
+   "hot": [
+    2.0,
+    45.3
+   ],
+   "name": "소말리아 알샤바브",
+   "type": "내전",
+   "name_en": "Somalia al-Shabaab"
+  },
+  {
+   "hot": [
+    -1.7,
+    29.2
+   ],
+   "name": "동부 콩고 M23",
+   "type": "무장 분쟁",
+   "name_en": "Eastern DRC M23"
+  },
+  {
+   "hot": [
+    11.6,
+    37.4
+   ],
+   "name": "에티오피아 암하라",
+   "type": "무장 분쟁",
+   "name_en": "Ethiopia Amhara"
+  },
+  {
+   "hot": [
+    35.0,
+    38.0
+   ],
+   "name": "시리아 불안정",
+   "type": "내전 여파",
+   "name_en": "Syria instability"
+  },
+  {
+   "hot": [
+    18.5,
+    -72.3
+   ],
+   "name": "아이티 갱 위기",
+   "type": "무장 갱 분쟁",
+   "name_en": "Haiti gang crisis"
+  }
+ ],
+ "standoffs": [
+  {
+   "pair": [
+    "south korea",
+    "north korea"
+   ],
+   "name": "한반도 휴전선(DMZ)",
+   "kind": "border",
+   "name_en": "Korean DMZ armistice line"
+  },
+  {
+   "pair": [
+    "india",
+    "pakistan"
+   ],
+   "name": "인도-파키스탄 LoC",
+   "kind": "border",
+   "name_en": "India-Pakistan LoC"
+  },
+  {
+   "line": [
+    [
+     25.6,
+     121.9
+    ],
+    [
+     22.7,
+     118.2
+    ]
+   ],
+   "name": "대만해협 대치",
+   "kind": "line",
+   "name_en": "Taiwan Strait standoff"
+  }
+ ],
+ "farpairs": [
+  {
+   "a": [
+    31.4,
+    34.4
+   ],
+   "b": [
+    15.3,
+    44.2
+   ],
+   "name": "이스라엘 ↔ 후티(예멘)",
+   "name_en": "Israel ↔ Houthis (Yemen)"
+  },
+  {
+   "a": [
+    31.8,
+    35.2
+   ],
+   "b": [
+    35.7,
+    51.4
+   ],
+   "name": "이란 ↔ 이스라엘 긴장",
+   "name_en": "Iran ↔ Israel tensions"
+  },
+  {
+   "a": [
+    38.9,
+    -77.04
+   ],
+   "b": [
+    35.7,
+    51.4
+   ],
+   "name": "미국 ↔ 이란 교전",
+   "name_en": "US ↔ Iran engagement"
+  }
+ ],
+ "econ_notes": [
+  {
+   "countries": [
+    "united states of america",
+    "china"
+   ],
+   "note": "미-중 관세·통상 분쟁 — 지도 미표기, 국가 정보용"
+  },
+  {
+   "countries": [
+    "united states of america",
+    "russia"
+   ],
+   "note": "대러시아 제재 — 지도 미표기, 국가 정보용"
+  }
+ ]
 }
