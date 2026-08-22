@@ -258,7 +258,6 @@
   .lspark{display:block;margin-top:6px;opacity:.9}
   .lnode .st{position:absolute;top:9px;right:10px;font:9px Consolas,monospace;color:#5b6b7a}
   .lnode.pass{border-left-color:var(--fam,#7FD8FF)}
-  .lnode .fambar{position:absolute;left:-3px;top:-1px;bottom:-1px;width:3px;border-radius:11px 0 0 11px}
   .lnode .nlnk{margin-top:5px;padding:3px 7px;border-left:2px solid var(--fam,#7FD8FF);border-radius:0 5px 5px 0;
     background:rgba(159,199,224,.06);font:10px/1.45 'Segoe UI';color:var(--ink);opacity:.92}
   .lnode .nlnk small{display:block;font:9px Consolas,monospace;color:var(--mut)}
@@ -1264,17 +1263,14 @@ function renderLogicView(){
     [['L-PHY-004',c.nearEv&&c.nearEv.e],['L-EVT-004',c.polEv]].filter(x=>x[1]).map(([id,e])=>
       `<div class="nlnk" id="nl-${id}" style="border-left-color:${famC(cardOf(id).color)}">`+
       `<small>📰 ${e.src||''} → ${id}</small>${String(e.name).slice(0,70)}${e.name.length>70?'…':''}</div>`).join('');
-  /* data nodes wear the colors of the cards they feed (stacked when several) */
+  /* data nodes wear the color of the card they feed, on the node's own rounded border
+     (active card wins; a waiting card shows at 30% alpha; chips carry the rest) */
   ['ld-evt','ld-mkt','ld-rgm','ld-news'].forEach(id=>{
     const n=document.getElementById(id);if(!n)return;
-    const cols=[...new Map(CONDS.filter(cd=>cd.src===id).map(cd=>{const c0=famC(cardOf(cd.id).color);
-      return [c0+(cd.pass?'':'w'), cd.pass?c0:c0+'4d'];})).values()]; /* hex+4d ≈ 30% alpha = waiting */
-    let bar=n.querySelector('.fambar');
-    if(!bar){bar=document.createElement('i');bar.className='fambar';n.appendChild(bar);}
-    if(cols.length){n.style.borderLeftColor='transparent';
-      bar.style.background=cols.length===1?cols[0]:
-        `linear-gradient(to bottom,${cols.map((c0,i)=>`${c0} ${i/cols.length*100}% ${(i+1)/cols.length*100}%`).join(',')})`;}
-    else{n.style.borderLeftColor='';bar.style.background='transparent';}});
+    const feeds=CONDS.filter(cd=>cd.src===id).map(cd=>({col:famC(cardOf(cd.id).color),on:cd.pass}));
+    const pick=feeds.find(f=>f.on)||feeds[0];
+    n.style.borderLeftColor=pick?(pick.on?pick.col:pick.col+'4d'):'';
+    const bar=n.querySelector('.fambar');if(bar)bar.remove();});
   const SHOW=LFILTER==='act'?CONDS.filter(cd=>cd.pass):CONDS;
   const cbox=document.getElementById('lcbox'),kbox=document.getElementById('lkbox');
   cbox.innerHTML=SHOW.map((cd,i)=>{
