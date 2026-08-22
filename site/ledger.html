@@ -99,8 +99,8 @@ fetch('logic/ledger-full.json',{cache:'no-store'}).then(r=>r.json()).then(d=>{
     ?`base ${d.counts.base} · interaction ${d.counts.interaction} · gates ${d.counts.gates} — ${d.counts.total} total · grades & probabilities are estimates until live grading`
     :`기본 ${d.counts.base} · 상호작용 ${d.counts.interaction} · 게이트 ${d.counts.gates} — 총 ${d.counts.total}장 · ${d.label}`;
   $('foot').textContent=EN
-    ?`Source: ${d.source} · judging live (cards wired to real-time fire judgment): ${d.judgeable.join(', ')} — the rest activate as data feeds connect`
-    :`출처: ${d.source} · 판정 가동(실시간 발동 판정이 연결된 카드): ${d.judgeable.join(', ')} — 나머지는 데이터 피드 연결 시 가동됩니다`;
+    ?`Source: ${d.source} · judging live (cards wired to real-time activation judgment): ${d.judgeable.join(', ')} — the rest activate as data feeds connect`
+    :`출처: ${d.source} · 판정 가동(실시간 활성 판정이 연결된 카드): ${d.judgeable.join(', ')} — 나머지는 데이터 피드 연결 시 가동됩니다`;
   const fams=[...new Set(d.cards.map(c=>c.family))];
   const bar=$('bar');
   fams.forEach(f=>{

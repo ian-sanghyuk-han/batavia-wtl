@@ -136,7 +136,7 @@
     <div id="gauges" class="glass"><h3>당시의 계기판 — 수식에 그날의 값을 대입</h3><div id="gglist"></div></div>
   </div>
 </main>
-<footer>시나리오는 대표적 사건일의 큐레이션입니다(사후 선택) — 채점 표본이 아닙니다 · 리플레이는 관찰의 재생입니다 — 어떤 문장도 행동 지시가 아닙니다 · 발동 배지 = 수식이 기준을 넘은 순간 · ✓ = 사후 검증된 관찰</footer>
+<footer>시나리오는 대표적 사건일의 큐레이션입니다(사후 선택) — 채점 표본이 아닙니다 · 리플레이는 관찰의 재생입니다 — 어떤 문장도 행동 지시가 아닙니다 · 활성 배지 = 수식이 기준을 넘은 순간 · ✓ = 사후 검증된 관찰</footer>
 <script>
 const R08=[
  {t:0,d:'2008-09-15',name:'리먼 브라더스 파산',c:'#FF5D6E',la:40.7,lo:-74,imp:5,reach:'전 시장',cx:'지속형 이벤트 개시 — 신용·유동성 붕괴',opp:'크레딧 선행 경보가 D-5부터 점등(코어 2.6) — 방어 전환의 창'},
@@ -270,7 +270,7 @@ if(EN){
  document.querySelector('#gwrap small').textContent="that day's epicenters — it turns on its own, no dragging";
  document.querySelector('#events h3').textContent='EVENTS — they wake as time reaches them';
  document.querySelector('#gauges h3').textContent="THE GAUGES OF THAT DAY — that day's values into the formulas";
- document.querySelector('footer').textContent='Scenarios are a curation of landmark days (chosen in hindsight) — they are not a grading sample · A replay is the playback of observations — no sentence is an instruction to act · FIRED badge = the moment a formula crossed its threshold · ✓ = an observation verified after the fact';
+ document.querySelector('footer').textContent='Scenarios are a curation of landmark days (chosen in hindsight) — they are not a grading sample · A replay is the playback of observations — no sentence is an instruction to act · ACTIVE badge = the moment a formula crossed its threshold · ✓ = an observation verified after the fact';
  const E8=[
   ['Lehman Brothers collapses','all markets','A persistent event opens — credit & liquidity breakdown','The credit early-warning had been lit since D-5 (core 2.6) — a window to turn defensive'],
   ['AIG bailout','financials · credit','The state absorbs systemic risk','Volatility regime shift — the half-Kelly shrink zone (core 6.5)'],
@@ -383,7 +383,7 @@ function paint(){
     const hit=o.dir==='le'?v<=o.th:v>=o.th;
     $('gv'+i).textContent=v.toFixed(o.dec);
     $('gc'+i).textContent=(o.dir==='le'?'≤':'≥')+' '+o.th+o.unit+' ?';
-    const st=$('gs'+i);st.textContent=hit?(EN?'FIRED':'발동'):(EN?'STANDBY':'대기');st.classList.toggle('on',hit);
+    const st=$('gs'+i);st.textContent=hit?(EN?'ACTIVE':'활성'):(EN?'STANDBY':'대기');st.classList.toggle('on',hit);
     $('gb'+i).style.width=Math.min(100,Math.abs(v)/o.max*100)+'%';
     $('vd'+i).classList.toggle('on',t>=o.verdT);});
   window.__rp={t,cur,list:SC[cur].ev};}
@@ -459,7 +459,7 @@ if(FREEQ&&/^\d{4}-\d{2}-\d{2}$/.test(FREEQ)){
   chip.addEventListener('click',()=>{cur='FREE';playing=false;$('play').textContent='▶';
     document.querySelectorAll('.sc').forEach(x=>x.classList.toggle('on',x===chip));
     document.getElementById('gwrap').style.display='none';build();});
-  document.getElementById('gwrap').style.display='none'; /* 좌표 없는 발동 — 지구본은 쉼 */
+  document.getElementById('gwrap').style.display='none'; /* 좌표 없는 활성 — 지구본은 쉼 */
   cur='FREE';build();
   /* 프리롤 자동 재생: 클릭한 순간이 "다가오도록" 3주 전에서 출발 */
   t=t_of(iso(new Date(ctr.getTime()-21*864e5)));

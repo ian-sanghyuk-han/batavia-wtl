@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- STATUS: FIRE CALENDAR v1 - phase 3 surface of the historical backtest.
+<!-- STATUS: ACTIVATION CALENDAR v1 - phase 3 surface of the historical backtest.
      Reads site/data/backtest/{fires.jsonl,scorecard.json} + ledger-full.json.
      Everything here is a RECONSTRUCTION (est.) - kept separate from live grading. -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>BATAVIA PROJECT — Fire Calendar</title>
+<title>BATAVIA PROJECT — Activation Calendar</title>
 <script>{const t=localStorage.getItem('bp-theme')||'dark';document.documentElement.dataset.theme=(t==='gundam'||t==='light')?'gundam':'dark';}</script>
 <style>
   :root{--acc:#7FD8FF;--ink:#EAF9FF;--dim:#93a7b8;--mut:#5b6b7a;
@@ -86,12 +86,12 @@
 <body>
 <header>
   <a href="./">← OBSERVATORY</a>
-  <b>BATAVIA PROJECT</b> · FIRE CALENDAR
-  <small id="hsub">every day the machine's cards fired, replayed over history — reconstructed · est. · separate from live grading</small>
+  <b>BATAVIA PROJECT</b> · ACTIVATION CALENDAR
+  <small id="hsub">every day the machine's cards were active, replayed over history — reconstructed · est. · separate from live grading</small>
 </header>
 <main>
   <section class="glass">
-    <h3 id="t1">FIRE DENSITY BY DAY <small id="t1s">— darker = more cards fired · click a day</small></h3>
+    <h3 id="t1">ACTIVATION DENSITY BY DAY <small id="t1s">— darker = more cards active · click a week</small></h3>
     <div id="grasswrap"><div id="grass"></div></div>
     <div id="legend"><span id="lgless">less</span>
       <i style="background:rgba(159,199,224,.07)"></i><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i>
@@ -102,7 +102,7 @@
     <div id="daylist"></div>
   </section>
   <section class="glass">
-    <h3 id="t2">WHO FIRED WHEN <small id="t2s">— one lane per family · each tick is a fire</small></h3>
+    <h3 id="t2">WHO WAS ACTIVE WHEN <small id="t2s">— one lane per family · each tick is an activation</small></h3>
     <div id="codewrap"><div id="lanes"></div></div>
   </section>
   <section class="glass">
@@ -119,11 +119,11 @@
 const EN=(localStorage.getItem('bp-lang')||'en')==='en';
 document.documentElement.lang=EN?'en':'ko';
 if(!EN){
-  document.getElementById('hsub').textContent='기계의 카드가 발동했던 모든 날 — 재구성·추정 · 실시간 채점과 분리';
-  document.getElementById('t1').firstChild.textContent='일별 발동 밀도 ';
-  document.getElementById('t1s').textContent='— 진할수록 그날 발동 많음 · 칸을 클릭';
-  document.getElementById('t2').firstChild.textContent='누가 언제 발동했나 ';
-  document.getElementById('t2s').textContent='— 계열별 한 줄 · 눈금 하나 = 발동 한 번';
+  document.getElementById('hsub').textContent='기계의 카드가 활성됐던 모든 날 — 재구성·추정 · 실시간 채점과 분리';
+  document.getElementById('t1').firstChild.textContent='일별 활성 밀도 ';
+  document.getElementById('t1s').textContent='— 진할수록 그날 활성 많음 · 칸을 클릭';
+  document.getElementById('t2').firstChild.textContent='누가 언제 활성됐나 ';
+  document.getElementById('t2s').textContent='— 계열별 한 줄 · 눈금 하나 = 활성 한 번';
   document.getElementById('t3').firstChild.textContent='역사 성적표 ';
   document.getElementById('t3s').textContent='— 카드별 표본 n · 적중률 (추정)';
   document.getElementById('lgless').textContent='적음';
@@ -196,7 +196,7 @@ Promise.all([
    days.forEach(ds=>{const b=briefs[ds];if(!b||!b.lines||!b.lines.length)return;
      rows.push('<div class="brief"><b>📰 '+ds+(EN?' — that day':' — 그날')+'</b>'
        +b.lines.map(l=>'• '+l).join('<br>')
-       +'<small>'+(EN?'Text from Wikipedia, CC BY-SA 4.0 · context only, not a trigger':'출처 Wikipedia, CC BY-SA 4.0 · 맥락 참고용, 발동 근거 아님')+'</small></div>');});
+       +'<small>'+(EN?'Text from Wikipedia, CC BY-SA 4.0 · context only, not a trigger':'출처 Wikipedia, CC BY-SA 4.0 · 맥락 참고용, 활성 근거 아님')+'</small></div>');});
    $('daylist').innerHTML=rows.join('');
    const era=ERAS.find(e=>days[0]>=e[0]&&days[0]<=e[1]);
    const rp=$('rplink');

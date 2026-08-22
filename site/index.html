@@ -250,7 +250,7 @@
   #lwires{position:absolute;inset:0;pointer-events:none;overflow:visible}
   .colh{font:600 9px Consolas,monospace;letter-spacing:2px;color:#5b6b7a;margin-bottom:2px}
   .lnode{position:relative;padding:9px 12px;margin-bottom:10px;border-left:3px solid #3a4a58;
-    background:var(--glass2);border-radius:9px;border-top:1px solid var(--edge);
+    background:var(--glass2);border-radius:11px;border-top:1px solid var(--edge);
     border-right:1px solid var(--edge);border-bottom:1px solid var(--edge)}
   .lnode h4{margin:0;font:600 11px Consolas,monospace;letter-spacing:1px;color:var(--ink)}
   .lnode .v{font:10.5px/1.7 Consolas,monospace;color:#9fb8cc;margin-top:3px}
@@ -258,7 +258,7 @@
   .lspark{display:block;margin-top:6px;opacity:.9}
   .lnode .st{position:absolute;top:9px;right:10px;font:9px Consolas,monospace;color:#5b6b7a}
   .lnode.pass{border-left-color:var(--fam,#7FD8FF)}
-  .lnode .fambar{position:absolute;left:-3px;top:-1px;bottom:-1px;width:3px;border-radius:9px 0 0 9px}
+  .lnode .fambar{position:absolute;left:-3px;top:-1px;bottom:-1px;width:3px;border-radius:11px 0 0 11px}
   .lnode .nlnk{margin-top:5px;padding:3px 7px;border-left:2px solid var(--fam,#7FD8FF);border-radius:0 5px 5px 0;
     background:rgba(159,199,224,.06);font:10px/1.45 'Segoe UI';color:var(--ink);opacity:.92}
   .lnode .nlnk small{display:block;font:9px Consolas,monospace;color:var(--mut)}
@@ -363,7 +363,7 @@
   <div class="sm-h" style="margin-top:8px">바로가기</div>
   <a class="sm-r" href="ledger.html">원장 열람</a>
   <a class="sm-r" href="replay.html">REPLAY</a>
-  <a class="sm-r" href="calendar.html">발동 달력</a>
+  <a class="sm-r" href="calendar.html">활성 달력</a>
   <a class="sm-r" href="pricing.html">구독 안내</a>
   <a class="sm-r" href="policy.html">데이터와 원칙</a>
   <div class="sm-cap" style="margin-top:6px;opacity:.6">build 2026-08-22a</div>
@@ -432,7 +432,7 @@
       <div id="lkbox"></div>
     </div>
     <div>
-      <div class="colh">④ 파급 (발동 시)</div>
+      <div class="colh">④ 파급 (활성 시)</div>
       <div id="ls-out" class="lnode"><div class="spread">—</div></div>
     </div>
   </div>
@@ -1280,7 +1280,7 @@ function renderLogicView(){
   cbox.innerHTML=SHOW.map((cd,i)=>{
     const card=cardOf(cd.id);
     return `<div id="lc-${cd.id}" class="lnode ${cd.pass?'pass':'wait'}" style="--fam:${famC(card.color)};animation-delay:${.45+i*.12}s">`+
-      `<h4>${cd.id}</h4><span class="st">${cd.pass?'발동':'대기'}</span>`+
+      `<h4>${cd.id}</h4><span class="st">${cd.pass?'활성':'대기'}</span>`+
       `<div class="formula">${cd.f}</div><div class="v">${cd.sub}</div>`+
       `<canvas class="lspark" id="lsp-${cd.id}" width="230" height="30"></canvas></div>`;}).join('');
   /* 미니 그래프: 실수치 이력 (쌓이는 만큼 길어짐) */
@@ -1295,7 +1295,7 @@ function renderLogicView(){
     const card=cardOf(cd.id);
     return `<div id="lk-${cd.id}" class="lnode lcard ${cd.pass?'pass':'wait'}" style="--fam:${famC(card.color)};animation-delay:${.95+i*.1}s">`+
       `<h4>${card.name} <span style="color:var(--acc)">${card.grade}</span></h4>`+
-      `<div class="v">${card.core} · ${cd.pass?'<b>지금 무대에서 파급 중</b>':'조건 충족 시 발동'}</div></div>`;}).join('');
+      `<div class="v">${card.core} · ${cd.pass?'<b>지금 무대에서 파급 중</b>':'조건 충족 시 활성'}</div></div>`;}).join('');
   document.querySelectorAll('#lstage > div:first-child .lnode').forEach((n,i)=>
     n.style.animationDelay=(i*.1)+'s');
   document.getElementById('ls-out').style.animationDelay='1.5s';
@@ -1306,7 +1306,7 @@ function renderLogicView(){
   const act=SHOW.filter(cd=>cd.pass);
   document.querySelector('#ls-out .spread').innerHTML=act.length?
     act.map(cd=>SPREAD_TXT[cd.id]).join('<hr style="border:none;border-top:1px solid rgba(159,199,224,.1)">')
-    :'발동 카드 없음 — 무소식도 기록됩니다';
+    :'활성 카드 없음 — 무소식도 기록됩니다';
   requestAnimationFrame(drawLWires);}
 document.getElementById('ld-news').addEventListener('click',()=>{
   document.getElementById('ld-news').classList.toggle('xp');requestAnimationFrame(drawLWires);});
@@ -1396,11 +1396,11 @@ function openPop(id){
     const G=EASY[id];
     const pass=CONDS&&CONDS.find(x=>x.id===id);
     html+=`<div class="plain">${G?G.plain:''}</div>
-    <div class="step"><span class="no">1</span><div class="bd"><h5>발동 조건</h5>
+    <div class="step"><span class="no">1</span><div class="bd"><h5>활성 조건</h5>
       <div class="formula">${G?G.f:''}</div>
-      <p style="margin-top:5px">${G?G.now(c):''} → <b>${pass&&pass.pass?'발동':'대기'}</b></p></div></div>
-    <div class="step"><span class="no">2</span><div class="bd"><h5>발동하면</h5><p>${G?G.path:''}</p></div></div>
-    <div class="step"><span class="no">3</span><div class="bd"><h5>채점</h5><p>발동 후의 관찰이 맞았는지 자동 채점되어 기록됩니다.</p></div></div>`;}
+      <p style="margin-top:5px">${G?G.now(c):''} → <b>${pass&&pass.pass?'활성':'대기'}</b></p></div></div>
+    <div class="step"><span class="no">2</span><div class="bd"><h5>활성되면</h5><p>${G?G.path:''}</p></div></div>
+    <div class="step"><span class="no">3</span><div class="bd"><h5>채점</h5><p>활성 후의 관찰이 맞았는지 자동 채점되어 기록됩니다.</p></div></div>`;}
   html+=`<div class="provline">${card.core} · 연결 규칙 v0 · <a href="policy.html" style="color:var(--acc);text-decoration:none">데이터와 원칙 →</a> · #${card.id}</div>`;
   el.innerHTML=html;
   document.getElementById('pop').classList.add('on');
@@ -1715,17 +1715,17 @@ Promise.all([
       sub:`미2년 <b>${fmt2(a2.cur)}%p</b> vs 발표 전 중앙값 ${fmt2(a2.hist_median)}%p → 상위 <b>${a2.pctl?Math.round(a2.pctl*100):'—'}%</b> → 지수 <b>${pp.index??'—'}</b>`},
      {id:'L-INF-004',pass:Math.abs(wchg)>=3,src:'ld-mkt',
       f:'|ΔWTI 하루| ≥ 3% ?',
-      sub:`지금 <b>${fmt2(Math.abs(wchg))}%</b> ${Math.abs(wchg)>=3?'≥':'<'} 3% → ${Math.abs(wchg)>=3?'발동':'대기'}`},
+      sub:`지금 <b>${fmt2(Math.abs(wchg))}%</b> ${Math.abs(wchg)>=3?'≥':'<'} 3% → ${Math.abs(wchg)>=3?'활성':'대기'}`},
      {id:'L-MKT-001',pass:conv!=null&&conv>=.55,src:'ld-rgm',
       f:'전 자산 평균 상관 ≥ 0.55 ?',
-      sub:`지금 <b>${fmt2(conv,3)}</b> ${conv>=.55?'≥':'<'} 0.55 → ${conv>=.55?'발동':'대기'}`},
+      sub:`지금 <b>${fmt2(conv,3)}</b> ${conv>=.55?'≥':'<'} 0.55 → ${conv>=.55?'활성':'대기'}`},
      {id:'L-PHY-004',pass:nearHit>0,src:'ld-news',
       f:'관문 700km 내 심각도≥4 사건 ?',
-      sub:`지금 <b>${nearHit}건</b> → ${nearHit>0?'발동':'대기'}${nearMin?` (가장 가까운 사건↔관문 ${Math.round(nearMin)}km)`:''}`+
+      sub:`지금 <b>${nearHit}건</b> → ${nearHit>0?'활성':'대기'}${nearMin?` (가장 가까운 사건↔관문 ${Math.round(nearMin)}km)`:''}`+
         (nearEv?`<br><span style="color:#7f95a8">연결 뉴스 · ${nearEv.e.src||''}</span> “${nearEv.e.name.slice(0,52)}…”`:'')},
      {id:'L-EVT-004',pass:polHit>0,src:'ld-news',
       f:'심각도≥4 정치 사건(시위·위협) ?',
-      sub:`지금 <b>${polHit}건</b> → ${polHit>0?'발동':'대기'}`+
+      sub:`지금 <b>${polHit}건</b> → ${polHit>0?'활성':'대기'}`+
         (polEv?`<br><span style="color:#7f95a8">연결 뉴스 · ${polEv.src||''}</span> “${polEv.name.slice(0,52)}…”`:'')}];
    if(document.getElementById('logicview').classList.contains('on'))renderLogicView();
    if(!runEngine.hashDone){runEngine.hashDone=true;
@@ -1922,7 +1922,7 @@ document.querySelectorAll('#setmenu .sm-r[data-fx]').forEach(r=>{
 if(LANG==='en'){
 const D={'로그인':'Sign in','시작하기':'Get started','테마':'Theme','● 다크':'● Dark',
  '○ 라이트':'○ Light','◈ 건담':'◈ Gundam','지역':'Region','언어':'Language',
- '바로가기':'Shortcuts','원장 열람':'Open the ledger','발동 달력':'Fire calendar','구독 안내':'Pricing',
+ '바로가기':'Shortcuts','원장 열람':'Open the ledger','활성 달력':'Activation calendar','구독 안내':'Pricing',
  '데이터와 원칙':'Data & principles','시세 색상':'Price colors',
  '자동 = 언어 관례 따라감 · 한국어는 빨강 상승, 영어는 초록 상승':'Auto = language custom · Korean red-up, English green-up',
  '자동 — 언어 따라감':'Auto — follows the language',
@@ -1945,12 +1945,12 @@ const D={'로그인':'Sign in','시작하기':'Get started','테마':'Theme','�
  '일정 · 이벤트':'Calendar · events','시장 · 시세':'Market · prices',
  '국면 · 동조도':'Regime · convergence','뉴스 · 관찰':'News · observation',
  '② 판정 — 수식에 지금 값을 대입':'② Judgment — live values into each formula',
- '③ 카드':'③ Cards','④ 파급 (발동 시)':'④ Spread (on fire)','✕ 닫기':'✕ Close',
- '발동':'FIRED','대기':'STANDBY','발동 조건':'Fire condition','발동하면':'When it fires',
- '채점':'Grading','발동 후의 관찰이 맞았는지 자동 채점되어 기록됩니다.':'After firing, the observation is auto-graded and archived.',
- '조건 충족 시 발동':'fires when the condition is met',
+ '③ 카드':'③ Cards','④ 파급 (활성 시)':'④ Spread (when active)','✕ 닫기':'✕ Close',
+ '활성':'ACTIVE','대기':'STANDBY','활성 조건':'Activation condition','활성되면':'When activated',
+ '채점':'Grading','활성 후의 관찰이 맞았는지 자동 채점되어 기록됩니다.':'After firing, the observation is auto-graded and archived.',
+ '조건 충족 시 활성':'activates when the condition is met',
  '지금 무대에서 파급 중':'spreading on the stage now',
- '발동 카드 없음 — 무소식도 기록됩니다':'No fired cards — silence is recorded too',
+ '활성 카드 없음 — 무소식도 기록됩니다':'No active cards yet — silence is recorded too',
  '대기 카드도 "왜 아직인지"가 수치로 보입니다 · 카드 클릭 = 완전한 이야기(고유 주소 #카드ID) ·':'Standby cards show why-not-yet in numbers · click a card = its full story (permalink #cardID) ·',
  '데이터와 원칙 →':'Data & principles →',
  '등록 이벤트 없음':'No registered event','활성 카드 없음':'No active cards',
@@ -1992,9 +1992,9 @@ const RX=[
  [/가장 가까운 사건↔관문/g,'nearest event↔gate'],
  [/(\d+)분 전/g,'$1m ago'],[/(\d+)시간 전/g,'$1h ago'],[/(\d+)일 전/g,'$1d ago'],
  [/방금/g,'just now'],[/재판독/g,'RE-READ'],[/수집/g,'fetched'],
- [/조건 충족 시 발동/g,'fires when the condition is met'],
+ [/조건 충족 시 활성/g,'activates when the condition is met'],
  [/연결 뉴스/g,'linked news'],[/심각도/g,'severity'],[/논조/g,'tone'],
- [/발동/g,'FIRED'],[/대기/g,'STANDBY'],[/지금/g,'now'],
+ [/활성/g,'ACTIVE'],[/대기/g,'STANDBY'],[/지금/g,'now'],
  [/(\d+)\s*건/g,'$1 hit(s)'],[/사건/g,'event'],[/관측 노드/g,'observation node'],
  [/최근/g,'recent'],[/상위/g,'top'],[/중앙값/g,'median'],[/지수/g,'index'],
  [/이동/g,'move'],[/코어/g,'core'],[/뉴스/g,'news'],[/진앙/g,'epicenter'],
