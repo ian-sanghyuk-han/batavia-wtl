@@ -87,6 +87,9 @@ if(EN){
   H[2].firstChild.nodeValue='Gates ';H[2].lastChild.nodeValue=' — multipliers over every card';
 }
 let D=null,FQ='',FF='';
+let SCORE=null;
+fetch('data/backtest/scorecard.json',{cache:'no-store'}).then(r=>r.json())
+  .then(s=>{SCORE=s;if(D)render();}).catch(()=>{});
 fetch('logic/ledger-full.json',{cache:'no-store'}).then(r=>r.json()).then(d=>{
   D=d;
   if(EN){const sw=o=>{['name','desc','note','formula'].forEach(k=>{if(o[k+'_en'])o[k]=o[k+'_en'];});};
@@ -123,7 +126,10 @@ function render(){
     `<div class="cd glass" style="border-left-color:${c.color}">`+
     `<div class="r1">${c.id} ${c.name}<span class="gr">${c.grade||''}</span>`+
     `${jd.has(c.id)?'<span class="live">'+(EN?'● judging live':'● 판정 가동')+'</span>':''}</div>`+
-    `<div class="meta">${fam(c.family)} · ${coreT(c.core)}${c.note?' · '+c.note:''}</div>`+
+    `<div class="meta">${fam(c.family)} · ${coreT(c.core)}${c.note?' · '+c.note:''}${
+      (SCORE&&SCORE.cards[c.id]&&SCORE.cards[c.id].graded)?
+      ` · <span style="color:var(--acc)">${EN?'history':'역사'} n=${SCORE.cards[c.id].graded} · ${
+        Math.round(100*SCORE.cards[c.id].rate)}% <small>(${EN?'est.':'추정'})</small></span>`:''}</div>`+
     (c.desc?`<div class="ds">${c.desc}</div>`:'')+`</div>`).join('')||`<div style="color:#5b6b7a;font-size:11px">${EN?'No results':'검색 결과 없음'}</div>`;
   const I=FF?[]:D.interactions.filter(match);
   $('ninter').textContent=`${I.length}/${D.interactions.length}`;

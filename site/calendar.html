@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- STATUS: FIRE CALENDAR v1 - phase 3 surface of the historical backtest.
+     Reads site/data/backtest/{fires.jsonl,scorecard.json} + ledger-full.json.
+     Everything here is a RECONSTRUCTION (est.) - kept separate from live grading. -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>BATAVIA PROJECT — Fire Calendar</title>
+<script>{const t=localStorage.getItem('bp-theme')||'dark';document.documentElement.dataset.theme=(t==='gundam'||t==='light')?'gundam':'dark';}</script>
+<style>
+  :root{--acc:#7FD8FF;--ink:#EAF9FF;--dim:#93a7b8;--mut:#5b6b7a;
+    --glass:rgba(7,11,17,.60);--edge:rgba(159,199,224,.20);
+    --g1:#123b2e;--g2:#1c6e4d;--g3:#2ba86e;--g4:#49e69a;--gh:#F5C518}
+  *{box-sizing:border-box}
+  body{margin:0;background:#05070c;color:var(--ink);font-family:'Segoe UI',system-ui,sans-serif}
+  .glass{background:var(--glass);border:1px solid var(--edge);backdrop-filter:blur(9px);border-radius:11px}
+  header{padding:18px 18px 8px;max-width:1080px;margin:0 auto}
+  header b{font:600 14px Consolas,monospace;letter-spacing:3px}
+  header small{display:block;color:var(--mut);font:10px Consolas,monospace;margin-top:4px}
+  header a{color:var(--acc);text-decoration:none;font:10px Consolas,monospace;float:right;margin-top:4px}
+  main{max-width:1080px;margin:0 auto;padding:8px 18px 44px}
+  h3{font:600 10px Consolas,monospace;letter-spacing:2px;color:var(--acc);margin:0 0 9px}
+  h3 small{color:var(--mut);letter-spacing:0;font-weight:400}
+  section{padding:14px 16px;margin-bottom:12px}
+  /* grass */
+  #grasswrap{overflow-x:auto}
+  #grass{display:grid;grid-auto-rows:10px;gap:2px;width:max-content}
+  .yr{font:8px Consolas,monospace;color:var(--mut);line-height:10px;padding-right:6px;text-align:right}
+  .cell{width:10px;height:10px;border-radius:2px;background:rgba(159,199,224,.07);cursor:pointer}
+  .c1{background:var(--g1)} .c2{background:var(--g2)} .c3{background:var(--g3)} .c4{background:var(--g4)}
+  .cell.sel{outline:2px solid var(--gh)}
+  #legend{margin-top:8px;font:9px Consolas,monospace;color:var(--mut);display:flex;gap:5px;align-items:center}
+  #legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+  /* day panel */
+  #day{display:none}
+  #day.on{display:block}
+  #dayhead{font:600 15px Consolas,monospace;letter-spacing:2px;margin-bottom:8px}
+  #dayhead .rp{float:right;font:10px Consolas,monospace;color:var(--acc);text-decoration:none}
+  .fire{border-left:3px solid var(--acc);background:rgba(159,199,224,.05);border-radius:7px;
+    padding:7px 10px;margin:7px 0}
+  .fire b{font:600 12px Consolas,monospace}
+  .fire .nm{font-size:12px;margin-left:6px}
+  .fire .nt{display:block;font:10px Consolas,monospace;color:var(--mut);margin-top:3px}
+  .fire .vd{float:right;font:600 10px Consolas,monospace;border-radius:6px;padding:1px 8px;
+    border:1px solid var(--edge);color:var(--mut)}
+  .fire .vd.ok{color:#3FE0A0;border-color:rgba(63,224,160,.5)}
+  .fire .vd.no{color:#FF6A6E;border-color:rgba(255,106,110,.5)}
+  /* barcode */
+  #codewrap{overflow-x:auto}
+  .fam{display:flex;align-items:center;gap:8px;margin:3px 0}
+  .fam .lb{flex:none;width:120px;font:9px Consolas,monospace;color:var(--dim);text-align:right}
+  .fam canvas{border-radius:4px;background:rgba(159,199,224,.04)}
+  /* scorecard */
+  table{width:100%;border-collapse:collapse;font-size:11.5px}
+  th{font:600 9px Consolas,monospace;letter-spacing:1px;color:var(--mut);text-align:left;
+    padding:5px 8px;border-bottom:1px solid var(--edge)}
+  td{padding:6px 8px;border-bottom:1px solid rgba(159,199,224,.08);color:#c5d7e4}
+  td b{color:#F4FBFF}
+  td .est{font-size:9px;color:var(--mut)}
+  .bar{display:inline-block;height:7px;border-radius:3px;background:var(--acc);vertical-align:middle}
+  footer{max-width:1080px;margin:0 auto;padding:0 18px 30px;font:9px Consolas,monospace;color:var(--mut);line-height:1.7}
+  /* light (gundam) */
+  html[data-theme="gundam"]{--acc:#2c52b3;--ink:#14283c;--dim:#3f5a7a;--mut:#5a708a;
+    --glass:rgba(252,253,255,.82);--edge:rgba(44,82,179,.28);
+    --g1:#a9c3ec;--g2:#6f97d8;--g3:#3a63b8;--g4:#16388f;--gh:#c99700}
+  html[data-theme="gundam"] body{background:#e9edf3;color:var(--ink)}
+  html[data-theme="gundam"] .glass{box-shadow:0 2px 12px rgba(44,82,179,.10)}
+  html[data-theme="gundam"] td{color:#2c4258}
+  html[data-theme="gundam"] td b{color:#14283c}
+  html[data-theme="gundam"] .cell{background:rgba(44,82,179,.08)}
+  html[data-theme="gundam"] .cell.c1{background:var(--g1)}
+  html[data-theme="gundam"] .cell.c2{background:var(--g2)}
+  html[data-theme="gundam"] .cell.c3{background:var(--g3)}
+  html[data-theme="gundam"] .cell.c4{background:var(--g4)}
+  html[data-theme="gundam"] .fire{background:rgba(44,82,179,.05)}
+  html[data-theme="gundam"] .fire .vd.ok{color:#1f9d63}
+  html[data-theme="gundam"] .fire .vd.no{color:#fb2f38}
+</style>
+</head>
+<body>
+<header>
+  <a href="./">← OBSERVATORY</a>
+  <b>BATAVIA PROJECT</b> · FIRE CALENDAR
+  <small id="hsub">every day the machine's cards fired, replayed over history — reconstructed · est. · separate from live grading</small>
+</header>
+<main>
+  <section class="glass">
+    <h3 id="t1">FIRE DENSITY BY DAY <small id="t1s">— darker = more cards fired · click a day</small></h3>
+    <div id="grasswrap"><div id="grass"></div></div>
+    <div id="legend"><span id="lgless">less</span>
+      <i style="background:rgba(159,199,224,.07)"></i><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i>
+      <span id="lgmore">more</span></div>
+  </section>
+  <section class="glass" id="day">
+    <div id="dayhead"><a class="rp" id="rplink" style="display:none">▶ REPLAY THIS ERA</a><span id="daydate">—</span></div>
+    <div id="daylist"></div>
+  </section>
+  <section class="glass">
+    <h3 id="t2">WHO FIRED WHEN <small id="t2s">— one lane per family · each tick is a fire</small></h3>
+    <div id="codewrap"><div id="lanes"></div></div>
+  </section>
+  <section class="glass">
+    <h3 id="t3">HISTORY REPORT CARD <small id="t3s">— per card: sample n · hit rate (est.)</small></h3>
+    <div style="overflow-x:auto"><table id="score"></table></div>
+  </section>
+</main>
+<footer id="foot">
+  This page is a machine reconstruction: triggers were applied to history AFTER the fact, with stated
+  substitutions (see repo: pipeline/backtest). It is published separately from the live preregistered
+  grading record and the two are never merged. No sentence here is an instruction to act.
+</footer>
+<script>
+const EN=(localStorage.getItem('bp-lang')||'en')==='en';
+document.documentElement.lang=EN?'en':'ko';
+if(!EN){
+  document.getElementById('hsub').textContent='기계의 카드가 발동했던 모든 날 — 재구성·추정 · 실시간 채점과 분리';
+  document.getElementById('t1').firstChild.textContent='일별 발동 밀도 ';
+  document.getElementById('t1s').textContent='— 진할수록 그날 발동 많음 · 칸을 클릭';
+  document.getElementById('t2').firstChild.textContent='누가 언제 발동했나 ';
+  document.getElementById('t2s').textContent='— 계열별 한 줄 · 눈금 하나 = 발동 한 번';
+  document.getElementById('t3').firstChild.textContent='역사 성적표 ';
+  document.getElementById('t3s').textContent='— 카드별 표본 n · 적중률 (추정)';
+  document.getElementById('lgless').textContent='적음';
+  document.getElementById('lgmore').textContent='많음';
+  document.getElementById('foot').textContent='이 페이지는 기계 재구성입니다: 트리거를 사후에 과거에 적용했고, 치환 사항은 저장소(pipeline/backtest)에 공개되어 있습니다. 실시간 사전등록 채점 기록과 분리 게시되며 둘은 합산되지 않습니다. 어떤 문장도 행동 지시가 아닙니다.';
+}
+const NOC={cache:'no-store'};
+const $=id=>document.getElementById(id);
+const FAMC={'성장':'#4FD8C0','고용':'#7FD8FF','물가':'#FF5D6E','금리':'#FF8A93','유동성':'#5B8DEF',
+ '포지셔닝':'#C79BFF','물리':'#D9A441','시장구조':'#A79BFF','이벤트':'#E8A33D'};
+const FAM_EN={'성장':'Growth','고용':'Jobs','물가':'Inflation','금리':'Rates','유동성':'Liquidity',
+ '포지셔닝':'Positioning','물리':'Physical','시장구조':'Market structure','이벤트':'Events'};
+/* replay scenarios: era windows that have a stage */
+const ERAS=[['2008-09-01','2008-11-15','R08'],['2016-06-15','2016-07-20','R16'],
+ ['2020-01-15','2020-04-01','R20'],['2022-06-01','2022-10-15','R22'],['2023-03-01','2023-03-31','R23']];
+Promise.all([
+ fetch('data/backtest/fires.jsonl',NOC).then(r=>r.text()),
+ fetch('data/backtest/scorecard.json',NOC).then(r=>r.json()),
+ fetch('logic/ledger-full.json',NOC).then(r=>r.json())
+]).then(([ftxt,score,led])=>{
+ const FIRES=ftxt.trim().split(/\r?\n/).map(l=>JSON.parse(l));
+ const CARD={};led.cards.forEach(c=>CARD[c.id]=c);
+ const nameOf=id=>{const c=CARD[id];if(!c)return id;
+   return EN&&c.name_en?c.name_en:c.name;};
+ const famOf=id=>(CARD[id]||{}).family||'';
+ const byDay={};FIRES.forEach(f=>(byDay[f.date]=byDay[f.date]||[]).push(f));
+ /* ── grass: one row per year, one cell per week ── */
+ const years=[...new Set(FIRES.map(f=>+f.date.slice(0,4)))].filter(y=>y>=1998).sort();
+ const g=$('grass');g.style.gridTemplateColumns='auto repeat(53,10px)';
+ const cells={};
+ years.forEach(y=>{
+   const yl=document.createElement('div');yl.className='yr';yl.textContent=y;g.appendChild(yl);
+   for(let w=0;w<53;w++){
+     const d=document.createElement('div');d.className='cell';d.dataset.y=y;d.dataset.w=w;
+     g.appendChild(d);cells[y+'-'+w]=d;}});
+ const week=ds=>{const dt=new Date(ds+'T00:00:00Z');
+   const jan1=new Date(Date.UTC(dt.getUTCFullYear(),0,1));
+   return Math.min(52,Math.floor((dt-jan1)/864e5/7));};
+ const wcount={},wdays={};
+ Object.keys(byDay).forEach(ds=>{
+   const y=+ds.slice(0,4);if(y<1998)return;
+   const k=y+'-'+week(ds);
+   wcount[k]=(wcount[k]||0)+byDay[ds].length;
+   (wdays[k]=wdays[k]||[]).push(ds);});
+ Object.keys(wcount).forEach(k=>{
+   const c=cells[k];if(!c)return;
+   const n=wcount[k];
+   c.classList.add(n>=5?'c4':n>=3?'c3':n>=2?'c2':'c1');
+   c.title=wdays[k].sort().map(ds=>ds+' · '+byDay[ds].map(f=>f.card).join(', ')).join('\n');
+   c.addEventListener('click',()=>showWeek(k,c));});
+ let selCell=null;
+ function showWeek(k,cell){
+   if(selCell)selCell.classList.remove('sel');
+   selCell=cell;cell.classList.add('sel');
+   const days=wdays[k].sort();
+   $('day').classList.add('on');
+   $('daydate').textContent=days[0]+(days.length>1?' ~ '+days[days.length-1].slice(5):'');
+   const rows=[];
+   days.forEach(ds=>byDay[ds].forEach(f=>{
+     const vd=f.hit===true?'<span class="vd ok">✓ '+(EN?'hit':'적중')+'</span>'
+        :f.hit===false?'<span class="vd no">✗ '+(EN?'miss':'빗나감')+'</span>'
+        :'<span class="vd">—</span>';
+     rows.push('<div class="fire" style="border-left-color:'+(FAMC[famOf(f.card)]||'#7FD8FF')+'">'
+       +vd+'<b>'+f.card+'</b><span class="nm">'+nameOf(f.card)+'</span>'
+       +'<span class="nt">'+ds+' · '+f.note
+       +(f.ret!=null?' · '+(EN?'window':'창')+' '+f.w[1]+'d → '+(100*f.ret).toFixed(1)
+         +(f.tgt&&f.tgt.indexOf('fred')===0?'':'%'):'')+'</span></div>');}));
+   $('daylist').innerHTML=rows.join('');
+   const era=ERAS.find(e=>days[0]>=e[0]&&days[0]<=e[1]);
+   const rp=$('rplink');
+   if(era){rp.style.display='';rp.href='replay.html';
+     rp.textContent=(EN?'▶ REPLAY THIS ERA':'▶ 이 시기 리플레이')+' ('+era[2]+')';}
+   else rp.style.display='none';
+   $('day').scrollIntoView({behavior:'smooth',block:'nearest'});}
+ /* ── family barcode lanes ── */
+ const fams=[...new Set(FIRES.map(f=>famOf(f.card)))].filter(Boolean);
+ const T0=new Date('1998-01-01').getTime(),T1=new Date('2026-12-31').getTime();
+ const W=940,H=16;
+ fams.forEach(fm=>{
+   const row=document.createElement('div');row.className='fam';
+   const lb=document.createElement('div');lb.className='lb';
+   lb.textContent=EN?(FAM_EN[fm]||fm):fm;row.appendChild(lb);
+   const cv=document.createElement('canvas');cv.width=W;cv.height=H;row.appendChild(cv);
+   const x=cv.getContext('2d');x.fillStyle=FAMC[fm]||'#7FD8FF';x.globalAlpha=.85;
+   FIRES.filter(f=>famOf(f.card)===fm).forEach(f=>{
+     const t=new Date(f.date).getTime();
+     if(t<T0)return;
+     x.fillRect((t-T0)/(T1-T0)*W,2,1.6,H-4);});
+   $('lanes').appendChild(row);});
+ /* ── scorecard table ── */
+ const ids=Object.keys(score.cards).sort((a,b)=>score.cards[b].graded-score.cards[a].graded);
+ const th=EN?'<tr><th>CARD</th><th>NAME</th><th>n</th><th>HIT</th><th></th><th>PRE/POST 2015</th><th>CONV≥.55</th></tr>'
+           :'<tr><th>카드</th><th>이름</th><th>n</th><th>적중</th><th></th><th>2015 전/후</th><th>수렴≥.55</th></tr>';
+ $('score').innerHTML=th+ids.map(id=>{
+   const c=score.cards[id];
+   const pct=c.rate==null?'—':(100*c.rate).toFixed(0)+'%';
+   const era=c.era.pre2015[0]+c.era.post2015[0]?
+     (c.era.pre2015[0]?Math.round(100*c.era.pre2015[1]/Math.max(1,c.era.pre2015[0]))+'%':'—')+' / '+
+     (c.era.post2015[0]?Math.round(100*c.era.post2015[1]/Math.max(1,c.era.post2015[0]))+'%':'—'):'—';
+   const cv=c.gate.conv_hi[0]?Math.round(100*c.gate.conv_hi[1]/c.gate.conv_hi[0])+'% (n='+c.gate.conv_hi[0]+')':'—';
+   return '<tr><td><b>'+id+'</b></td><td>'+nameOf(id)+'</td><td>'+c.graded+'</td>'
+     +'<td><b>'+pct+'</b> <span class="est">est.</span></td>'
+     +'<td><span class="bar" style="width:'+(c.rate?Math.round(c.rate*60):0)+'px"></span></td>'
+     +'<td>'+era+'</td><td>'+cv+'</td></tr>';}).join('');
+});
+</script>
+<script src="page-chrome.js" defer></script>
+</body>
+</html>
