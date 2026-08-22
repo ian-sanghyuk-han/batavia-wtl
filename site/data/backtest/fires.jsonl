@@ -19,6 +19,7 @@
 {"card": "L-EMP-002", "date": "1991-11-01", "note": "naiveSDS=1.15", "w": [0, 0], "tgt": "fred_DGS2", "dir": "up", "ret": -0.05, "hit": false, "conv": null, "H": null}
 {"card": "L-PHY-006", "date": "1991-11-01", "note": "noaa_ONI=1.18", "w": [21, 189], "tgt": "yh_SB_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-INF-001", "date": "1991-12-12", "note": "naiveSDS=1.74", "w": [0, 3], "tgt": "fred_DGS2", "dir": "up", "ret": 0.03, "hit": true, "conv": null, "H": null}
+{"card": "L-PHY-005", "date": "1991-12-27", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-RAT-003", "date": "1992-01-30", "note": "d20=+60bp", "w": [0, 14], "tgt": "yh_XLK", "dir": "down", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-EMP-002", "date": "1992-04-03", "note": "naiveSDS=1.05", "w": [0, 0], "tgt": "fred_DGS2", "dir": "up", "ret": -0.18, "hit": false, "conv": null, "H": null}
 {"card": "L-INF-001", "date": "1992-04-12", "note": "naiveSDS=1.08", "w": [0, 3], "tgt": "fred_DGS2", "dir": "up", "ret": 0.06, "hit": true, "conv": null, "H": null}
@@ -28,8 +29,10 @@
 {"card": "L-RAT-003", "date": "1992-10-30", "note": "d20=+57bp", "w": [0, 14], "tgt": "yh_XLK", "dir": "down", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-INF-005", "date": "1992-11-01", "note": "fred_EXPINF5YR=3.31", "w": [0, 21], "tgt": "fred_DGS2", "dir": "up", "ret": 0.26, "hit": true, "conv": null, "H": null}
 {"card": "L-EMP-002", "date": "1992-11-06", "note": "naiveSDS=2.18", "w": [0, 0], "tgt": "fred_DGS2", "dir": "up", "ret": 0.09, "hit": true, "conv": null, "H": null}
+{"card": "L-PHY-005", "date": "1992-11-06", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-INF-001", "date": "1992-11-12", "note": "naiveSDS=1.96", "w": [0, 3], "tgt": "fred_DGS2", "dir": "up", "ret": 0.1, "hit": true, "conv": null, "H": null}
 {"card": "L-EMP-002", "date": "1992-12-04", "note": "naiveSDS=1.09", "w": [0, 0], "tgt": "fred_DGS2", "dir": "up", "ret": -0.08, "hit": false, "conv": null, "H": null}
+{"card": "L-PHY-005", "date": "1992-12-25", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-EMP-002", "date": "1993-01-01", "note": "naiveSDS=2.12", "w": [0, 0], "tgt": "fred_DGS2", "dir": "up", "ret": 0.0, "hit": false, "conv": null, "H": null}
 {"card": "L-EMP-002", "date": "1993-02-05", "note": "naiveSDS=2.62", "w": [0, 0], "tgt": "fred_DGS2", "dir": "up", "ret": -0.12, "hit": false, "conv": null, "H": null}
 {"card": "L-INF-001", "date": "1993-02-12", "note": "naiveSDS=1.20", "w": [0, 3], "tgt": "fred_DGS2", "dir": "up", "ret": 0.0, "hit": false, "conv": null, "H": null}
@@ -55,35 +58,53 @@
 {"card": "L-GRO-005", "date": "1994-04-15", "note": "naiveSDS=1.20", "w": [0, 3], "tgt": "yh_XLY", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-RAT-003", "date": "1994-04-18", "note": "d20=+65bp", "w": [0, 14], "tgt": "yh_XLK", "dir": "down", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-INF-004", "date": "1994-05-06", "note": "60d=25%", "w": [21, 42], "tgt": "fred_DGS10", "dir": "up", "ret": -0.21, "hit": false, "conv": null, "H": null}
+{"card": "L-PHY-005", "date": "1994-05-06", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-RAT-003", "date": "1994-05-09", "note": "d20=+55bp", "w": [0, 14], "tgt": "yh_XLK", "dir": "down", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-EMP-003", "date": "1994-05-21", "note": "4wMA 358000 vs low 323000", "w": [0, 63], "tgt": "yh_TLT", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
+{"card": "L-PHY-005", "date": "1994-06-03", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-INF-004", "date": "1994-06-17", "note": "60d=26%", "w": [21, 42], "tgt": "fred_DGS10", "dir": "up", "ret": -0.02, "hit": false, "conv": null, "H": null}
 {"card": "L-INF-001", "date": "1994-08-12", "note": "naiveSDS=1.26", "w": [0, 3], "tgt": "fred_DGS2", "dir": "up", "ret": 0.04, "hit": true, "conv": null, "H": null}
+{"card": "L-PHY-005", "date": "1994-08-26", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-INF-001", "date": "1994-09-12", "note": "naiveSDS=1.68", "w": [0, 3], "tgt": "fred_DGS2", "dir": "up", "ret": -0.09, "hit": false, "conv": null, "H": null}
 {"card": "L-GRO-005", "date": "1994-09-15", "note": "naiveSDS=1.29", "w": [0, 3], "tgt": "yh_XLY", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-EMP-004", "date": "1994-10-01", "note": "gap=2.3pp x2q", "w": [0, 252], "tgt": "yh_SPY", "dir": "down", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-EMP-002", "date": "1994-12-02", "note": "naiveSDS=1.39", "w": [0, 0], "tgt": "fred_DGS2", "dir": "up", "ret": 0.02, "hit": true, "conv": null, "H": null}
+{"card": "L-PHY-005", "date": "1995-02-10", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-EMP-003", "date": "1995-05-06", "note": "4wMA 358250 vs low 323000", "w": [0, 63], "tgt": "yh_TLT", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-INF-001", "date": "1995-05-12", "note": "naiveSDS=1.80", "w": [0, 3], "tgt": "fred_DGS2", "dir": "up", "ret": -0.04, "hit": false, "conv": null, "H": null}
 {"card": "L-GRO-005", "date": "1995-06-15", "note": "naiveSDS=1.40", "w": [0, 3], "tgt": "yh_XLY", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
+{"card": "L-PHY-005", "date": "1995-06-16", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
+{"card": "L-PHY-005", "date": "1995-07-14", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-INF-005", "date": "1995-08-01", "note": "fred_EXPINF5YR=3.21", "w": [0, 21], "tgt": "fred_DGS2", "dir": "up", "ret": 0.16, "hit": true, "conv": null, "H": null}
+{"card": "L-PHY-005", "date": "1995-08-18", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-EMP-003", "date": "1995-08-26", "note": "4wMA 356250 vs low 323000", "w": [0, 63], "tgt": "yh_TLT", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
+{"card": "L-PHY-005", "date": "1995-09-15", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
+{"card": "L-PHY-005", "date": "1995-10-13", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
+{"card": "L-PHY-005", "date": "1995-12-08", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-GRO-005", "date": "1995-12-15", "note": "naiveSDS=1.58", "w": [0, 3], "tgt": "yh_XLY", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
+{"card": "L-PHY-005", "date": "1996-01-05", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-INF-002", "date": "1996-01-13", "note": "gap=1.5pp", "w": [0, 63], "tgt": "fred_DGS10", "dir": "up", "ret": 0.71, "hit": true, "conv": null, "H": null}
+{"card": "L-PHY-005", "date": "1996-02-02", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-INF-001", "date": "1996-02-12", "note": "naiveSDS=4.09", "w": [0, 3], "tgt": "fred_DGS2", "dir": "up", "ret": 0.04, "hit": true, "conv": null, "H": null}
 {"card": "L-RAT-003", "date": "1996-02-29", "note": "d20=+53bp", "w": [0, 14], "tgt": "yh_XLK", "dir": "down", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-EMP-002", "date": "1996-03-01", "note": "naiveSDS=3.10", "w": [0, 0], "tgt": "fred_DGS2", "dir": "up", "ret": -0.18, "hit": false, "conv": null, "H": null}
+{"card": "L-PHY-005", "date": "1996-03-01", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-RAT-003", "date": "1996-03-14", "note": "d20=+74bp", "w": [0, 14], "tgt": "yh_XLK", "dir": "down", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-GRO-005", "date": "1996-03-15", "note": "naiveSDS=1.35", "w": [0, 3], "tgt": "yh_XLY", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-INF-004", "date": "1996-03-18", "note": "60d=25%", "w": [21, 42], "tgt": "fred_DGS10", "dir": "up", "ret": 0.16, "hit": true, "conv": null, "H": null}
+{"card": "L-PHY-005", "date": "1996-03-29", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
+{"card": "L-PHY-005", "date": "1996-04-26", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-INF-005", "date": "1996-05-01", "note": "fred_EXPINF5YR=3.29", "w": [0, 21], "tgt": "fred_DGS2", "dir": "up", "ret": 0.0, "hit": false, "conv": null, "H": null}
 {"card": "L-RAT-003", "date": "1996-05-02", "note": "d20=+52bp", "w": [0, 14], "tgt": "yh_XLK", "dir": "down", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-INF-001", "date": "1996-05-12", "note": "naiveSDS=1.29", "w": [0, 3], "tgt": "fred_DGS2", "dir": "up", "ret": -0.03, "hit": false, "conv": null, "H": null}
 {"card": "L-EMP-002", "date": "1996-06-07", "note": "naiveSDS=1.41", "w": [0, 0], "tgt": "fred_DGS2", "dir": "up", "ret": 0.24, "hit": true, "conv": null, "H": null}
+{"card": "L-PHY-005", "date": "1996-06-14", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-MKT-007", "date": "1996-09-30", "note": "IV-RV=8.7p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 9.0, "hit": true, "conv": null, "H": null}
 {"card": "L-GRO-005", "date": "1996-10-15", "note": "naiveSDS=1.01", "w": [0, 3], "tgt": "yh_XLY", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-MKT-007", "date": "1996-10-31", "note": "IV-RV=10.0p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 10.61, "hit": true, "conv": null, "H": null}
+{"card": "L-PHY-005", "date": "1996-11-22", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-MKT-007", "date": "1996-11-29", "note": "IV-RV=9.6p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 3.88, "hit": true, "conv": null, "H": null}
+{"card": "L-PHY-005", "date": "1996-12-20", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": null}
 {"card": "L-MKT-007", "date": "1996-12-31", "note": "IV-RV=6.3p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 9.0, "hit": true, "conv": null, "H": null}
 {"card": "L-INF-005", "date": "1997-01-01", "note": "fred_EXPINF5YR=3.25", "w": [0, 21], "tgt": "fred_DGS2", "dir": "up", "ret": 0.12, "hit": true, "conv": null, "H": null}
 {"card": "L-MKT-007", "date": "1997-01-31", "note": "IV-RV=8.3p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 5.84, "hit": true, "conv": null, "H": null}
@@ -97,6 +118,7 @@
 {"card": "L-MKT-007", "date": "1997-07-31", "note": "IV-RV=7.3p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 4.46, "hit": true, "conv": null, "H": 0.57}
 {"card": "L-GRO-005", "date": "1997-08-15", "note": "naiveSDS=1.06", "w": [0, 3], "tgt": "yh_XLY", "dir": "up", "ret": null, "hit": null, "conv": null, "H": 0.589}
 {"card": "L-MKT-007", "date": "1997-08-29", "note": "IV-RV=7.7p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 7.43, "hit": true, "conv": null, "H": 0.589}
+{"card": "L-PHY-005", "date": "1997-09-05", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": 0.589}
 {"card": "L-MKT-007", "date": "1997-09-30", "note": "IV-RV=8.7p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": -11.05, "hit": false, "conv": null, "H": 0.568}
 {"card": "L-EMP-002", "date": "1997-10-03", "note": "naiveSDS=2.74", "w": [0, 0], "tgt": "fred_DGS2", "dir": "up", "ret": -0.01, "hit": false, "conv": null, "H": 0.568}
 {"card": "L-MKT-007", "date": "1997-11-28", "note": "IV-RV=9.2p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 13.28, "hit": true, "conv": null, "H": 0.492}
@@ -152,6 +174,7 @@
 {"card": "L-MKT-007", "date": "1999-12-31", "note": "IV-RV=13.7p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 1.12, "hit": true, "conv": null, "H": 0.559}
 {"card": "L-RAT-003", "date": "2000-01-05", "note": "d20=+51bp", "w": [0, 14], "tgt": "yh_XLK", "dir": "down", "ret": 0.02712, "hit": false, "conv": null, "H": 0.559}
 {"card": "L-GRO-005", "date": "2000-01-15", "note": "naiveSDS=3.30", "w": [0, 3], "tgt": "yh_XLY", "dir": "up", "ret": -0.0057, "hit": false, "conv": null, "H": 0.52}
+{"card": "L-PHY-005", "date": "2000-01-28", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": 0.52}
 {"card": "L-MKT-006", "date": "2000-01-31", "note": "top:XLK,XLB,XLI", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": 0.07152, "hit": true, "conv": null, "H": 0.52}
 {"card": "L-EVT-001", "date": "2000-02-01", "note": "FOMC 2000-02-02", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": 0.00985, "hit": true, "conv": null, "H": 0.52}
 {"card": "L-RAT-001", "date": "2000-02-02", "note": "fred_T10Y2Y=-0.03", "w": [126, 504], "tgt": "USREC", "dir": "recession", "ret": null, "hit": true, "conv": null, "H": 0.52}
@@ -168,28 +191,34 @@
 {"card": "L-RAT-003", "date": "2000-05-18", "note": "d20=+57bp", "w": [0, 14], "tgt": "yh_XLK", "dir": "down", "ret": 0.01917, "hit": false, "conv": null, "H": 0.466}
 {"card": "L-MKT-006", "date": "2000-05-31", "note": "top:XLK,XLV,XLE", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.01579, "hit": false, "conv": null, "H": 0.466}
 {"card": "L-INF-004", "date": "2000-06-09", "note": "60d=26%", "w": [21, 42], "tgt": "fred_DGS10", "dir": "up", "ret": -0.12, "hit": false, "conv": null, "H": 0.466}
+{"card": "L-PHY-005", "date": "2000-06-16", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": 0.446}
 {"card": "L-EVT-001", "date": "2000-06-27", "note": "FOMC 2000-06-28", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": -0.00737, "hit": false, "conv": null, "H": 0.446}
 {"card": "L-MKT-006", "date": "2000-06-30", "note": "top:XLK,XLE,XLV", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": 0.05991, "hit": true, "conv": null, "H": 0.446}
 {"card": "L-MKT-007", "date": "2000-06-30", "note": "IV-RV=5.5p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 3.36, "hit": true, "conv": null, "H": 0.446}
 {"card": "L-INF-001", "date": "2000-07-12", "note": "naiveSDS=1.85", "w": [0, 3], "tgt": "fred_DGS2", "dir": "up", "ret": 0.07, "hit": true, "conv": null, "H": 0.448}
 {"card": "L-EMP-003", "date": "2000-07-15", "note": "4wMA 293250 vs low 266250", "w": [0, 63], "tgt": "yh_TLT", "dir": "up", "ret": null, "hit": null, "conv": null, "H": 0.448}
+{"card": "L-PHY-005", "date": "2000-07-28", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": null, "hit": null, "conv": null, "H": 0.448}
 {"card": "L-MKT-006", "date": "2000-07-31", "note": "top:XLK,XLE,XLV", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": 0.01395, "hit": true, "conv": null, "H": 0.448}
 {"card": "L-MKT-007", "date": "2000-07-31", "note": "IV-RV=4.6p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 10.63, "hit": true, "conv": null, "H": 0.448}
 {"card": "L-EVT-001", "date": "2000-08-21", "note": "FOMC 2000-08-22", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": 0.00543, "hit": true, "conv": null, "H": 0.465}
 {"card": "L-MKT-006", "date": "2000-08-31", "note": "top:XLK,XLF,XLV", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.12102, "hit": false, "conv": null, "H": 0.465}
 {"card": "L-MKT-007", "date": "2000-08-31", "note": "IV-RV=6.7p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 3.34, "hit": true, "conv": null, "H": 0.465}
 {"card": "L-EVT-004", "date": "2000-09-08", "note": "election 2000-11-07", "w": [0, 60], "tgt": "^VIX", "dir": "up", "ret": 6.11, "hit": true, "conv": null, "H": 0.465}
+{"card": "L-PHY-005", "date": "2000-09-15", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": -0.02232, "hit": false, "conv": null, "H": 0.464}
 {"card": "L-INF-004", "date": "2000-09-20", "note": "60d=30%", "w": [21, 42], "tgt": "fred_DGS10", "dir": "up", "ret": -0.17, "hit": false, "conv": null, "H": 0.464}
 {"card": "L-MKT-006", "date": "2000-09-29", "note": "top:XLK,XLF,XLE", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.17099, "hit": false, "conv": null, "H": 0.464}
 {"card": "L-MKT-007", "date": "2000-09-29", "note": "IV-RV=7.1p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": -3.98, "hit": false, "conv": null, "H": 0.464}
 {"card": "L-EVT-001", "date": "2000-10-02", "note": "FOMC 2000-10-03", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": 0.00152, "hit": true, "conv": null, "H": 0.464}
 {"card": "L-INF-001", "date": "2000-10-12", "note": "naiveSDS=1.27", "w": [0, 3], "tgt": "fred_DGS2", "dir": "up", "ret": -0.02, "hit": false, "conv": null, "H": 0.5}
+{"card": "L-PHY-005", "date": "2000-10-13", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": -0.02739, "hit": false, "conv": null, "H": 0.5}
 {"card": "L-MKT-006", "date": "2000-10-31", "note": "top:XLF,XLE,XLU", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.05298, "hit": false, "conv": null, "H": 0.5}
 {"card": "L-EVT-001", "date": "2000-11-14", "note": "FOMC 2000-11-15", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": 0.02628, "hit": true, "conv": null, "H": 0.521}
 {"card": "L-MKT-006", "date": "2000-11-30", "note": "top:XLE,XLU,XLI", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.11558, "hit": false, "conv": null, "H": 0.521}
 {"card": "L-MKT-007", "date": "2000-11-30", "note": "IV-RV=10.3p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 3.88, "hit": true, "conv": null, "H": 0.521}
+{"card": "L-PHY-005", "date": "2000-12-08", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": -0.01754, "hit": false, "conv": null, "H": 0.481}
 {"card": "L-EVT-001", "date": "2000-12-18", "note": "FOMC 2000-12-19", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": 0.01336, "hit": true, "conv": null, "H": 0.481}
 {"card": "L-MKT-006", "date": "2000-12-29", "note": "top:XLU,XLE,XLP", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.01617, "hit": false, "conv": null, "H": 0.481}
+{"card": "L-PHY-005", "date": "2001-01-26", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": -0.02619, "hit": false, "conv": null, "H": 0.427}
 {"card": "L-EVT-001", "date": "2001-01-30", "note": "FOMC 2001-01-31", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": 0.00878, "hit": true, "conv": null, "H": 0.427}
 {"card": "L-MKT-006", "date": "2001-01-31", "note": "top:XLF,XLU,XLE", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": 0.11187, "hit": true, "conv": null, "H": 0.427}
 {"card": "L-INF-001", "date": "2001-02-12", "note": "naiveSDS=1.43", "w": [0, 3], "tgt": "fred_DGS2", "dir": "up", "ret": 0.22, "hit": true, "conv": null, "H": 0.445}
@@ -249,6 +278,7 @@
 {"card": "L-EVT-001", "date": "2002-08-12", "note": "FOMC 2002-08-13", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": -0.00734, "hit": false, "conv": null, "H": 0.532}
 {"card": "L-MKT-006", "date": "2002-08-30", "note": "top:XLB,XLV,XLP", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": 0.00495, "hit": true, "conv": null, "H": 0.572}
 {"card": "L-EMP-002", "date": "2002-09-06", "note": "naiveSDS=1.16", "w": [0, 0], "tgt": "fred_DGS2", "dir": "up", "ret": 0.13, "hit": true, "conv": null, "H": 0.572}
+{"card": "L-PHY-005", "date": "2002-09-20", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": -0.00804, "hit": false, "conv": null, "H": 0.542}
 {"card": "L-EVT-001", "date": "2002-09-23", "note": "FOMC 2002-09-24", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": -0.00818, "hit": false, "conv": null, "H": 0.542}
 {"card": "L-MKT-006", "date": "2002-09-30", "note": "top:XLV,XLY,XLB", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.04521, "hit": false, "conv": null, "H": 0.542}
 {"card": "L-MKT-007", "date": "2002-09-30", "note": "IV-RV=10.4p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 6.08, "hit": true, "conv": null, "H": 0.542}
@@ -260,8 +290,10 @@
 {"card": "L-MKT-006", "date": "2002-11-29", "note": "top:XLV,XLY,XLF", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": 0.00695, "hit": true, "conv": null, "H": 0.529}
 {"card": "L-MKT-007", "date": "2002-11-29", "note": "IV-RV=4.3p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 10.15, "hit": true, "conv": null, "H": 0.529}
 {"card": "L-EVT-001", "date": "2002-12-09", "note": "FOMC 2002-12-10", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": -0.02749, "hit": false, "conv": null, "H": 0.529}
+{"card": "L-PHY-005", "date": "2002-12-13", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": 0.11392, "hit": true, "conv": null, "H": 0.529}
 {"card": "L-MKT-006", "date": "2002-12-31", "note": "top:XLV,XLB,XLY", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.00652, "hit": false, "conv": null, "H": 0.49}
 {"card": "L-MKT-007", "date": "2002-12-31", "note": "IV-RV=11.0p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 3.75, "hit": true, "conv": null, "H": 0.49}
+{"card": "L-PHY-005", "date": "2003-01-10", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": 0.10859, "hit": true, "conv": null, "H": 0.49}
 {"card": "L-GRO-005", "date": "2003-01-15", "note": "naiveSDS=1.01", "w": [0, 3], "tgt": "yh_XLY", "dir": "up", "ret": -0.0137, "hit": false, "conv": null, "H": 0.49}
 {"card": "L-INF-004", "date": "2003-01-15", "note": "60d=27%", "w": [21, 42], "tgt": "fred_DGS10", "dir": "up", "ret": -0.32, "hit": false, "conv": null, "H": 0.49}
 {"card": "L-EVT-001", "date": "2003-01-28", "note": "FOMC 2003-01-29", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": 0.00739, "hit": true, "conv": null, "H": 0.531}
@@ -270,22 +302,27 @@
 {"card": "L-INF-003", "date": "2003-02-04", "note": "d20=21bp", "w": [0, 14], "tgt": "yh_XLE", "dir": "up", "ret": -0.01222, "hit": false, "conv": null, "H": 0.531}
 {"card": "L-RAT-002", "date": "2003-02-04", "note": "d20=-34bp", "w": [0, 28], "tgt": "yh_GC_F", "dir": "up", "ret": -0.06807, "hit": false, "conv": null, "H": 0.531}
 {"card": "L-EMP-002", "date": "2003-02-07", "note": "naiveSDS=1.95", "w": [0, 0], "tgt": "fred_DGS2", "dir": "up", "ret": -0.05, "hit": false, "conv": null, "H": 0.531}
+{"card": "L-PHY-005", "date": "2003-02-07", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": 0.07574, "hit": true, "conv": null, "H": 0.531}
 {"card": "L-INF-001", "date": "2003-02-12", "note": "naiveSDS=2.47", "w": [0, 3], "tgt": "fred_DGS2", "dir": "up", "ret": 0.0, "hit": false, "conv": null, "H": 0.531}
 {"card": "L-INF-003", "date": "2003-02-20", "note": "d20=22bp", "w": [0, 14], "tgt": "yh_XLE", "dir": "up", "ret": 0.03908, "hit": true, "conv": null, "H": 0.559}
 {"card": "L-MKT-006", "date": "2003-02-28", "note": "top:XLV,XLB,XLF", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": 0.0166, "hit": true, "conv": null, "H": 0.559}
 {"card": "L-MKT-007", "date": "2003-02-28", "note": "IV-RV=11.1p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 2.7, "hit": true, "conv": null, "H": 0.559}
 {"card": "L-RAT-002", "date": "2003-03-04", "note": "d20=-43bp", "w": [0, 28], "tgt": "yh_GC_F", "dir": "up", "ret": -0.05351, "hit": false, "conv": null, "H": 0.559}
+{"card": "L-PHY-005", "date": "2003-03-07", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": -0.24246, "hit": false, "conv": null, "H": 0.559}
 {"card": "L-INF-001", "date": "2003-03-12", "note": "naiveSDS=2.80", "w": [0, 3], "tgt": "fred_DGS2", "dir": "up", "ret": 0.11, "hit": true, "conv": null, "H": 0.559}
 {"card": "L-EVT-001", "date": "2003-03-17", "note": "FOMC 2003-03-18", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": 0.0315, "hit": true, "conv": null, "H": 0.559}
 {"card": "L-MKT-006", "date": "2003-03-31", "note": "top:XLV,XLE,XLF", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.06431, "hit": false, "conv": null, "H": 0.505}
 {"card": "L-INF-002", "date": "2003-04-13", "note": "gap=2.4pp", "w": [0, 63], "tgt": "fred_DGS10", "dir": "up", "ret": -0.87, "hit": false, "conv": null, "H": 0.505}
 {"card": "L-MKT-006", "date": "2003-04-30", "note": "top:XLV,XLE,XLB", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.02746, "hit": false, "conv": null, "H": 0.518}
 {"card": "L-EVT-001", "date": "2003-05-05", "note": "FOMC 2003-05-06", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": -0.00193, "hit": false, "conv": null, "H": 0.518}
+{"card": "L-PHY-005", "date": "2003-05-09", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": 0.12843, "hit": true, "conv": null, "H": 0.518}
 {"card": "L-RAT-002", "date": "2003-05-14", "note": "d20=-31bp", "w": [0, 28], "tgt": "yh_GC_F", "dir": "up", "ret": 0.00908, "hit": true, "conv": null, "H": 0.518}
 {"card": "L-MKT-006", "date": "2003-05-30", "note": "top:XLV,XLF,XLK", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": 0.06444, "hit": true, "conv": null, "H": 0.529}
+{"card": "L-PHY-005", "date": "2003-06-06", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": -0.02749, "hit": false, "conv": null, "H": 0.529}
 {"card": "L-RAT-002", "date": "2003-06-11", "note": "d20=-32bp", "w": [0, 28], "tgt": "yh_GC_F", "dir": "up", "ret": -0.03347, "hit": false, "conv": null, "H": 0.529}
 {"card": "L-EVT-001", "date": "2003-06-24", "note": "FOMC 2003-06-25", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": 0.00102, "hit": true, "conv": null, "H": 0.563}
 {"card": "L-MKT-006", "date": "2003-06-30", "note": "top:XLV,XLF,XLK", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.00513, "hit": false, "conv": null, "H": 0.563}
+{"card": "L-PHY-005", "date": "2003-07-04", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": 0.06213, "hit": true, "conv": null, "H": 0.563}
 {"card": "L-RAT-003", "date": "2003-07-09", "note": "d20=+53bp", "w": [0, 14], "tgt": "yh_XLK", "dir": "down", "ret": -0.03025, "hit": true, "conv": null, "H": 0.563}
 {"card": "L-GRO-005", "date": "2003-07-15", "note": "naiveSDS=1.22", "w": [0, 3], "tgt": "yh_XLY", "dir": "up", "ret": -0.00789, "hit": false, "conv": null, "H": 0.563}
 {"card": "L-INF-003", "date": "2003-07-15", "note": "d20=29bp", "w": [0, 14], "tgt": "yh_XLE", "dir": "up", "ret": -0.01288, "hit": false, "conv": null, "H": 0.563}
@@ -296,6 +333,7 @@
 {"card": "L-RAT-003", "date": "2003-08-06", "note": "d20=+59bp", "w": [0, 14], "tgt": "yh_XLK", "dir": "down", "ret": 0.05627, "hit": false, "conv": 0.156, "H": 0.516}
 {"card": "L-EVT-001", "date": "2003-08-11", "note": "FOMC 2003-08-12", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": 0.00376, "hit": true, "conv": 0.154, "H": 0.516}
 {"card": "L-INF-003", "date": "2003-08-12", "note": "d20=20bp", "w": [0, 14], "tgt": "yh_XLE", "dir": "up", "ret": 0.00083, "hit": true, "conv": 0.154, "H": 0.516}
+{"card": "L-PHY-005", "date": "2003-08-15", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": -0.08953, "hit": false, "conv": 0.139, "H": 0.516}
 {"card": "L-MKT-006", "date": "2003-08-29", "note": "top:XLK,XLY,XLF", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": 0.02013, "hit": true, "conv": 0.125, "H": 0.501}
 {"card": "L-MKT-007", "date": "2003-08-29", "note": "IV-RV=8.4p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 4.04, "hit": true, "conv": 0.125, "H": 0.501}
 {"card": "L-INF-003", "date": "2003-09-04", "note": "d20=22bp", "w": [0, 14], "tgt": "yh_XLE", "dir": "up", "ret": -0.0266, "hit": false, "conv": 0.125, "H": 0.501}
@@ -316,10 +354,13 @@
 {"card": "L-RAT-002", "date": "2003-11-14", "note": "d20=-34bp", "w": [0, 28], "tgt": "yh_GC_F", "dir": "up", "ret": 0.02916, "hit": true, "conv": 0.278, "H": 0.452}
 {"card": "L-MKT-006", "date": "2003-11-28", "note": "top:XLK,XLB,XLY", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.03514, "hit": false, "conv": 0.289, "H": 0.452}
 {"card": "L-MKT-007", "date": "2003-11-28", "note": "IV-RV=5.5p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 7.12, "hit": true, "conv": 0.289, "H": 0.452}
+{"card": "L-PHY-005", "date": "2003-11-28", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": 0.08057, "hit": true, "conv": 0.289, "H": 0.452}
 {"card": "L-EVT-001", "date": "2003-12-08", "note": "FOMC 2003-12-09", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": 0.00674, "hit": true, "conv": 0.205, "H": 0.452}
+{"card": "L-PHY-005", "date": "2003-12-26", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": 0.0633, "hit": true, "conv": 0.196, "H": 0.41}
 {"card": "L-MKT-006", "date": "2003-12-31", "note": "top:XLY,XLK,XLB", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.04855, "hit": false, "conv": 0.207, "H": 0.41}
 {"card": "L-MKT-007", "date": "2003-12-31", "note": "IV-RV=9.2p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 7.29, "hit": true, "conv": 0.207, "H": 0.41}
 {"card": "L-EMP-002", "date": "2004-01-02", "note": "naiveSDS=1.10", "w": [0, 0], "tgt": "fred_DGS2", "dir": "up", "ret": 0.1, "hit": true, "conv": 0.207, "H": 0.41}
+{"card": "L-PHY-005", "date": "2004-01-23", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": 0.01889, "hit": true, "conv": 0.21, "H": 0.431}
 {"card": "L-EVT-001", "date": "2004-01-27", "note": "FOMC 2004-01-28", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": -0.01027, "hit": false, "conv": 0.21, "H": 0.431}
 {"card": "L-MKT-006", "date": "2004-01-30", "note": "top:XLY,XLB,XLK", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": 0.0026, "hit": true, "conv": 0.21, "H": 0.431}
 {"card": "L-MKT-007", "date": "2004-01-30", "note": "IV-RV=5.6p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 7.86, "hit": true, "conv": 0.21, "H": 0.431}
@@ -356,6 +397,7 @@
 {"card": "L-INF-004", "date": "2004-08-13", "note": "60d=25%", "w": [21, 42], "tgt": "fred_DGS10", "dir": "up", "ret": -0.18, "hit": false, "conv": 0.214, "H": 0.455}
 {"card": "L-MKT-006", "date": "2004-08-31", "note": "top:XLE,XLI,XLB", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": 0.07061, "hit": true, "conv": 0.25, "H": 0.464}
 {"card": "L-EVT-004", "date": "2004-09-03", "note": "election 2004-11-02", "w": [0, 60], "tgt": "^VIX", "dir": "up", "ret": 1.28, "hit": true, "conv": 0.225, "H": 0.464}
+{"card": "L-PHY-005", "date": "2004-09-17", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": 0.20487, "hit": true, "conv": 0.217, "H": 0.542}
 {"card": "L-EVT-001", "date": "2004-09-20", "note": "FOMC 2004-09-21", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": -0.00601, "hit": false, "conv": 0.217, "H": 0.542}
 {"card": "L-MKT-006", "date": "2004-09-30", "note": "top:XLE,XLU,XLB", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.02944, "hit": false, "conv": 0.249, "H": 0.542}
 {"card": "L-GRO-005", "date": "2004-10-15", "note": "naiveSDS=2.27", "w": [0, 3], "tgt": "yh_XLY", "dir": "up", "ret": 0.007, "hit": true, "conv": 0.261, "H": 0.542}
@@ -1493,9 +1535,11 @@
 {"card": "L-MKT-007", "date": "2021-11-30", "note": "IV-RV=14.2p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 10.59, "hit": true, "conv": 0.268, "H": 0.508}
 {"card": "L-MKT-003", "date": "2021-12-01", "note": "VIX 31 > 3M 31", "w": [0, 14], "tgt": "yh_SPY", "dir": "down", "ret": 0.04462, "hit": false, "conv": 0.268, "H": 0.508}
 {"card": "L-PHY-002", "date": "2021-12-02", "note": "20d=+38%", "w": [14, 42], "tgt": "yh_XME", "dir": "up", "ret": 0.13464, "hit": true, "conv": 0.268, "H": 0.508}
+{"card": "L-PHY-005", "date": "2021-12-03", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": 0.13507, "hit": true, "conv": 0.268, "H": 0.508}
 {"card": "L-INF-001", "date": "2021-12-12", "note": "naiveSDS=1.57", "w": [0, 3], "tgt": "fred_DGS2", "dir": "up", "ret": 0.02, "hit": true, "conv": 0.273, "H": 0.508}
 {"card": "L-EVT-001", "date": "2021-12-14", "note": "FOMC 2021-12-15", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": -0.00688, "hit": false, "conv": 0.276, "H": 0.508}
 {"card": "L-MKT-006", "date": "2021-12-31", "note": "top:XLE,XLK,XLF", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": 0.08237, "hit": true, "conv": 0.28, "H": 0.462}
+{"card": "L-PHY-005", "date": "2021-12-31", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": 0.15437, "hit": true, "conv": 0.28, "H": 0.462}
 {"card": "L-EMP-003", "date": "2022-01-01", "note": "4wMA 222000 vs low 201500", "w": [0, 63], "tgt": "yh_TLT", "dir": "up", "ret": 0.03644, "hit": true, "conv": 0.28, "H": 0.462}
 {"card": "L-EVT-001", "date": "2022-01-25", "note": "FOMC 2022-01-26", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": -0.01221, "hit": false, "conv": 0.283, "H": 0.537}
 {"card": "L-POS-001", "date": "2022-01-25", "note": "ES z=+3.7", "w": [7, 56], "tgt": "yh_SPY", "dir": "contrarian", "ret": 0.0348, "hit": false, "conv": 0.283, "H": 0.537}
@@ -1503,11 +1547,13 @@
 {"card": "L-INF-004", "date": "2022-01-28", "note": "60d=25%", "w": [21, 42], "tgt": "fred_DGS10", "dir": "up", "ret": 0.22, "hit": true, "conv": 0.272, "H": 0.537}
 {"card": "L-MKT-006", "date": "2022-01-31", "note": "top:XLK,XLE,XLF", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": 0.01363, "hit": true, "conv": 0.272, "H": 0.537}
 {"card": "L-MKT-007", "date": "2022-01-31", "note": "IV-RV=6.6p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 1.9, "hit": true, "conv": 0.272, "H": 0.537}
+{"card": "L-PHY-005", "date": "2022-02-04", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": 0.25317, "hit": true, "conv": 0.298, "H": 0.537}
 {"card": "L-MKT-003", "date": "2022-02-23", "note": "VIX 31 > 3M 31", "w": [0, 14], "tgt": "yh_SPY", "dir": "down", "ret": 0.01294, "hit": false, "conv": 0.275, "H": 0.558}
 {"card": "L-MKT-006", "date": "2022-02-28", "note": "top:XLE,XLF,XLK", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.01874, "hit": false, "conv": 0.232, "H": 0.558}
 {"card": "L-MKT-007", "date": "2022-02-28", "note": "IV-RV=7.6p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 8.31, "hit": true, "conv": 0.232, "H": 0.558}
 {"card": "L-INF-003", "date": "2022-03-02", "note": "d20=28bp", "w": [0, 14], "tgt": "yh_XLE", "dir": "up", "ret": -0.01961, "hit": false, "conv": 0.232, "H": 0.558}
 {"card": "L-EMP-002", "date": "2022-03-04", "note": "naiveSDS=1.07", "w": [0, 0], "tgt": "fred_DGS2", "dir": "up", "ret": -0.03, "hit": false, "conv": 0.239, "H": 0.558}
+{"card": "L-PHY-005", "date": "2022-03-04", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": -0.14186, "hit": false, "conv": 0.239, "H": 0.558}
 {"card": "L-RAT-002", "date": "2022-03-04", "note": "d20=-37bp", "w": [0, 28], "tgt": "yh_GC_F", "dir": "up", "ret": -0.02341, "hit": false, "conv": 0.239, "H": 0.558}
 {"card": "L-EMP-003", "date": "2022-03-05", "note": "4wMA 222000 vs low 201500", "w": [0, 63], "tgt": "yh_TLT", "dir": "up", "ret": -0.14126, "hit": false, "conv": 0.239, "H": 0.558}
 {"card": "L-INF-004", "date": "2022-03-11", "note": "60d=40%", "w": [21, 42], "tgt": "fred_DGS10", "dir": "up", "ret": 0.9, "hit": true, "conv": 0.316, "H": 0.558}
@@ -1529,6 +1575,7 @@
 {"card": "L-POS-001", "date": "2022-05-10", "note": "GC z=-3.0", "w": [7, 56], "tgt": "yh_GC_F", "dir": "contrarian", "ret": -0.04245, "hit": false, "conv": 0.335, "H": 0.47}
 {"card": "L-POS-002", "date": "2022-05-12", "note": "funding ann=-28%", "w": [3, 21], "tgt": "yh_BTC-USD", "dir": "contrarian", "ret": 0.04888, "hit": true, "conv": 0.335, "H": 0.47}
 {"card": "L-PHY-004", "date": "2022-05-14", "note": "hormuz 7d/90d=0.80", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": 0.09214, "hit": true, "conv": 0.305, "H": 0.47}
+{"card": "L-PHY-005", "date": "2022-05-20", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": -0.03241, "hit": false, "conv": 0.297, "H": 0.47}
 {"card": "L-MKT-006", "date": "2022-05-31", "note": "top:XLE,XLP,XLU", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.03556, "hit": false, "conv": 0.276, "H": 0.46}
 {"card": "L-INF-004", "date": "2022-06-08", "note": "60d=27%", "w": [21, 42], "tgt": "fred_DGS10", "dir": "up", "ret": 0.01, "hit": true, "conv": 0.263, "H": 0.46}
 {"card": "L-LIQ-001", "date": "2022-06-08", "note": "4w dNL z>+1", "w": [7, 28], "tgt": "yh_QQQ", "dir": "up", "ret": -0.06124, "hit": false, "conv": 0.263, "H": 0.46}
@@ -1571,6 +1618,7 @@
 {"card": "L-PHY-004", "date": "2022-11-10", "note": "hormuz 7d/90d=0.77", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": -0.17359, "hit": false, "conv": 0.507, "H": 0.516}
 {"card": "L-POS-002", "date": "2022-11-10", "note": "funding ann=-93%", "w": [3, 21], "tgt": "yh_BTC-USD", "dir": "contrarian", "ret": -0.03523, "hit": false, "conv": 0.507, "H": 0.516}
 {"card": "L-MKT-002", "date": "2022-11-18", "note": "HYG-TLT 20d=-4.5%", "w": [0, 42], "tgt": "yh_SPY", "dir": "down", "ret": -0.03434, "hit": true, "conv": 0.506, "H": 0.516}
+{"card": "L-PHY-005", "date": "2022-11-18", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": -0.0723, "hit": false, "conv": 0.506, "H": 0.516}
 {"card": "L-LIQ-001", "date": "2022-11-23", "note": "4w dNL z>+1", "w": [7, 28], "tgt": "yh_QQQ", "dir": "up", "ret": -0.05322, "hit": false, "conv": 0.506, "H": 0.503}
 {"card": "L-POS-001", "date": "2022-11-29", "note": "EC z=+4.4", "w": [7, 56], "tgt": "yh_UUP", "dir": "contrarian", "ret": -0.0482, "hit": false, "conv": 0.512, "H": 0.503}
 {"card": "L-MKT-006", "date": "2022-11-30", "note": "top:XLE,XLV,XLP", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.0653, "hit": false, "conv": 0.512, "H": 0.503}
@@ -1696,6 +1744,7 @@
 {"card": "L-EVT-001", "date": "2024-09-17", "note": "FOMC 2024-09-18", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": 0.00041, "hit": true, "conv": 0.316, "H": 0.523}
 {"card": "L-POS-001", "date": "2024-09-17", "note": "GC z=+2.2", "w": [7, 56], "tgt": "yh_GC_F", "dir": "contrarian", "ret": 0.01392, "hit": false, "conv": 0.316, "H": 0.523}
 {"card": "L-RAT-005", "date": "2024-09-19", "note": "first cut, insurance", "w": [0, 252], "tgt": "yh_SPY", "dir": "branch", "ret": 0.0334, "hit": true, "conv": 0.323, "H": 0.523}
+{"card": "L-PHY-005", "date": "2024-09-20", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": -0.03754, "hit": false, "conv": 0.323, "H": 0.523}
 {"card": "L-MKT-006", "date": "2024-09-30", "note": "top:XLF,XLK,XLI", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": 0.01452, "hit": true, "conv": 0.31, "H": 0.515}
 {"card": "L-LIQ-003", "date": "2024-10-01", "note": "SOFR-adm=+15bp", "w": [0, 7], "tgt": "yh_SPY", "dir": "down", "ret": 0.008, "hit": false, "conv": 0.31, "H": 0.515}
 {"card": "L-PHY-004", "date": "2024-10-01", "note": "hormuz 7d/90d=0.79", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": -0.03752, "hit": false, "conv": 0.31, "H": 0.515}
@@ -1717,6 +1766,7 @@
 {"card": "L-LIQ-002", "date": "2024-12-13", "note": "RRP 4w -37%", "w": [7, 28], "tgt": "yh_SPY", "dir": "up", "ret": -0.03926, "hit": false, "conv": 0.248, "H": 0.517}
 {"card": "L-EVT-001", "date": "2024-12-17", "note": "FOMC 2024-12-18", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": -0.00412, "hit": false, "conv": 0.248, "H": 0.517}
 {"card": "L-MKT-003", "date": "2024-12-18", "note": "VIX 28 > 3M 24", "w": [0, 14], "tgt": "yh_SPY", "dir": "down", "ret": -0.00034, "hit": true, "conv": 0.248, "H": 0.517}
+{"card": "L-PHY-005", "date": "2024-12-20", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": 0.12122, "hit": true, "conv": 0.269, "H": 0.517}
 {"card": "L-LIQ-003", "date": "2024-12-26", "note": "SOFR-adm=+13bp", "w": [0, 7], "tgt": "yh_SPY", "dir": "down", "ret": -0.02777, "hit": true, "conv": 0.269, "H": 0.507}
 {"card": "L-MKT-006", "date": "2024-12-31", "note": "top:XLF,XLI,XLU", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.01607, "hit": false, "conv": 0.241, "H": 0.507}
 {"card": "L-LIQ-001", "date": "2025-01-01", "note": "4w dNL z>+1", "w": [7, 28], "tgt": "yh_QQQ", "dir": "up", "ret": 0.01878, "hit": true, "conv": 0.241, "H": 0.507}
@@ -1751,11 +1801,13 @@
 {"card": "L-LIQ-001", "date": "2025-06-04", "note": "4w dNL z>+1", "w": [7, 28], "tgt": "yh_QQQ", "dir": "up", "ret": 0.04166, "hit": true, "conv": 0.332, "H": 0.534}
 {"card": "L-INF-002", "date": "2025-06-13", "note": "gap=1.6pp", "w": [0, 63], "tgt": "fred_DGS10", "dir": "up", "ret": -0.08, "hit": false, "conv": 0.336, "H": 0.534}
 {"card": "L-EVT-001", "date": "2025-06-17", "note": "FOMC 2025-06-18", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": -0.00855, "hit": false, "conv": 0.314, "H": 0.534}
+{"card": "L-PHY-005", "date": "2025-06-20", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": -0.10129, "hit": false, "conv": 0.314, "H": 0.534}
 {"card": "L-MKT-006", "date": "2025-06-30", "note": "top:XLF,XLY,XLI", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.00287, "hit": false, "conv": 0.307, "H": 0.534}
 {"card": "L-MKT-007", "date": "2025-06-30", "note": "IV-RV=7.1p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 10.37, "hit": true, "conv": 0.307, "H": 0.534}
 {"card": "L-POS-001", "date": "2025-07-08", "note": "ES z=-2.8", "w": [7, 56], "tgt": "yh_SPY", "dir": "contrarian", "ret": 0.03213, "hit": true, "conv": 0.3, "H": 0.557}
 {"card": "L-POS-001", "date": "2025-07-08", "note": "EC z=+2.9", "w": [7, 56], "tgt": "yh_UUP", "dir": "contrarian", "ret": 0.01698, "hit": true, "conv": 0.3, "H": 0.557}
 {"card": "L-PHY-002", "date": "2025-07-17", "note": "20d=+35%", "w": [14, 42], "tgt": "yh_XME", "dir": "up", "ret": 0.09325, "hit": true, "conv": 0.184, "H": 0.557}
+{"card": "L-PHY-005", "date": "2025-07-18", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": -0.06742, "hit": false, "conv": 0.184, "H": 0.557}
 {"card": "L-LIQ-002", "date": "2025-07-24", "note": "RRP 4w -37%", "w": [7, 28], "tgt": "yh_SPY", "dir": "up", "ret": 0.00178, "hit": true, "conv": 0.175, "H": 0.557}
 {"card": "L-EVT-001", "date": "2025-07-29", "note": "FOMC 2025-07-30", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": -0.00264, "hit": false, "conv": 0.175, "H": 0.557}
 {"card": "L-MKT-006", "date": "2025-07-31", "note": "top:XLF,XLI,XLU", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.02516, "hit": false, "conv": 0.186, "H": 0.563}
@@ -1778,6 +1830,7 @@
 {"card": "L-PHY-004", "date": "2025-10-15", "note": "hormuz 7d/90d=0.79", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": 0.00378, "hit": true, "conv": 0.272, "H": 0.48}
 {"card": "L-MKT-003", "date": "2025-10-16", "note": "VIX 25 > 3M 25", "w": [0, 14], "tgt": "yh_SPY", "dir": "down", "ret": 0.02905, "hit": false, "conv": 0.272, "H": 0.48}
 {"card": "L-MKT-002", "date": "2025-10-22", "note": "HYG-TLT 20d=-4.0%", "w": [0, 42], "tgt": "yh_SPY", "dir": "down", "ret": 0.02409, "hit": false, "conv": 0.264, "H": 0.48}
+{"card": "L-PHY-005", "date": "2025-10-24", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": -0.05593, "hit": false, "conv": 0.266, "H": 0.48}
 {"card": "L-LIQ-003", "date": "2025-10-27", "note": "SOFR-adm=+12bp", "w": [0, 7], "tgt": "yh_SPY", "dir": "down", "ret": -0.00277, "hit": true, "conv": 0.266, "H": 0.48}
 {"card": "L-EVT-001", "date": "2025-10-28", "note": "FOMC 2025-10-29", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": 0.00266, "hit": true, "conv": 0.266, "H": 0.48}
 {"card": "L-MKT-006", "date": "2025-10-31", "note": "top:XLK,XLY,XLF", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.06516, "hit": false, "conv": 0.275, "H": 0.479}
@@ -1843,9 +1896,11 @@
 {"card": "L-PHY-004", "date": "2026-06-13", "note": "panama 7d/90d=0.79", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": -0.15869, "hit": false, "conv": 0.544, "H": 0.607}
 {"card": "L-EVT-001", "date": "2026-06-16", "note": "FOMC 2026-06-17", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": -0.00596, "hit": false, "conv": 0.561, "H": 0.607}
 {"card": "L-MKT-001", "date": "2026-06-16", "note": "avg|rho|=0.56", "w": [0, 28], "tgt": "yh_SPY", "dir": "down", "ret": 0.002, "hit": false, "conv": 0.561, "H": 0.607}
+{"card": "L-PHY-005", "date": "2026-06-19", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": 0.07689, "hit": true, "conv": 0.561, "H": 0.607}
 {"card": "L-MKT-006", "date": "2026-06-30", "note": "top:XLK,XLE,XLI", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": 0.02763, "hit": true, "conv": 0.513, "H": 0.607}
 {"card": "L-LIQ-001", "date": "2026-07-15", "note": "4w dNL z>+1", "w": [7, 28], "tgt": "yh_QQQ", "dir": "up", "ret": 0.0083, "hit": true, "conv": 0.499, "H": 0.593}
 {"card": "L-PHY-004", "date": "2026-07-15", "note": "hormuz 7d/90d=0.74", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": 0.04611, "hit": true, "conv": 0.499, "H": 0.593}
+{"card": "L-PHY-005", "date": "2026-07-24", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": -0.0299, "hit": false, "conv": 0.47, "H": 0.593}
 {"card": "L-EVT-001", "date": "2026-07-28", "note": "FOMC 2026-07-29", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": 0.00239, "hit": true, "conv": 0.47, "H": 0.593}
 {"card": "L-MKT-003", "date": "2026-07-29", "note": "VIX 21 > 3M 21", "w": [0, 14], "tgt": "yh_SPY", "dir": "down", "ret": 0.05899, "hit": false, "conv": 0.47, "H": 0.593}
 {"card": "L-MKT-006", "date": "2026-07-31", "note": "top:XLK,XLI,XLE", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": 0.0264, "hit": true, "conv": 0.444, "H": 0.593}
