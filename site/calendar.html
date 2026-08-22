@@ -46,6 +46,11 @@
     border:1px solid var(--edge);color:var(--mut)}
   .fire .vd.ok{color:#3FE0A0;border-color:rgba(63,224,160,.5)}
   .fire .vd.no{color:#FF6A6E;border-color:rgba(255,106,110,.5)}
+  .brief{margin:8px 0 4px;padding:7px 10px;border-radius:7px;background:rgba(159,199,224,.05);
+    font-size:11px;line-height:1.55;color:#a9becd}
+  .brief b{font:600 10px Consolas,monospace;color:var(--dim);display:block;margin-bottom:2px}
+  .brief small{display:block;margin-top:3px;font:9px Consolas,monospace;color:var(--mut)}
+  html[data-theme="gundam"] .brief{background:rgba(44,82,179,.05);color:#37536e}
   /* barcode */
   #codewrap{overflow-x:auto}
   .fam{display:flex;align-items:center;gap:8px;margin:3px 0}
@@ -137,8 +142,9 @@ const ERAS=[['2008-09-01','2008-11-15','R08'],['2016-06-15','2016-07-20','R16'],
 Promise.all([
  fetch('data/backtest/fires.jsonl',NOC).then(r=>r.text()),
  fetch('data/backtest/scorecard.json',NOC).then(r=>r.json()),
- fetch('logic/ledger-full.json',NOC).then(r=>r.json())
-]).then(([ftxt,score,led])=>{
+ fetch('logic/ledger-full.json',NOC).then(r=>r.json()),
+ fetch('data/backtest/briefs.json',NOC).then(r=>r.json()).catch(()=>({}))
+]).then(([ftxt,score,led,briefs])=>{
  const FIRES=ftxt.trim().split(/\r?\n/).map(l=>JSON.parse(l));
  const CARD={};led.cards.forEach(c=>CARD[c.id]=c);
  const nameOf=id=>{const c=CARD[id];if(!c)return id;
@@ -186,6 +192,11 @@ Promise.all([
        +'<span class="nt">'+ds+' · '+f.note
        +(f.ret!=null?' · '+(EN?'window':'창')+' '+f.w[1]+'d → '+(100*f.ret).toFixed(1)
          +(f.tgt&&f.tgt.indexOf('fred')===0?'':'%'):'')+'</span></div>');}));
+   /* 📰 그날의 사건 — Wikipedia Current events (CC BY-SA) */
+   days.forEach(ds=>{const b=briefs[ds];if(!b||!b.lines||!b.lines.length)return;
+     rows.push('<div class="brief"><b>📰 '+ds+(EN?' — that day':' — 그날')+'</b>'
+       +b.lines.map(l=>'• '+l).join('<br>')
+       +'<small>'+(EN?'Text from Wikipedia, CC BY-SA 4.0 · context only, not a trigger':'출처 Wikipedia, CC BY-SA 4.0 · 맥락 참고용, 발동 근거 아님')+'</small></div>');});
    $('daylist').innerHTML=rows.join('');
    const era=ERAS.find(e=>days[0]>=e[0]&&days[0]<=e[1]);
    const rp=$('rplink');

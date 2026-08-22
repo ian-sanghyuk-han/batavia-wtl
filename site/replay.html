@@ -56,6 +56,9 @@
   .ev .imp{display:inline-block;margin-top:5px;font:9.5px Consolas,monospace;color:#c9dcea;
     background:rgba(159,199,224,.07);border-radius:6px;padding:2px 8px}
   .ev .opp{font-size:10.5px;color:#8fd8c8;margin-top:4px;line-height:1.5}
+  .ev .nb{font-size:10px;color:#9fb3c4;margin-top:5px;line-height:1.5;padding-left:8px;
+    border-left:2px solid rgba(159,199,224,.25)}
+  html[data-theme="gundam"] .ev .nb{color:#4a6076;border-left-color:rgba(44,82,179,.3)}
   .gg{border-left:3px solid var(--acc);background:rgba(159,199,224,.04);border-radius:0 8px 8px 0;
     padding:9px 11px;margin:9px 0}
   .gg .h{font:600 11px Consolas,monospace}
@@ -360,7 +363,7 @@ function build(){
     `<b>${e.name}</b><div class="d">${e.d}</div>`+
     `<div class="cx">${e.cx}</div>`+
     `<span class="imp">${EN?'impact':'파급력'} ${impDots(e.imp,e.c)} ${e.imp}/5 · ${e.reach} <span style="color:#5b6b7a">(${EN?'reconstructed · est.':'재구성·추정'})</span></span>`+
-    `<div class="opp">☞ ${e.opp}</div></div>`).join('');
+    `<div class="opp">☞ ${e.opp}</div>`+(e.nb?`<div class="nb">📰 ${e.nb}</div>`:'')+`</div>`).join('');
   $('gglist').innerHTML=SC[cur].opps.map((o,i)=>
     `<div class="gg"><div class="h">${o.name}<span class="core">${EN?'core':'코어'} ${o.core}</span></div>`+
     `<div class="fx">${o.f}</div>`+
@@ -413,8 +416,9 @@ if(FREEQ&&/^\d{4}-\d{2}-\d{2}$/.test(FREEQ)){
  Promise.all([
   fetch('data/backtest/fires.jsonl',NOC).then(r=>r.text()),
   fetch('data/backtest/series-lite.json',NOC).then(r=>r.json()),
-  fetch('logic/ledger-full.json',NOC).then(r=>r.json())
- ]).then(([ftxt,lite,led])=>{
+  fetch('logic/ledger-full.json',NOC).then(r=>r.json()),
+  fetch('data/backtest/briefs.json',NOC).then(r=>r.json()).catch(()=>({}))
+ ]).then(([ftxt,lite,led,briefs])=>{
   const FIRES=ftxt.trim().split(/\r?\n/).map(l=>JSON.parse(l));
   const CARD={};led.cards.forEach(c=>CARD[c.id]=c);
   const FAMC={'성장':'#4FD8C0','고용':'#7FD8FF','물가':'#FF5D6E','금리':'#FF8A93',
@@ -433,7 +437,9 @@ if(FREEQ&&/^\d{4}-\d{2}-\d{2}$/.test(FREEQ)){
       ?(100*f.ret).toFixed(0)+'bp':(100*f.ret).toFixed(1)+'%');
     return {t:t_of(f.date),d:f.date,name:f.card+' · '+nm,
       c:FAMC[c.family]||'#7FD8FF',imp:f.hit===true?4:3,
-      reach:(EN?'window ':'창 ')+f.w[1]+'d',cx:f.note,opp:vd+rv};});
+      reach:(EN?'window ':'창 ')+f.w[1]+'d',cx:f.note,opp:vd+rv,
+      nb:(briefs[f.date]&&briefs[f.date].lines&&briefs[f.date].lines.length)
+        ?briefs[f.date].lines.slice(0,2).join(' · ')+' <small>(Wikipedia, CC BY-SA)</small>':''};});
   const opps=Object.keys(lite).map(k=>{const L=lite[k];
     const kf=L.data.filter(p=>p[0]>=iso(start)&&p[0]<=endIso).map(p=>[t_of(p[0]),p[1]]);
     if(kf.length<2)return null;
