@@ -48,7 +48,10 @@ def enrich(ev):
             title = re.sub(r"\s+", " ", title).strip()
             title = re.sub(r"&#?\w+;", lambda x: {"&amp;": "&", "&quot;": '"', "&#39;": "'",
                                                    "&lt;": "<", "&gt;": ">"}.get(x.group(), ""), title)
-            if 8 < len(title) < 200:
+            # English is the product's base locale: keep only Latin-script headlines
+            # (Hangul / CJK / Arabic / Cyrillic / Thai / Devanagari titles fall back to
+            # the English actor-based name built from the GDELT record)
+            if 8 < len(title) < 200 and not NONLATIN.search(title):
                 ev["name"] = title[:110]
         m = RE_PUBTIME.search(html)
         if m:
@@ -62,6 +65,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "..", "site", "data", "news.json")
 
 LASTUPDATE = "http://data.gdeltproject.org/gdeltv2/lastupdate.txt"
+NONLATIN = re.compile(r"[Ѐ-ӿ؀-ۿऀ-ॿ฀-๿぀-ヿ㐀-鿿가-힣]")
 
 # CAMEO event root codes -> Korean labels
 ROOT_KO = {
