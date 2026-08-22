@@ -451,6 +451,29 @@ if eia.ok():
         if band and eia.v[i] < min(band):
             cand.append((eia.d[i], f"stocks below 5y band"))
     run_simple("L-PHY-005", cand, ("ret", "yh_CL_F"), "up", 28)
+# GRO-006 GDP nowcast gap (ALFRED real-time vintages vs naive forecast)
+gv = os.path.join(HIST, "alfred_GDPNOW.csv")
+gdp = S("fred_A191RL1Q225SBEA")
+if os.path.exists(gv) and gdp.ok():
+    vint = {}
+    for row in csv.DictReader(io.open(gv, encoding="utf-8")):
+        vint.setdefault(row["quarter"], []).append((D(row["vintage"]), float(row["value"])))
+    cand = []
+    for q, vs in sorted(vint.items()):
+        qd = D(q); qend = add((qd.replace(day=28) + datetime.timedelta(days=4)).replace(day=1), 0)
+        # quarter end = first day of the 4th month minus 1; advance GDP release ~ +28d; fire at T-7
+        m3 = (qd.replace(day=1) + datetime.timedelta(days=93)).replace(day=1)
+        release = add(m3, 27); fire = add(release, -7)
+        vs.sort()
+        asof = [v for d0, v in vs if d0 <= fire]
+        if not asof: continue
+        now = asof[-1]
+        prev = [gdp.v[i] for i in range(len(gdp.d)) if gdp.d[i] < qd][-4:]
+        if len(prev) < 4: continue
+        naive = statistics.fmean(prev)
+        if now - naive > 0.8:
+            cand.append((fire, f"GDPNow {now:.1f} vs naive {naive:.1f}"))
+    run_simple("L-GRO-006", cand, ("diff", "fred_DGS2"), "up", 7)
 # EVT-004 election uncertainty (US presidential)
 ELEC = ["2000-11-07","2004-11-02","2008-11-04","2012-11-06","2016-11-08","2020-11-03","2024-11-05"]
 for e in ELEC:
@@ -465,7 +488,6 @@ for e in ELEC:
 
 DEFER = {
  "deferred_in_phase2": {
-   "L-GRO-006": "GDPNow vintage xlsx parsing",
    "L-LIQ-005": "multi-country M2 aggregate assembly",
    "L-POS-003": "CBOE put/call history endpoint unstable",
    "L-POS-004": "ICI flow scrape",

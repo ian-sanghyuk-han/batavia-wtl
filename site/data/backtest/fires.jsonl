@@ -1172,6 +1172,7 @@
 {"card": "L-GRO-005", "date": "2017-01-15", "note": "naiveSDS=2.94", "w": [0, 3], "tgt": "yh_XLY", "dir": "up", "ret": -0.00012, "hit": false, "conv": 0.252, "H": 0.574}
 {"card": "L-RAT-002", "date": "2017-01-17", "note": "d20=-34bp", "w": [0, 28], "tgt": "yh_GC_F", "dir": "up", "ret": 0.00982, "hit": true, "conv": 0.252, "H": 0.574}
 {"card": "L-LIQ-001", "date": "2017-01-18", "note": "4w dNL z>+1", "w": [7, 28], "tgt": "yh_QQQ", "dir": "up", "ret": 0.0508, "hit": true, "conv": 0.261, "H": 0.574}
+{"card": "L-GRO-006", "date": "2017-01-21", "note": "GDPNow 2.8 vs naive 1.8", "w": [0, 7], "tgt": "fred_DGS2", "dir": "up", "ret": 0.02, "hit": true, "conv": 0.261, "H": 0.574}
 {"card": "L-MKT-006", "date": "2017-01-31", "note": "top:XLE,XLF,XLI", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.03972, "hit": false, "conv": 0.259, "H": 0.541}
 {"card": "L-MKT-007", "date": "2017-01-31", "note": "IV-RV=5.7p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 5.4, "hit": true, "conv": 0.259, "H": 0.541}
 {"card": "L-POS-001", "date": "2017-02-07", "note": "CL z=+2.1", "w": [7, 56], "tgt": "yh_CL_F", "dir": "contrarian", "ret": -0.02185, "hit": true, "conv": 0.258, "H": 0.541}
@@ -1230,6 +1231,7 @@
 {"card": "L-MKT-007", "date": "2017-12-29", "note": "IV-RV=5.6p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 3.94, "hit": true, "conv": 0.246, "H": 0.468}
 {"card": "L-POS-001", "date": "2018-01-02", "note": "ES z=+2.4", "w": [7, 56], "tgt": "yh_SPY", "dir": "contrarian", "ret": 0.02106, "hit": false, "conv": 0.246, "H": 0.468}
 {"card": "L-POS-001", "date": "2018-01-09", "note": "CL z=+2.1", "w": [7, 56], "tgt": "yh_CL_F", "dir": "contrarian", "ret": -0.00572, "hit": true, "conv": 0.229, "H": 0.468}
+{"card": "L-GRO-006", "date": "2018-01-21", "note": "GDPNow 3.4 vs naive 2.4", "w": [0, 7], "tgt": "fred_DGS2", "dir": "up", "ret": 0.07, "hit": true, "conv": 0.215, "H": 0.468}
 {"card": "L-EVT-001", "date": "2018-01-30", "note": "FOMC 2018-01-31", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": -0.01026, "hit": false, "conv": 0.173, "H": 0.518}
 {"card": "L-MKT-006", "date": "2018-01-31", "note": "top:XLK,XLI,XLB", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.00465, "hit": false, "conv": 0.173, "H": 0.518}
 {"card": "L-MKT-007", "date": "2018-01-31", "note": "IV-RV=4.9p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": -12.96, "hit": false, "conv": 0.173, "H": 0.518}
@@ -1256,6 +1258,7 @@
 {"card": "L-LIQ-003", "date": "2018-06-29", "note": "SOFR-adm=+17bp", "w": [0, 7], "tgt": "yh_SPY", "dir": "down", "ret": 0.01526, "hit": false, "conv": 0.279, "H": 0.506}
 {"card": "L-MKT-006", "date": "2018-06-29", "note": "top:XLK,XLE,XLF", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.01682, "hit": false, "conv": 0.279, "H": 0.506}
 {"card": "L-MKT-007", "date": "2018-06-29", "note": "IV-RV=8.1p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 7.94, "hit": true, "conv": 0.279, "H": 0.506}
+{"card": "L-GRO-006", "date": "2018-07-21", "note": "GDPNow 4.5 vs naive 3.3", "w": [0, 7], "tgt": "fred_DGS2", "dir": "up", "ret": 0.07, "hit": true, "conv": 0.29, "H": 0.506}
 {"card": "L-MKT-006", "date": "2018-07-31", "note": "top:XLK,XLY,XLE", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": 0.01683, "hit": true, "conv": 0.318, "H": 0.449}
 {"card": "L-MKT-007", "date": "2018-07-31", "note": "IV-RV=4.2p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 5.63, "hit": true, "conv": 0.318, "H": 0.449}
 {"card": "L-POS-001", "date": "2018-08-14", "note": "GC z=-2.1", "w": [7, 56], "tgt": "yh_GC_F", "dir": "contrarian", "ret": -0.00486, "hit": false, "conv": 0.298, "H": 0.449}
@@ -1444,6 +1447,7 @@
 {"card": "L-MKT-002", "date": "2020-09-25", "note": "HYG-TLT 20d=-4.9%", "w": [0, 42], "tgt": "yh_SPY", "dir": "down", "ret": 0.06519, "hit": false, "conv": 0.362, "H": 0.5}
 {"card": "L-MKT-006", "date": "2020-09-30", "note": "top:XLK,XLY,XLV", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.11225, "hit": false, "conv": 0.375, "H": 0.5}
 {"card": "L-POS-001", "date": "2020-10-06", "note": "EC z=+2.6", "w": [7, 56], "tgt": "yh_UUP", "dir": "contrarian", "ret": -0.02882, "hit": false, "conv": 0.376, "H": 0.5}
+{"card": "L-GRO-006", "date": "2020-10-21", "note": "GDPNow 35.3 vs naive -6.4", "w": [0, 7], "tgt": "fred_DGS2", "dir": "up", "ret": 0.02, "hit": true, "conv": 0.348, "H": 0.5}
 {"card": "L-MKT-003", "date": "2020-10-26", "note": "VIX 32 > 3M 32", "w": [0, 14], "tgt": "yh_SPY", "dir": "down", "ret": 0.0447, "hit": false, "conv": 0.356, "H": 0.475}
 {"card": "L-MKT-006", "date": "2020-10-30", "note": "top:XLK,XLY,XLV", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.04901, "hit": false, "conv": 0.356, "H": 0.475}
 {"card": "L-MKT-007", "date": "2020-10-30", "note": "IV-RV=16.9p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 21.6, "hit": true, "conv": 0.356, "H": 0.475}
@@ -1463,6 +1467,7 @@
 {"card": "L-PHY-002", "date": "2021-01-04", "note": "20d=+36%", "w": [14, 42], "tgt": "yh_XME", "dir": "up", "ret": 0.05765, "hit": true, "conv": 0.304, "H": 0.547}
 {"card": "L-POS-002", "date": "2021-01-10", "note": "funding ann=117%", "w": [3, 21], "tgt": "yh_BTC-USD", "dir": "contrarian", "ret": -0.13667, "hit": true, "conv": 0.308, "H": 0.547}
 {"card": "L-INF-003", "date": "2021-01-12", "note": "d20=21bp", "w": [0, 14], "tgt": "yh_XLE", "dir": "up", "ret": -0.06408, "hit": false, "conv": 0.308, "H": 0.547}
+{"card": "L-GRO-006", "date": "2021-01-21", "note": "GDPNow 7.5 vs naive 1.1", "w": [0, 7], "tgt": "fred_DGS2", "dir": "up", "ret": -0.01, "hit": false, "conv": 0.304, "H": 0.547}
 {"card": "L-EVT-001", "date": "2021-01-26", "note": "FOMC 2021-01-27", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": -0.00156, "hit": false, "conv": 0.301, "H": 0.548}
 {"card": "L-MKT-003", "date": "2021-01-27", "note": "VIX 37 > 3M 36", "w": [0, 14], "tgt": "yh_SPY", "dir": "down", "ret": 0.04185, "hit": false, "conv": 0.301, "H": 0.548}
 {"card": "L-MKT-006", "date": "2021-01-29", "note": "top:XLK,XLY,XLB", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.0926, "hit": false, "conv": 0.296, "H": 0.548}
@@ -1484,6 +1489,7 @@
 {"card": "L-POS-002", "date": "2021-04-06", "note": "funding ann=87%", "w": [3, 21], "tgt": "yh_BTC-USD", "dir": "contrarian", "ret": -0.05429, "hit": true, "conv": 0.259, "H": 0.477}
 {"card": "L-INF-001", "date": "2021-04-12", "note": "naiveSDS=1.01", "w": [0, 3], "tgt": "fred_DGS2", "dir": "up", "ret": -0.02, "hit": false, "conv": 0.259, "H": 0.477}
 {"card": "L-GRO-005", "date": "2021-04-15", "note": "naiveSDS=1.37", "w": [0, 3], "tgt": "yh_XLY", "dir": "up", "ret": 0.00773, "hit": true, "conv": 0.282, "H": 0.477}
+{"card": "L-GRO-006", "date": "2021-04-21", "note": "GDPNow 8.3 vs naive 1.6", "w": [0, 7], "tgt": "fred_DGS2", "dir": "up", "ret": 0.02, "hit": true, "conv": 0.266, "H": 0.477}
 {"card": "L-PHY-002", "date": "2021-04-21", "note": "20d=+31%", "w": [14, 42], "tgt": "yh_XME", "dir": "up", "ret": 0.15826, "hit": true, "conv": 0.266, "H": 0.477}
 {"card": "L-EVT-001", "date": "2021-04-27", "note": "FOMC 2021-04-28", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": -0.00022, "hit": false, "conv": 0.271, "H": 0.528}
 {"card": "L-MKT-006", "date": "2021-04-30", "note": "top:XLB,XLY,XLI", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": 0.00063, "hit": true, "conv": 0.271, "H": 0.528}
@@ -1500,6 +1506,7 @@
 {"card": "L-MKT-006", "date": "2021-06-30", "note": "top:XLB,XLF,XLI", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": 0.02436, "hit": true, "conv": 0.276, "H": 0.445}
 {"card": "L-MKT-007", "date": "2021-06-30", "note": "IV-RV=7.3p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 4.16, "hit": true, "conv": 0.276, "H": 0.445}
 {"card": "L-INF-001", "date": "2021-07-12", "note": "naiveSDS=2.78", "w": [0, 3], "tgt": "fred_DGS2", "dir": "up", "ret": 0.0, "hit": false, "conv": 0.267, "H": 0.445}
+{"card": "L-GRO-006", "date": "2021-07-21", "note": "GDPNow 7.6 vs naive 4.3", "w": [0, 7], "tgt": "fred_DGS2", "dir": "up", "ret": -0.02, "hit": false, "conv": 0.267, "H": 0.445}
 {"card": "L-POS-002", "date": "2021-07-21", "note": "funding ann=-34%", "w": [3, 21], "tgt": "yh_BTC-USD", "dir": "contrarian", "ret": 0.41989, "hit": true, "conv": 0.267, "H": 0.445}
 {"card": "L-RAT-002", "date": "2021-07-26", "note": "d20=-31bp", "w": [0, 28], "tgt": "yh_GC_F", "dir": "up", "ret": 0.0025, "hit": true, "conv": 0.296, "H": 0.451}
 {"card": "L-EVT-001", "date": "2021-07-27", "note": "FOMC 2021-07-28", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": -0.00456, "hit": false, "conv": 0.296, "H": 0.451}
@@ -1631,6 +1638,7 @@
 {"card": "L-MKT-006", "date": "2022-12-30", "note": "top:XLE,XLP,XLV", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.12994, "hit": false, "conv": 0.458, "H": 0.527}
 {"card": "L-PHY-004", "date": "2022-12-30", "note": "hormuz 7d/90d=0.75", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": -0.00723, "hit": false, "conv": 0.458, "H": 0.527}
 {"card": "L-LIQ-001", "date": "2023-01-18", "note": "4w dNL z>+1", "w": [7, 28], "tgt": "yh_QQQ", "dir": "up", "ret": 0.11235, "hit": true, "conv": 0.418, "H": 0.527}
+{"card": "L-GRO-006", "date": "2023-01-21", "note": "GDPNow 3.5 vs naive 2.4", "w": [0, 7], "tgt": "fred_DGS2", "dir": "up", "ret": 0.05, "hit": true, "conv": 0.418, "H": 0.527}
 {"card": "L-POS-001", "date": "2023-01-24", "note": "GC z=-2.1", "w": [7, 56], "tgt": "yh_GC_F", "dir": "contrarian", "ret": 0.00212, "hit": true, "conv": 0.418, "H": 0.527}
 {"card": "L-POS-001", "date": "2023-01-24", "note": "EC z=+3.2", "w": [7, 56], "tgt": "yh_UUP", "dir": "contrarian", "ret": 0.02113, "hit": true, "conv": 0.418, "H": 0.527}
 {"card": "L-RAT-002", "date": "2023-01-25", "note": "d20=-38bp", "w": [0, 28], "tgt": "yh_GC_F", "dir": "up", "ret": -0.05625, "hit": false, "conv": 0.432, "H": 0.519}
@@ -1654,6 +1662,7 @@
 {"card": "L-MKT-006", "date": "2023-03-31", "note": "top:XLE,XLI,XLB", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.06027, "hit": false, "conv": 0.294, "H": 0.441}
 {"card": "L-EVT-003", "date": "2023-04-02", "note": "bull: Surprise voluntary cuts (~1.16 mb/d)", "w": [0, 5], "tgt": "yh_CL_F", "dir": "up", "ret": 0.06647, "hit": true, "conv": 0.294, "H": 0.441}
 {"card": "L-POS-001", "date": "2023-04-04", "note": "ES z=-2.7", "w": [7, 56], "tgt": "yh_SPY", "dir": "contrarian", "ret": 0.02816, "hit": true, "conv": 0.294, "H": 0.441}
+{"card": "L-GRO-006", "date": "2023-04-21", "note": "GDPNow 2.5 vs naive 1.3", "w": [0, 7], "tgt": "fred_DGS2", "dir": "up", "ret": -0.13, "hit": false, "conv": 0.273, "H": 0.441}
 {"card": "L-MKT-006", "date": "2023-04-28", "note": "top:XLE,XLI,XLP", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": -0.06969, "hit": false, "conv": 0.271, "H": 0.43}
 {"card": "L-EVT-001", "date": "2023-05-02", "note": "FOMC 2023-05-03", "w": [0, 1], "tgt": "yh_SPY", "dir": "up", "ret": -0.01124, "hit": false, "conv": 0.271, "H": 0.43}
 {"card": "L-EMP-003", "date": "2023-05-13", "note": "4wMA 217500 vs low 197500", "w": [0, 63], "tgt": "yh_TLT", "dir": "up", "ret": -0.12015, "hit": false, "conv": 0.284, "H": 0.43}
@@ -1679,6 +1688,7 @@
 {"card": "L-MKT-007", "date": "2023-09-29", "note": "IV-RV=6.8p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 4.15, "hit": true, "conv": 0.409, "H": 0.552}
 {"card": "L-RAT-003", "date": "2023-09-29", "note": "d20=+50bp", "w": [0, 14], "tgt": "yh_XLK", "dir": "down", "ret": 0.02867, "hit": false, "conv": 0.409, "H": 0.552}
 {"card": "L-RAT-003", "date": "2023-10-17", "note": "d20=+51bp", "w": [0, 14], "tgt": "yh_XLK", "dir": "down", "ret": -0.03216, "hit": true, "conv": 0.389, "H": 0.552}
+{"card": "L-GRO-006", "date": "2023-10-21", "note": "GDPNow 5.4 vs naive 2.8", "w": [0, 7], "tgt": "fred_DGS2", "dir": "up", "ret": -0.08, "hit": false, "conv": 0.354, "H": 0.552}
 {"card": "L-MKT-006", "date": "2023-10-31", "note": "top:XLK,XLI,XLY", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": 0.06355, "hit": true, "conv": 0.308, "H": 0.56}
 {"card": "L-MKT-007", "date": "2023-10-31", "note": "IV-RV=4.4p", "w": [21, 21], "tgt": "IV vs fwd RV", "dir": "harvest", "ret": 7.3, "hit": true, "conv": 0.308, "H": 0.56}
 {"card": "L-PHY-004", "date": "2023-11-07", "note": "hormuz 7d/90d=0.74", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": -0.06527, "hit": false, "conv": 0.334, "H": 0.56}
@@ -1830,6 +1840,7 @@
 {"card": "L-LIQ-003", "date": "2025-10-15", "note": "SOFR-adm=+14bp", "w": [0, 7], "tgt": "yh_SPY", "dir": "down", "ret": 0.00395, "hit": false, "conv": 0.272, "H": 0.48}
 {"card": "L-PHY-004", "date": "2025-10-15", "note": "hormuz 7d/90d=0.79", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": 0.00378, "hit": true, "conv": 0.272, "H": 0.48}
 {"card": "L-MKT-003", "date": "2025-10-16", "note": "VIX 25 > 3M 25", "w": [0, 14], "tgt": "yh_SPY", "dir": "down", "ret": 0.02905, "hit": false, "conv": 0.272, "H": 0.48}
+{"card": "L-GRO-006", "date": "2025-10-21", "note": "GDPNow 3.8 vs naive 2.1", "w": [0, 7], "tgt": "fred_DGS2", "dir": "up", "ret": 0.02, "hit": true, "conv": 0.264, "H": 0.48}
 {"card": "L-MKT-002", "date": "2025-10-22", "note": "HYG-TLT 20d=-4.0%", "w": [0, 42], "tgt": "yh_SPY", "dir": "down", "ret": 0.02409, "hit": false, "conv": 0.264, "H": 0.48}
 {"card": "L-PHY-005", "date": "2025-10-24", "note": "stocks below 5y band", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": -0.05593, "hit": false, "conv": 0.266, "H": 0.48}
 {"card": "L-LIQ-003", "date": "2025-10-27", "note": "SOFR-adm=+12bp", "w": [0, 7], "tgt": "yh_SPY", "dir": "down", "ret": -0.00277, "hit": true, "conv": 0.266, "H": 0.48}
@@ -1906,3 +1917,4 @@
 {"card": "L-MKT-003", "date": "2026-07-29", "note": "VIX 21 > 3M 21", "w": [0, 14], "tgt": "yh_SPY", "dir": "down", "ret": 0.05899, "hit": false, "conv": 0.47, "H": 0.593}
 {"card": "L-MKT-006", "date": "2026-07-31", "note": "top:XLK,XLI,XLE", "w": [21, 63], "tgt": "sector 12-1 L/S", "dir": "up", "ret": 0.0264, "hit": true, "conv": 0.444, "H": 0.593}
 {"card": "L-PHY-004", "date": "2026-08-12", "note": "hormuz 7d/90d=0.52", "w": [0, 28], "tgt": "yh_CL_F", "dir": "up", "ret": 0.04047, "hit": true, "conv": 0.415, "H": 0.588}
+{"card": "L-GRO-006", "date": "2026-10-21", "note": "GDPNow 4.0 vs naive 2.1", "w": [0, 7], "tgt": "fred_DGS2", "dir": "up", "ret": 0.0, "hit": false, "conv": 0.366, "H": 0.588}

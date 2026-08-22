@@ -705,6 +705,32 @@
    },
    "rate": 0.667
   },
+  "L-GRO-006": {
+   "n": 12,
+   "hits": 7,
+   "graded": 12,
+   "era": {
+    "pre2015": [
+     0,
+     0
+    ],
+    "post2015": [
+     12,
+     7
+    ]
+   },
+   "gate": {
+    "conv_hi": [
+     0,
+     0
+    ],
+    "conv_lo": [
+     12,
+     7
+    ]
+   },
+   "rate": 0.583
+  },
   "L-LIQ-003": {
    "n": 35,
    "hits": 16,
@@ -837,7 +863,6 @@
   }
  },
  "deferred_in_phase2": {
-  "L-GRO-006": "GDPNow vintage xlsx parsing",
   "L-LIQ-005": "multi-country M2 aggregate assembly",
   "L-POS-003": "CBOE put/call history endpoint unstable",
   "L-POS-004": "ICI flow scrape",

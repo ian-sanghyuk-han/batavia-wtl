@@ -25,7 +25,7 @@ def save(name, rows):
 FRED = ["SAHMREALTIME","IC4WSA","CES0500000003","OPHNFB","CPIAUCSL","CPILFESL",
         "WPSFD4131","T10YIE","DCOILWTICO","DGS10","DGS2","EXPINF5YR","T10Y2Y",
         "USREC","DFII10","DFEDTARU","UNRATE","WALCL","WTREGEN","RRPONTSYD",
-        "SOFR","IORB","IOER","BAMLH0A0HYM2","RSXFS","PAYEMS"]
+        "SOFR","IORB","IOER","BAMLH0A0HYM2","RSXFS","PAYEMS","A191RL1Q225SBEA"]
 
 def fetch_fred():
     key = os.environ.get("FRED_API_KEY")
@@ -197,6 +197,25 @@ def fetch_fomc():
     rows = sorted(set(rows))
     save("manual_fomc", rows)
 
+# ── ALFRED vintages of GDPNow (real-time nowcast history, 2016-05+) ──
+def fetch_gdpnow_vintages():
+    key = os.environ.get("FRED_API_KEY")
+    if not key: return
+    try:
+        r = requests.get("https://api.stlouisfed.org/fred/series/observations",
+            params={"series_id": "GDPNOW", "api_key": key, "file_type": "json",
+                    "realtime_start": "2011-07-01", "realtime_end": "9999-12-31",
+                    "limit": 100000}, timeout=60)
+        obs = r.json().get("observations", [])
+        with io.open(os.path.join(OUT, "alfred_GDPNOW.csv"), "w", newline="", encoding="utf-8") as f:
+            w = csv.writer(f); w.writerow(["vintage", "quarter", "value"])
+            for o in obs:
+                if o["value"] not in (".", ""):
+                    w.writerow([o["realtime_start"], o["date"], float(o["value"])])
+        print(f"  alfred_GDPNOW: {len(obs)} vintage rows")
+    except Exception as e:
+        print(f"  gdpnow vintages FAILED: {e}")
+
 # ── EIA crude stocks (needs free key: env EIA_API_KEY) ──────────────
 def fetch_eia():
     key = os.environ.get("EIA_API_KEY")
@@ -218,5 +237,6 @@ if __name__ == "__main__":
     print("fetching COT...");    fetch_cot()
     print("fetching PortWatch..."); fetch_portwatch()
     print("fetching FOMC dates..."); fetch_fomc()
+    print("fetching GDPNow vintages..."); fetch_gdpnow_vintages()
     print("fetching EIA...");       fetch_eia()
     print("done ->", OUT)
