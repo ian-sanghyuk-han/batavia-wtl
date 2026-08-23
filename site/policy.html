@@ -89,6 +89,9 @@
         데이터는 각 출처의 이용 조건을 따릅니다.</li>
       <li><span class="tag">수동 등록</span> 분쟁 문법의 구조 관계(전선·대치선·경제 분쟁)는 사람이 등록하고
         주기적으로 검토합니다.</li>
+      <li><span class="tag">채점 규칙 두 열</span> 과거 재구성(백테스트)은 창을 거래일 단위로 통일하고, 판정을 두 열로 나란히 공개합니다 —
+        부호만 보는 초기 규칙(sign-only)과 실시간 채점이 쓰는 상속 규칙(±0.1% 초과 방향 일치). ±0.1% 안의 움직임은
+        "정보 없음"으로 표본에서 제외(null)하며, 두 열은 합산하지 않습니다.</li>
     </ul>
   </section>
 
@@ -151,7 +154,8 @@ S[2].innerHTML='<h2>LABELING PRINCIPLES</h2><ul>'+
  '<li><span class="tag">link rules v0</span> The rules for "which event wakes which card" are an early version — the rules themselves get graded over time.</li>'+
  '<li><span class="tag">reconstruction</span> Past replays (2008 · 2020) use real event timelines, but the gauge values are approximate reconstructions — replaced by real-record playback as the daily archive grows.</li>'+
  '<li><span class="tag">formulas public</span> Every judgment formula is published in IF→THEN form in the ledger. Mathematical formulas — our own and published academic ones (Sahm rule, Kelly, Hurst, Taylor rule) — are not subject to copyright or patents and need no license. Black-Scholes is not used directly (volatility gauges use provider-computed values). Data follows each source\'s terms of use.</li>'+
- '<li><span class="tag">manually registered</span> Structural relations of the conflict grammar (fronts · standoffs) are registered by a human and reviewed periodically.</li></ul>';
+ '<li><span class="tag">manually registered</span> Structural relations of the conflict grammar (fronts · standoffs) are registered by a human and reviewed periodically.</li>'+
+ '<li><span class="tag">two verdict columns</span> The historical reconstruction (backtest) runs every window in trading days and publishes two verdict columns side by side: the early sign-only rule and the inherited live rule (signed move beyond ±0.1% in the biased direction). Moves inside ±0.1% are treated as no information and excluded from n (null); the two columns are never summed.</li></ul>';
 S[3].innerHTML='<h2>CONFLICT-LAYER CRITERIA</h2>'+
  '<p>The conflict layer uses a four-tier grammar: <span class="hl">full war</span> (the belligerents\' shared border — spark line) · <span class="hl">local conflict · civil war</span> (epicenter markers) · <span class="hl">standoff · armistice</span> (amber hold-line — e.g. the Korean DMZ) · <span class="hl">distant engagement</span> (zigzag threat line — e.g. US↔Iran).</p>'+
  '<p>The map draws <span class="hl">armed conflict only</span>. Economic and trade disputes (tariffs, sanctions) have blurry boundaries and are hard to track — they are described in country-level notes instead of being drawn.</p>'+

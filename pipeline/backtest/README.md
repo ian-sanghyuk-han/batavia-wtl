@@ -31,6 +31,34 @@ The two must never be summed into one statistic.
 
 ## Conventions (binding for phase 2)
 
+- **Units (protocol 1.4)**: every window is in **trading days** (weekdays),
+  repo-wide, via `tadd()/tdays()`. The 2026-08-23 unit audit converted
+  windows that had been written in calendar days (x5/7): INF-001 3->2,
+  INF-003 14->10, RAT-002 28->20, RAT-003 14->10, LIQ-001 [7,28]->[5,20],
+  LIQ-002 [7,28]->[5,20], LIQ-003 7->5, POS-001 [7,56]->[5,40],
+  POS-002 [3,21]->[2,15], PHY-002 [14,42]->[10,30], PHY-004 28->20,
+  PHY-005 28->20, MKT-001 28->20, MKT-002 42->30, MKT-003 14->10,
+  EVT-003 5->4, GRO-006 7->5, EVT-004 label 60->42. Month-denominated
+  windows (21/42/63/126/189/252/504) were already trading days and are
+  now *executed* as such (previously the code stepped calendar days, so
+  e.g. RAT-001's 504 ran as 16.5 months instead of 24).
+- **Two verdict columns, published side by side, never overwritten
+  (protocol 1.6)**: `hit` = legacy sign-only rule; `hit01` = the inherited
+  Handoff 6.3 rule, *signed move of the anchor beyond +/-0.1% in the biased
+  direction*. For rate anchors the 0.1% is relative to the level at fire.
+  Flag/classification/harvest verdicts (RAT-001, RAT-005 branch, MKT-007)
+  copy the sign verdict into `hit01` because no price band applies.
+- **Three-state decision (recorded 2026-08-23)**: a move inside the
+  +/-0.1% band is **NULL - excluded from n** (`nulls01` counts them), not
+  a miss. Rationale: the band marks "no information", and the live 6.3
+  rule already treats an in-band move as a neutral observation rather
+  than a wrong one; counting it as a miss would make P depend on the
+  volatility regime instead of on direction. Applied uniformly to every
+  card; scorecard exposes `graded01 / hits01 / rate01 / nulls01`.
+- **Frequency table (protocol 1.7)**: `frequency.json` — per card: class
+  (E/S/R), fires, window, fires_per_year, median gap; per year: distinct
+  days with >=1 and >=2 fires.
+
 - **surprise_naive**: where the card's original trigger compares a
   release to consensus (paid history), the backtest substitutes
   "actual vs naive forecast (12m trailing mean change), in trailing

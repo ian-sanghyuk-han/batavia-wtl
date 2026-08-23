@@ -1,7 +1,7 @@
 {
  "version": "v1",
  "source": "docs/BATAVIA-LOGIC-LEDGER-v1.md (자동 추출)",
- "label": "원장 전량 기계화 v1 · 등급·확률은 실측 채점 전 추정",
+ "label": "원장 전량 기계화 v1 · 64장(기본 52 + 상호작용 12) + 게이트 3 · 등급·확률은 실측 채점 전 추정",
  "judgeable": [
   "L-INF-001",
   "L-INF-004",
@@ -10,10 +10,10 @@
   "L-EVT-004"
  ],
  "counts": {
-  "base": 48,
+  "base": 52,
   "interaction": 12,
   "gates": 3,
-  "total": 63
+  "total": 64
  },
  "cards": [
   {
@@ -327,6 +327,54 @@
    "desc": "- IF 글로벌 M2(달러 환산) 6M 변화 부호 전환 → LAG 2~6개월 → THEN 위험자산 장기 편향 동조 - P 58%±7 · n≈35",
    "name_en": "Global M2 Impulse",
    "desc_en": "- IF global M2 (USD terms) 6M change flips sign → LAG 2–6mo → THEN long-horizon risk-asset bias follows - P 58%±7 · n≈35"
+  },
+  {
+   "id": "L-FX-001",
+   "family": "달러·FX",
+   "color": "#4FB8D8",
+   "name": "킹달러의 압박",
+   "core": "코어 3.2",
+   "grade": "A−",
+   "note": null,
+   "desc": "- IF DXY 60일 +6% 이상 → LAG 2~8주 → THEN 신흥국 주식·통화 하방, 원자재 표시가 하방 편향 - 공식 F2 · SIZE EM 상대 8주 −3.1% · P 62%±5 · n≈70",
+   "name_en": "King Dollar's Squeeze",
+   "desc_en": "- IF DXY +6% or more over 60 days → LAG 2–8wk → THEN downward bias in EM equities · currencies and dollar-priced commodities - formula F2 · SIZE EM relative 8wk −3.1% · P 62%±5 · n≈70"
+  },
+  {
+   "id": "L-FX-002",
+   "family": "달러·FX",
+   "color": "#4FB8D8",
+   "name": "캐리의 조건",
+   "core": "코어 9.5",
+   "grade": "A−",
+   "note": null,
+   "desc": "- IF 금리차 상위 통화 바스켓 (변동성 저국면) → 상시 구조 → THEN 캐리 초과수익 편향 + 급반전 꼬리 - 공식 F5 · P 월간 60%±4 · n≈520 · UNLESS w>0.6 (폭풍에서 캐리는 반대로 돈다)",
+   "name_en": "The Carry Condition",
+   "desc_en": "- IF a basket of top rate-differential currencies (low-volatility regime) → standing structure → THEN carry excess-return bias plus a sharp-reversal tail - formula F5 · P monthly 60%±4 · n≈520 · UNLESS w>0.6 (in a storm, carry runs backwards)"
+  },
+  {
+   "id": "L-FX-003",
+   "family": "달러·FX",
+   "color": "#4FB8D8",
+   "name": "엔의 피난처 스위치",
+   "core": "코어 3.8·9.5",
+   "grade": "B+",
+   "note": null,
+   "desc": "- IF VIX 20일 +50% 급등 → LAG 0~5일 → THEN 엔 강세 편향(캐리 되감기 채널) - P 64%±6 · n≈45",
+   "name_en": "The Yen Haven Switch",
+   "desc_en": "- IF VIX jumps +50% in 20 days → LAG 0–5d → THEN yen-strength bias (carry-unwind channel) - P 64%±6 · n≈45"
+  },
+  {
+   "id": "L-FX-004",
+   "family": "달러·FX",
+   "color": "#4FB8D8",
+   "name": "CIP 이탈 경보",
+   "core": "코어 9.5",
+   "grade": "B",
+   "note": null,
+   "desc": "- IF 교차통화 베이시스 < −40bp 확대 → LAG 즉시~2주 → THEN 달러 조달 스트레스 — 글로벌 위험 하방 감시 - P 경보 61%±9 · n≈18",
+   "name_en": "CIP Breach Alarm",
+   "desc_en": "- IF cross-currency basis widens below −40bp → LAG now–2wk → THEN dollar-funding stress — watch global risk down - P alarm 61%±9 · n≈18"
   },
   {
    "id": "L-POS-001",

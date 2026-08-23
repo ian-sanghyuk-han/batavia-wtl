@@ -73,7 +73,7 @@ const $=id=>document.getElementById(id);
 const EN=(localStorage.getItem('bp-lang')||'en')==='en';
 document.documentElement.lang=EN?'en':'ko';
 const FAM_EN={'고용':'Jobs','금리':'Rates','물가':'Inflation','물리':'Physical','성장':'Growth',
- '시장구조':'Market structure','유동성':'Liquidity','이벤트':'Events','포지셔닝':'Positioning'};
+ '시장구조':'Market structure','유동성':'Liquidity','이벤트':'Events','포지셔닝':'Positioning','달러·FX':'Dollar · FX'};
 const fam=f=>EN&&FAM_EN[f]||f;
 const coreT=s=>EN?String(s||'').replace('코어','core'):s;
 if(EN){
@@ -128,8 +128,8 @@ function render(){
     `${jd.has(c.id)?'<span class="live">'+(EN?'● judging live':'● 판정 가동')+'</span>':''}</div>`+
     `<div class="meta">${fam(c.family)} · ${coreT(c.core)}${c.note?' · '+c.note:''}${
       (SCORE&&SCORE.cards[c.id]&&SCORE.cards[c.id].graded)?
-      ` · <span style="color:var(--acc)">${EN?'history':'역사'} n=${SCORE.cards[c.id].graded} · ${
-        Math.round(100*SCORE.cards[c.id].rate)}% <small>(${EN?'est.':'추정'})</small></span>`:''}</div>`+
+      ` · <span style="color:var(--acc)">${EN?'history':'역사'} n=${SCORE.cards[c.id].graded01||SCORE.cards[c.id].graded} · ${
+        Math.round(100*(SCORE.cards[c.id].rate01!=null?SCORE.cards[c.id].rate01:SCORE.cards[c.id].rate))}% <small>(±0.1% · ${EN?'est.':'추정'})</small></span>`:''}</div>`+
     (c.desc?`<div class="ds">${c.desc}</div>`:'')+`</div>`).join('')||`<div style="color:#5b6b7a;font-size:11px">${EN?'No results':'검색 결과 없음'}</div>`;
   const I=FF?[]:D.interactions.filter(match);
   $('ninter').textContent=`${I.length}/${D.interactions.length}`;

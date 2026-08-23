@@ -106,7 +106,7 @@
     <div id="codewrap"><div id="lanes"></div></div>
   </section>
   <section class="glass">
-    <h3 id="t3">HISTORY REPORT CARD <small id="t3s">— per card: sample n · hit rate (est.)</small></h3>
+    <h3 id="t3">HISTORY REPORT CARD <small id="t3s">— per card: n · hit rate under the inherited ±0.1% rule, sign-only kept beside it (est.)</small></h3>
     <div style="overflow-x:auto"><table id="score"></table></div>
   </section>
 </main>
@@ -133,9 +133,9 @@ if(!EN){
 const NOC={cache:'no-store'};
 const $=id=>document.getElementById(id);
 const FAMC={'성장':'#4FD8C0','고용':'#7FD8FF','물가':'#FF5D6E','금리':'#FF8A93','유동성':'#5B8DEF',
- '포지셔닝':'#C79BFF','물리':'#D9A441','시장구조':'#A79BFF','이벤트':'#E8A33D'};
+ '포지셔닝':'#C79BFF','물리':'#D9A441','시장구조':'#A79BFF','이벤트':'#E8A33D','달러·FX':'#4FB8D8'};
 const FAM_EN={'성장':'Growth','고용':'Jobs','물가':'Inflation','금리':'Rates','유동성':'Liquidity',
- '포지셔닝':'Positioning','물리':'Physical','시장구조':'Market structure','이벤트':'Events'};
+ '포지셔닝':'Positioning','물리':'Physical','시장구조':'Market structure','이벤트':'Events','달러·FX':'Dollar · FX'};
 /* replay scenarios: era windows that have a stage */
 const ERAS=[['2008-09-01','2008-11-15','R08'],['2016-06-15','2016-07-20','R16'],
  ['2020-01-15','2020-04-01','R20'],['2022-06-01','2022-10-15','R22'],['2023-03-01','2023-03-31','R23']];
@@ -184,9 +184,10 @@ Promise.all([
    $('daydate').textContent=days[0]+(days.length>1?' ~ '+days[days.length-1].slice(5):'');
    const rows=[];
    days.forEach(ds=>byDay[ds].forEach(f=>{
-     const vd=f.hit===true?'<span class="vd ok">✓ '+(EN?'hit':'적중')+'</span>'
-        :f.hit===false?'<span class="vd no">✗ '+(EN?'miss':'빗나감')+'</span>'
-        :'<span class="vd">—</span>';
+     const h=('hit01' in f)?f.hit01:f.hit;
+     const vd=h===true?'<span class="vd ok">✓ '+(EN?'hit':'적중')+'</span>'
+        :h===false?'<span class="vd no">✗ '+(EN?'miss':'빗나감')+'</span>'
+        :(f.hit!=null?'<span class="vd">± '+(EN?'in band':'밴드 내')+'</span>':'<span class="vd">—</span>');
      rows.push('<div class="fire" style="border-left-color:'+(FAMC[famOf(f.card)]||'#7FD8FF')+'">'
        +vd+'<b>'+f.card+'</b><span class="nm">'+nameOf(f.card)+'</span>'
        +'<span class="nt">'+ds+' · '+f.note
@@ -220,20 +221,23 @@ Promise.all([
      x.fillRect((t-T0)/(T1-T0)*W,2,1.6,H-4);});
    $('lanes').appendChild(row);});
  /* ── scorecard table ── */
- const ids=Object.keys(score.cards).sort((a,b)=>score.cards[b].graded-score.cards[a].graded);
- const th=EN?'<tr><th>CARD</th><th>NAME</th><th>n</th><th>HIT</th><th></th><th>PRE/POST 2015</th><th>CONV≥.55</th></tr>'
-           :'<tr><th>카드</th><th>이름</th><th>n</th><th>적중</th><th></th><th>2015 전/후</th><th>수렴≥.55</th></tr>';
+ const ids=Object.keys(score.cards).sort((a,b)=>(score.cards[b].graded01||0)-(score.cards[a].graded01||0));
+ const th=EN?'<tr><th>CARD</th><th>NAME</th><th>n</th><th>HIT ±0.1%</th><th></th><th>SIGN-ONLY</th><th>PRE/POST 2015</th><th>CONV≥.55</th></tr>'
+           :'<tr><th>카드</th><th>이름</th><th>n</th><th>적중 ±0.1%</th><th></th><th>부호만</th><th>2015 전/후</th><th>수렴≥.55</th></tr>';
  $('score').innerHTML=th+ids.map(id=>{
    const c=score.cards[id];
-   const pct=c.rate==null?'—':(100*c.rate).toFixed(0)+'%';
-   const era=c.era.pre2015[0]+c.era.post2015[0]?
-     (c.era.pre2015[0]?Math.round(100*c.era.pre2015[1]/Math.max(1,c.era.pre2015[0]))+'%':'—')+' / '+
-     (c.era.post2015[0]?Math.round(100*c.era.post2015[1]/Math.max(1,c.era.post2015[0]))+'%':'—'):'—';
+   const r01=c.rate01==null?c.rate:c.rate01, n01=c.graded01||c.graded;
+   const pct=r01==null?'—':(100*r01).toFixed(0)+'%';
+   const sign=c.rate==null?'—':(100*c.rate).toFixed(0)+'% <span class="est">n='+c.graded+'</span>';
+   const E=c.era01||c.era;
+   const era=E.pre2015[0]+E.post2015[0]?
+     (E.pre2015[0]?Math.round(100*E.pre2015[1]/Math.max(1,E.pre2015[0]))+'%':'—')+' / '+
+     (E.post2015[0]?Math.round(100*E.post2015[1]/Math.max(1,E.post2015[0]))+'%':'—'):'—';
    const cv=c.gate.conv_hi[0]?Math.round(100*c.gate.conv_hi[1]/c.gate.conv_hi[0])+'% (n='+c.gate.conv_hi[0]+')':'—';
-   return '<tr><td><b>'+id+'</b></td><td>'+nameOf(id)+'</td><td>'+c.graded+'</td>'
+   return '<tr><td><b>'+id+'</b></td><td>'+nameOf(id)+'</td><td>'+n01+(c.nulls01?' <span class="est">(+'+c.nulls01+' null)</span>':'')+'</td>'
      +'<td><b>'+pct+'</b> <span class="est">est.</span></td>'
-     +'<td><span class="bar" style="width:'+(c.rate?Math.round(c.rate*60):0)+'px"></span></td>'
-     +'<td>'+era+'</td><td>'+cv+'</td></tr>';}).join('');
+     +'<td><span class="bar" style="width:'+(r01?Math.round(r01*60):0)+'px"></span></td>'
+     +'<td>'+sign+'</td><td>'+era+'</td><td>'+cv+'</td></tr>';}).join('');
 });
 </script>
 <script src="page-chrome.js" defer></script>

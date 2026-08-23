@@ -24,6 +24,21 @@ os.makedirs(OUTD, exist_ok=True)
 
 def D(s): return datetime.date.fromisoformat(s)
 def add(d, n): return d + datetime.timedelta(days=n)
+def tadd(d, n):
+    """n TRADING days (weekdays) from d; negative n walks back. Repo-wide unit (protocol 1.4)."""
+    step, k, cur = (1 if n >= 0 else -1), abs(n), d
+    while k > 0:
+        cur += datetime.timedelta(days=step)
+        if cur.weekday() < 5: k -= 1
+    return cur
+def tdays(a, b):
+    """Trading days strictly after a, up to b."""
+    n, cur = 0, a
+    while cur < b:
+        cur += datetime.timedelta(days=1)
+        if cur.weekday() < 5: n += 1
+    return n
+BAND = 0.001   # inherited +/-0.1% judgment band (Handoff 6.3); rate anchors: relative to the level at fire
 
 class S:
     """Date-sorted series with as-of lookup."""
@@ -150,23 +165,32 @@ def state_at(series, dt):
 
 # ── generic grading ─────────────────────────────────────────────────
 def grade(tgt, dt, hi):
-    kind = tgt[0]
+    """-> (metric, up, inband). Window = hi TRADING days. inband = |move| <= 0.1%
+    (relative move for price anchors; relative to the fire-date level for rate anchors)."""
+    kind, end = tgt[0], tadd(dt, hi)
     if kind == "ret":
-        r = SER[tgt[1]].ret_cal(dt, add(dt, hi)); return r, (None if r is None else r > 0)
+        r = SER[tgt[1]].ret_cal(dt, end)
+        return r, (None if r is None else r > 0), (None if r is None else abs(r) <= BAND)
     if kind == "diff":
-        r = SER[tgt[1]].diff_cal(dt, add(dt, hi)); return r, (None if r is None else r > 0)
+        r = SER[tgt[1]].diff_cal(dt, end); lvl = SER[tgt[1]].asof(dt)
+        if r is None or not lvl: return r, (None if r is None else r > 0), None
+        return r, r > 0, abs(r / abs(lvl)) <= BAND
     if kind == "rel":
-        a = SER[tgt[1]].ret_cal(dt, add(dt, hi)); b = SER[tgt[2]].ret_cal(dt, add(dt, hi))
-        if a is None or b is None: return None, None
-        return a - b, a - b > 0
-    return None, None
+        a = SER[tgt[1]].ret_cal(dt, end); b = SER[tgt[2]].ret_cal(dt, end)
+        if a is None or b is None: return None, None, None
+        return a - b, a - b > 0, abs(a - b) <= BAND
+    return None, None, None
+
+def three_state(hit, inband):
+    """Inherited-rule column: None (excluded from n) when the move sits inside +/-0.1%."""
+    return None if (hit is None or inband) else hit
 
 FIRES, DEFER = [], {}
-def emit(card, dt, note, w, tgt_label, direction, ret, hit):
+def emit(card, dt, note, w, tgt_label, direction, ret, hit, hit01=None):
     FIRES.append({"card": card, "date": dt.isoformat(), "note": note,
         "w": w, "tgt": tgt_label, "dir": direction,
         "ret": None if ret is None else round(ret, 5),
-        "hit": hit,
+        "hit": hit, "hit01": hit01,
         "conv": (lambda c: None if c is None else round(c, 3))(state_at(CONV, dt)),
         "H": (lambda h: None if h is None else round(h, 3))(state_at(HURST, dt))})
 
@@ -174,11 +198,12 @@ def run_simple(card, cand, tgt, direction, hi, wlo=0):
     """cand: sorted [(date, note)]; dedup inside own window; grade at fire+hi."""
     last = None
     for dt, note in cand:
-        if last and (dt - last).days < hi: continue
+        if last and tdays(last, dt) < hi: continue
         last = dt
-        ret, up = grade(tgt, dt, hi)
+        ret, up, inband = grade(tgt, dt, hi)
         hit = None if up is None else (up if direction == "up" else (not up))
-        emit(card, dt, note, [wlo, hi], tgt[1] if len(tgt) > 1 else "", direction, ret, hit)
+        emit(card, dt, note, [wlo, hi], tgt[1] if len(tgt) > 1 else "", direction, ret, hit,
+             three_state(hit, inband))
 
 def crossings(s, level, above=True, sep=30):
     out, prev, lastd = [], None, None
@@ -203,9 +228,10 @@ last = None
 for dt, note in c:
     if last and (dt - last).days < 1: continue
     last = dt
-    r = SER["fred_DGS2"].diff_cal(add(dt, -1), dt)
+    r = SER["fred_DGS2"].diff_cal(tadd(dt, -1), dt); lvl = SER["fred_DGS2"].asof(tadd(dt, -1))
     hit = None if r is None else r > 0
-    emit("L-EMP-002", dt, note, [0, 0], "fred_DGS2", "up", r, hit)
+    emit("L-EMP-002", dt, note, [0, 0], "fred_DGS2", "up", r, hit,
+         three_state(hit, None if (r is None or not lvl) else abs(r / abs(lvl)) <= BAND))
 # EMP-003 claims 4wMA turn
 s = SER["fred_IC4WSA"]; cand = []
 for i in range(60, len(s.d)):
@@ -223,7 +249,7 @@ for i in range(14, len(pr.d)):
 run_simple("L-EMP-004", cand, ("ret", "yh_SPY"), "down", 252)
 # INF-001 CPI naive surprise
 c = [(rel_cpi(d), f"naiveSDS={z:.2f}") for d, z in naive_sds(SER["fred_CPIAUCSL"], True) if z > 1.0]
-run_simple("L-INF-001", c, ("diff", "fred_DGS2"), "up", 3)
+run_simple("L-INF-001", c, ("diff", "fred_DGS2"), "up", 2)
 # INF-002 PPI->CPI pipeline
 pp, cp = SER["fred_WPSFD4131"], SER["fred_CPILFESL"]; cand = []
 for i in range(4, len(pp.d)):
@@ -235,7 +261,7 @@ run_simple("L-INF-002", cand, ("diff", "fred_DGS10"), "up", 63)
 # INF-003 BEI jolt
 s = SER["fred_T10YIE"]
 cand = [(s.d[i], f"d20={s.chg_obs(i,20)*100:.0f}bp") for i in range(20, len(s.d)) if s.chg_obs(i, 20) > 0.20]
-run_simple("L-INF-003", cand, ("ret", "yh_XLE"), "up", 14)
+run_simple("L-INF-003", cand, ("ret", "yh_XLE"), "up", 10)
 # INF-004 oil second ignition
 s = SER["fred_DCOILWTICO"]
 cand = [(s.d[i], f"60d={s.ret_obs(i,42)*100:.0f}%") for i in range(42, len(s.d))
@@ -247,19 +273,19 @@ run_simple("L-INF-005", crossings(SER["fred_EXPINF5YR"], 3.2, True, 180),
 # RAT-001 2s10s inversion -> NBER recession within 504d
 rec = SER["fred_USREC"]
 for dt, note in crossings(SER["fred_T10Y2Y"], 0.0, False, 365):
-    hit = any(rec.d[i] > dt and rec.d[i] <= add(dt, 504) and rec.v[i] == 1
+    hit = any(rec.d[i] > dt and rec.d[i] <= tadd(dt, 504) and rec.v[i] == 1
               for i in range(len(rec.d)))
-    emit("L-RAT-001", dt, note, [126, 504], "USREC", "recession", None, hit)
+    emit("L-RAT-001", dt, note, [126, 504], "USREC", "recession", None, hit, hit)
 # RAT-002 real rates & gold
 s = SER["fred_DFII10"]
 cand = [(s.d[i], f"d20={s.chg_obs(i,20)*100:.0f}bp") for i in range(20, len(s.d))
         if (s.chg_obs(i, 20) or 0) <= -0.30]
-run_simple("L-RAT-002", cand, ("ret", "yh_GC_F"), "up", 28)
+run_simple("L-RAT-002", cand, ("ret", "yh_GC_F"), "up", 20)
 # RAT-003 rate speed
 s = SER["fred_DGS10"]
 cand = [(s.d[i], f"d20=+{s.chg_obs(i,20)*100:.0f}bp") for i in range(20, len(s.d))
         if (s.chg_obs(i, 20) or 0) >= 0.50]
-run_simple("L-RAT-003", cand, ("ret", "yh_XLK"), "down", 14)
+run_simple("L-RAT-003", cand, ("ret", "yh_XLK"), "down", 10)
 # RAT-005 first cut, branched
 tar, un = SER["fred_DFEDTARU"], SER["fred_UNRATE"]; lastcut = None
 for i in range(1, len(tar.d)):
@@ -268,11 +294,12 @@ for i in range(1, len(tar.d)):
             u_now = un.asof(tar.d[i]); u_then = un.asof(add(tar.d[i], -180))
             if u_now is None or u_then is None: lastcut = tar.d[i]; continue
             recess = (u_now - u_then) > 0.5
-            r = SER["yh_SPY"].ret_cal(tar.d[i], add(tar.d[i], 252))
+            r = SER["yh_SPY"].ret_cal(tar.d[i], tadd(tar.d[i], 252))
             hit = None if r is None else ((r < 0) if recess else (r > 0))
             emit("L-RAT-005", tar.d[i],
                  f"first cut, {'recessionary' if recess else 'insurance'}",
-                 [0, 252], "yh_SPY", "branch", r, hit)
+                 [0, 252], "yh_SPY", "branch", r, hit,
+                 three_state(hit, None if r is None else abs(r) <= BAND))
         lastcut = tar.d[i]
 # RAT-006 taylor gap sustained 6 months
 cp, un, tar = SER["fred_CPILFESL"], SER["fred_UNRATE"], SER["fred_DFEDTARU"]
@@ -298,7 +325,7 @@ for i in range(52, len(chg)):
     sd = statistics.pstdev(win)
     if sd > 0 and (chg[i][1]-statistics.fmean(win))/sd > 1.0:
         cand.append((chg[i][0], f"4w dNL z>+1"))
-run_simple("L-LIQ-001", cand, ("ret", "yh_QQQ"), "up", 28, 7)
+run_simple("L-LIQ-001", cand, ("ret", "yh_QQQ"), "up", 20, 5)
 # LIQ-002 RRP drawdown
 cand = []
 for i in range(20, len(rr.d)):
@@ -307,7 +334,7 @@ for i in range(20, len(rr.d)):
         t0, t1 = tg.asof(rr.d[i-20]), tg.asof(rr.d[i])
         if t0 and t1 and t1/t0-1 >= 0.15: continue
         cand.append((rr.d[i], f"RRP 4w {100*(rr.v[i]/rr.v[i-20]-1):.0f}%"))
-run_simple("L-LIQ-002", cand, ("ret", "yh_SPY"), "up", 28, 7)
+run_simple("L-LIQ-002", cand, ("ret", "yh_SPY"), "up", 20, 5)
 # LIQ-003 SOFR spike (IORB stitched with IOER pre-2021)
 so, io_, ie = SER["fred_SOFR"], SER["fred_IORB"], SER["fred_IOER"]
 cand = []
@@ -315,7 +342,7 @@ for i in range(len(so.d)):
     base = io_.asof(so.d[i]) or ie.asof(so.d[i])
     if base is not None and so.v[i] - base > 0.10:
         cand.append((so.d[i], f"SOFR-adm=+{(so.v[i]-base)*100:.0f}bp"))
-run_simple("L-LIQ-003", cand, ("ret", "yh_SPY"), "down", 7)
+run_simple("L-LIQ-003", cand, ("ret", "yh_SPY"), "down", 5)
 # POS-001 COT extremes (contrarian), per market
 for mkt, tgt, in [("cot_ES", ("ret","yh_SPY")), ("cot_CL", ("ret","yh_CL_F")),
                   ("cot_GC", ("ret","yh_GC_F")), ("cot_EC", ("ret","yh_UUP"))]:
@@ -327,13 +354,13 @@ for mkt, tgt, in [("cot_ES", ("ret","yh_SPY")), ("cot_CL", ("ret","yh_CL_F")),
         if abs(z) > 2: cand.append((s.d[i], f"{mkt[4:]} z={z:+.1f}"))
     last = None
     for dt, note in cand:
-        if last and (dt-last).days < 56: continue
+        if last and tdays(last, dt) < 40: continue
         last = dt
         z = float(note.split("=")[1])
         contrarian_down = z > 0 if mkt != "cot_EC" else z < 0
-        r, up = grade(tgt, dt, 56)
+        r, up, inband = grade(tgt, dt, 40)
         hit = None if up is None else ((not up) if contrarian_down else up)
-        emit("L-POS-001", dt, note, [7, 56], tgt[1], "contrarian", r, hit)
+        emit("L-POS-001", dt, note, [5, 40], tgt[1], "contrarian", r, hit, three_state(hit, inband))
 # POS-002 funding extremes
 s = SER["bn_funding_BTC"]; cand = []
 for i in range(len(s.d)):
@@ -341,17 +368,17 @@ for i in range(len(s.d)):
     if ann > 0.5 or ann < -0.2: cand.append((s.d[i], f"funding ann={ann*100:.0f}%"))
 last = None
 for dt, note in cand:
-    if last and (dt-last).days < 21: continue
+    if last and tdays(last, dt) < 15: continue
     last = dt
     pos = float(note.split("=")[1].rstrip("%")) > 0
-    r, up = grade(("ret","yh_BTC-USD"), dt, 21)
+    r, up, inband = grade(("ret","yh_BTC-USD"), dt, 15)
     hit = None if up is None else ((not up) if pos else up)
-    emit("L-POS-002", dt, note, [3, 21], "yh_BTC-USD", "contrarian", r, hit)
+    emit("L-POS-002", dt, note, [2, 15], "yh_BTC-USD", "contrarian", r, hit, three_state(hit, inband))
 # PHY-002 BDI proxy
 s = SER["yh_BDRY"]
 cand = [(s.d[i], f"20d=+{s.ret_obs(i,20)*100:.0f}%") for i in range(20, len(s.d))
         if (s.ret_obs(i, 20) or 0) >= 0.30]
-run_simple("L-PHY-002", cand, ("ret", "yh_XME"), "up", 42, 14)
+run_simple("L-PHY-002", cand, ("ret", "yh_XME"), "up", 30, 10)
 # PHY-004 chokepoint transit collapse
 for nm in ("pw_hormuz", "pw_suez", "pw_panama"):
     s = SER[nm]
@@ -361,7 +388,7 @@ for nm in ("pw_hormuz", "pw_suez", "pw_panama"):
         w7 = statistics.fmean(s.v[i-6:i+1]); w90 = statistics.fmean(s.v[i-89:i+1])
         if w90 > 0 and w7 <= 0.8 * w90:
             cand.append((s.d[i], f"{nm[3:]} 7d/90d={w7/w90:.2f}"))
-    run_simple("L-PHY-004", cand, ("ret", "yh_CL_F"), "up", 28)
+    run_simple("L-PHY-004", cand, ("ret", "yh_CL_F"), "up", 20)
 # PHY-006 El Nino
 run_simple("L-PHY-006", crossings(SER["noaa_ONI"], 1.0, True, 300),
            ("ret", "yh_SB_F"), "up", 189, 21)
@@ -371,7 +398,7 @@ for d, v in CONV:
     if prev is not None and v >= 0.55 > prev and (lastd is None or (d-lastd).days >= 28):
         cand.append((d, f"avg|rho|={v:.2f}")); lastd = d
     prev = v
-run_simple("L-MKT-001", cand, ("ret", "yh_SPY"), "down", 28)
+run_simple("L-MKT-001", cand, ("ret", "yh_SPY"), "down", 20)
 # MKT-002 credit leads - PROXY: FRED serves ICE HY OAS only ~3y back
 # (licensing truncation), so credit stress = HYG underperforming IEF
 # by 4%+ over 20 obs (2007+). Substitution stated in scorecard notes.
@@ -383,7 +410,7 @@ for i in range(20, len(hyg.d)):
     rel = (hyg.v[i]/hyg.v[i-20]) - (ief.v[j]/ief.v[j-20])
     if rel <= -0.04:
         cand.append((hyg.d[i], f"HYG-TLT 20d={rel*100:.1f}%"))
-run_simple("L-MKT-002", cand, ("ret", "yh_SPY"), "down", 42)
+run_simple("L-MKT-002", cand, ("ret", "yh_SPY"), "down", 30)
 # MKT-003 VIX backwardation
 v, v3 = SER["yh__VIX"], SER["yh__VIX3M"]; cand = []
 prevb = False
@@ -393,7 +420,7 @@ for i in range(len(v.d)):
     b = v.v[i] > b3
     if b and not prevb: cand.append((v.d[i], f"VIX {v.v[i]:.0f} > 3M {b3:.0f}"))
     prevb = b
-run_simple("L-MKT-003", cand, ("ret", "yh_SPY"), "down", 14)
+run_simple("L-MKT-003", cand, ("ret", "yh_SPY"), "down", 10)
 # MKT-006 sector momentum 12-1 (monthly cross-section, 9 sectors)
 SEC = ["yh_XLK","yh_XLE","yh_XLF","yh_XLV","yh_XLI","yh_XLP","yh_XLY","yh_XLB","yh_XLU"]
 spy = SER["yh_SPY"]; monthly = [spy.d[i] for i in range(len(spy.d)-1)
@@ -408,38 +435,40 @@ for dt in monthly:
     if len(scores) < 9: continue
     scores.sort(reverse=True)
     top = [k for _, k in scores[:3]]; bot = [k for _, k in scores[-3:]]
-    rt = [SER[k].ret_cal(dt, add(dt, 63)) for k in top]
-    rb = [SER[k].ret_cal(dt, add(dt, 63)) for k in bot]
+    rt = [SER[k].ret_cal(dt, tadd(dt, 63)) for k in top]
+    rb = [SER[k].ret_cal(dt, tadd(dt, 63)) for k in bot]
     if None in rt or None in rb: continue
     spread = statistics.fmean(rt) - statistics.fmean(rb)
     emit("L-MKT-006", dt, f"top:{','.join(t[3:] for t in top)}",
-         [21, 63], "sector 12-1 L/S", "up", spread, spread > 0)
+         [21, 63], "sector 12-1 L/S", "up", spread, spread > 0,
+         three_state(spread > 0, abs(spread) <= BAND))
 # MKT-007 volatility premium (monthly harvest test)
 for dt in monthly:
     iv = v.asof(dt); rv = realized20(SER["yh__GSPC"], dt)
     if iv is None or rv is None or iv - rv <= 4: continue
-    rv_fwd = realized20(SER["yh__GSPC"], add(dt, 30))
+    rv_fwd = realized20(SER["yh__GSPC"], tadd(dt, 21))
     if rv_fwd is None: continue
     emit("L-MKT-007", dt, f"IV-RV={iv-rv:.1f}p", [21, 21], "IV vs fwd RV",
-         "harvest", round(iv - rv_fwd, 2), iv > rv_fwd)
+         "harvest", round(iv - rv_fwd, 2), iv > rv_fwd, iv > rv_fwd)
 # EVT-001 FOMC pre-drift (official meeting dates scraped from the Fed)
 fomc = S("manual_fomc")
 spyS = SER["yh_SPY"]
 for i in range(len(fomc.d)):
     T = fomc.d[i]
     if T > datetime.date.today(): break
-    r = spyS.ret_cal(add(T, -2), add(T, -1))     # the pre-announcement drift day
+    r = spyS.ret_cal(tadd(T, -2), tadd(T, -1))   # the pre-announcement drift day
     if r is None: continue
-    emit("L-EVT-001", add(T, -1), f"FOMC {T.isoformat()}", [0, 1], "yh_SPY", "up", r, r > 0)
+    emit("L-EVT-001", tadd(T, -1), f"FOMC {T.isoformat()}", [0, 1], "yh_SPY", "up", r, r > 0,
+         three_state(r > 0, abs(r) <= BAND))
 # EVT-003 OPEC prisoner's dilemma (curated event table, sources in CSV)
 op = os.path.join(HERE, "manual_opec.csv")
 if os.path.exists(op):
     for row in csv.DictReader(io.open(op, encoding="utf-8")):
         dt = D(row["date"]); direction = "down" if row["type"] == "bear" else "up"
-        r, up = grade(("ret", "yh_CL_F"), dt, 5)
+        r, up, inband = grade(("ret", "yh_CL_F"), dt, 4)
         hit = None if up is None else (up if direction == "up" else (not up))
-        emit("L-EVT-003", dt, row["type"] + ": " + row["event"][:46], [0, 5], "yh_CL_F",
-             direction, r, hit)
+        emit("L-EVT-003", dt, row["type"] + ": " + row["event"][:46], [0, 4], "yh_CL_F",
+             direction, r, hit, three_state(hit, inband))
 # PHY-005 inventory floor (activates when EIA_API_KEY fetched the series)
 eia = S("eia_WCESTUS1")
 if eia.ok():
@@ -450,7 +479,7 @@ if eia.ok():
                 if abs(eia.d[j].isocalendar()[1] - woy) <= 2]
         if band and eia.v[i] < min(band):
             cand.append((eia.d[i], f"stocks below 5y band"))
-    run_simple("L-PHY-005", cand, ("ret", "yh_CL_F"), "up", 28)
+    run_simple("L-PHY-005", cand, ("ret", "yh_CL_F"), "up", 20)
 # GRO-006 GDP nowcast gap (ALFRED real-time vintages vs naive forecast)
 gv = os.path.join(HIST, "alfred_GDPNOW.csv")
 gdp = S("fred_A191RL1Q225SBEA")
@@ -473,7 +502,7 @@ if os.path.exists(gv) and gdp.ok():
         naive = statistics.fmean(prev)
         if now - naive > 0.8:
             cand.append((fire, f"GDPNow {now:.1f} vs naive {naive:.1f}"))
-    run_simple("L-GRO-006", cand, ("diff", "fred_DGS2"), "up", 7)
+    run_simple("L-GRO-006", cand, ("diff", "fred_DGS2"), "up", 5)
 # EVT-004 election uncertainty (US presidential)
 ELEC = ["2000-11-07","2004-11-02","2008-11-04","2012-11-06","2016-11-08","2020-11-03","2024-11-05"]
 for e in ELEC:
@@ -482,9 +511,10 @@ for e in ELEC:
     near = [v.asof(add(ed, -k)) for k in range(0, 10)]
     pre = [x for x in pre if x]; near = [x for x in near if x]
     if not pre or not near: continue
-    emit("L-EVT-004", fire, f"election {e}", [0, 60], "^VIX",
-         "up", round(statistics.fmean(near)-statistics.fmean(pre), 2),
-         statistics.fmean(near) > statistics.fmean(pre))
+    mp, mn = statistics.fmean(pre), statistics.fmean(near)
+    emit("L-EVT-004", fire, f"election {e}", [0, 42], "^VIX",
+         "up", round(mn - mp, 2), mn > mp,
+         three_state(mn > mp, abs((mn - mp) / mp) <= BAND if mp else None))
 
 DEFER = {
  "deferred_in_phase2": {
@@ -563,9 +593,17 @@ with io.open(os.path.join(OUTD, "fires.jsonl"), "w", encoding="utf-8") as f:
 cards = {}
 for r in FIRES:
     c0 = cards.setdefault(r["card"], {"n":0,"hits":0,"graded":0,
+        "graded01":0,"hits01":0,"nulls01":0,
         "era":{"pre2015":[0,0],"post2015":[0,0]},
+        "era01":{"pre2015":[0,0],"post2015":[0,0]},
         "gate":{"conv_hi":[0,0],"conv_lo":[0,0]}})
     c0["n"] += 1
+    if r.get("hit01") is not None:
+        c0["graded01"] += 1; c0["hits01"] += 1 if r["hit01"] else 0
+        e01 = "pre2015" if r["date"] < "2015-01-01" else "post2015"
+        c0["era01"][e01][0] += 1; c0["era01"][e01][1] += 1 if r["hit01"] else 0
+    elif r.get("hit") is not None:
+        c0["nulls01"] += 1
     if r["hit"] is not None:
         c0["graded"] += 1; c0["hits"] += 1 if r["hit"] else 0
         era = "pre2015" if r["date"] < "2015-01-01" else "post2015"
@@ -575,13 +613,43 @@ for r in FIRES:
             c0["gate"][g][0] += 1; c0["gate"][g][1] += 1 if r["hit"] else 0
 for cid, c0 in cards.items():
     c0["rate"] = round(c0["hits"]/c0["graded"], 3) if c0["graded"] else None
+    c0["rate01"] = round(c0["hits01"]/c0["graded01"], 3) if c0["graded01"] else None
 
 score = {"generated": datetime.date.today().isoformat(),
          "label": "reconstructed backtest (est.) - separate from live preregistered grading",
+         "units": "all windows in TRADING days (protocol 1.4)",
+         "columns": {"rate": "sign-only (legacy backtest rule) - kept, labeled, never overwritten",
+                     "rate01": "inherited Handoff 6.3 rule: signed move beyond +/-0.1% in the biased direction; in-band moves are NULL (excluded from graded01, counted in nulls01)"},
          "conventions": "see pipeline/backtest/README.md",
          "cards": cards, **DEFER}
 with io.open(os.path.join(OUTD, "scorecard.json"), "w", encoding="utf-8") as f:
     json.dump(score, f, ensure_ascii=False, indent=1)
+
+# ── 1.7 firing-frequency table + calendar coverage ──
+CLASS = {"L-GRO-004":"R","L-EMP-001":"R","L-RAT-001":"R","L-RAT-005":"R","L-PHY-006":"R",
+         "L-MKT-005":"S","L-MKT-006":"S","L-MKT-007":"S","L-FX-002":"S"}
+today = datetime.date.today()
+freq = {"generated": today.isoformat(),
+        "units": "fires_per_year over [first_fire, today]; gaps in calendar days",
+        "cards": {}, "coverage": {}}
+bycard = {}
+for r in FIRES: bycard.setdefault(r["card"], []).append(D(r["date"]))
+for cid, ds in sorted(bycard.items()):
+    ds.sort(); yrs = max((today - ds[0]).days, 1) / 365.25
+    gaps = [(ds[i] - ds[i-1]).days for i in range(1, len(ds))]
+    freq["cards"][cid] = {"class": CLASS.get(cid, "E"), "fires": len(ds),
+        "window_start": ds[0].isoformat(), "window_end": today.isoformat(),
+        "fires_per_year": round(len(ds) / yrs, 2),
+        "median_gap_days": (statistics.median(gaps) if gaps else None)}
+daycount = {}
+for r in FIRES: daycount[r["date"]] = daycount.get(r["date"], 0) + 1
+for ds, n in daycount.items():
+    y = ds[:4]; cv = freq["coverage"].setdefault(y, {"days_with_fire": 0, "days_with_2plus": 0})
+    cv["days_with_fire"] += 1
+    if n >= 2: cv["days_with_2plus"] += 1
+freq["coverage"] = dict(sorted(freq["coverage"].items()))
+with io.open(os.path.join(OUTD, "frequency.json"), "w", encoding="utf-8") as f:
+    json.dump(freq, f, ensure_ascii=False, indent=1)
 
 cal = {}
 for r in FIRES: cal.setdefault(r["date"], []).append(r["card"])
@@ -591,4 +659,9 @@ with io.open(os.path.join(OUTD, "calendar.json"), "w", encoding="utf-8") as f:
 print(f"fires: {len(FIRES)} rows across {len(cards)} cards -> {OUTD}")
 for cid in sorted(cards):
     c0 = cards[cid]
-    print(f"  {cid}: n={c0['graded']}/{c0['n']} hit={c0['rate']}")
+    print(f"  {cid}: sign n={c0['graded']} rate={c0['rate']} | +/-0.1% n={c0['graded01']} rate={c0['rate01']} nulls={c0['nulls01']}")
+print("frequency:")
+for cid, f0 in freq["cards"].items():
+    print(f"  {cid} {f0['class']} fires={f0['fires']} {f0['window_start']}->{f0['window_end']} "
+          f"/yr={f0['fires_per_year']} medgap={f0['median_gap_days']}")
+print("coverage:", {y: (v['days_with_fire'], v['days_with_2plus']) for y, v in freq['coverage'].items()})
