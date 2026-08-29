@@ -48,7 +48,7 @@ jobs:
       - name: Restore price cache
         uses: actions/cache/restore@v4
         with:
-          path: lab/exp004/data/ohlcv
+          path: lab/exp004/data
           key: exp004-ohlcv-${{ github.run_id }}
           restore-keys: |
             exp004-ohlcv-
@@ -69,5 +69,5 @@ jobs:
         if: always()
         uses: actions/cache/save@v4
         with:
-          path: lab/exp004/data/ohlcv
+          path: lab/exp004/data
           key: exp004-ohlcv-${{ github.run_id }}
