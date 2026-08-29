@@ -1,0 +1,50 @@
+name: EXP-004 pilot (20 stocks, real data)
+
+on:
+  workflow_dispatch:
+    inputs:
+      tickers:
+        description: 'Number of stocks (0 = whole universe)'
+        required: false
+        default: '20'
+
+permissions:
+  contents: write
+
+jobs:
+  pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: claude/review-and-proceed-rir7n2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r lab/exp004/requirements.txt finance-datareader
+      - name: Unit tests must pass before any real-data run
+        run: cd lab/exp004 && python -m pytest tests/ -q
+      - name: Run pilot
+        run: cd lab/exp004 && python run.py --backend pykrx --tickers ${{ inputs.tickers || 20 }} --outdir output/pilot
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp004-pilot
+          path: lab/exp004/output/pilot/
+          retention-days: 30
+      - name: Commit pilot summary
+        if: always()
+        run: |
+          git config user.name "batavia-pipeline"
+          git config user.email "actions@users.noreply.github.com"
+          git add -f lab/exp004/output/pilot/report.md \
+                     lab/exp004/output/pilot/meta.json \
+                     lab/exp004/output/pilot/rule_summary.csv \
+                     lab/exp004/output/pilot/persistence.csv \
+                     lab/exp004/output/pilot/cost_impact.csv \
+                     lab/exp004/output/pilot/top_list_characteristics.csv || true
+          if git diff --cached --quiet; then echo "no change"; exit 0; fi
+          git commit -m "lab: EXP-004 pilot result"
+          git pull --rebase
+          git push origin HEAD:claude/review-and-proceed-rir7n2
