@@ -23,10 +23,21 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install -r lab/exp004/requirements.txt finance-datareader
+
+      - name: Restore price cache
+        uses: actions/cache/restore@v4
+        with:
+          path: lab/exp004/data/ohlcv
+          key: exp004-ohlcv-
+          restore-keys: |
+            exp004-ohlcv-
       - name: Unit tests must pass before any real-data run
         run: cd lab/exp004 && python -m pytest tests/ -q
-      - name: Run pilot
-        run: cd lab/exp004 && python run.py --backend pykrx --tickers ${{ inputs.tickers || 20 }} --outdir output/pilot
+      - name: Run pilot (cache only — never touches the venue)
+        run: |
+          cd lab/exp004
+          python run.py --backend pykrx --offline \
+                        --tickers ${{ inputs.tickers || 20 }} --outdir output/pilot
       - uses: actions/upload-artifact@v4
         if: always()
         with:
