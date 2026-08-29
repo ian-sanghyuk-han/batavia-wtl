@@ -17,20 +17,23 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: pip install pykrx pandas numpy
+      - run: pip install pykrx pandas numpy finance-datareader
       - name: Probe what pykrx can actually deliver
         run: python lab/exp004/probe_phase0.py
+      - name: Follow-up probe (ticker lists, history depth, FDR fallback)
+        if: always()
+        run: python lab/exp004/probe_phase0b.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: phase0-probe
-          path: lab/exp004/output/phase0_probe.json
+          path: lab/exp004/output/phase0*_probe.json
       - name: Commit probe result
         if: always()
         run: |
           git config user.name "batavia-pipeline"
           git config user.email "actions@users.noreply.github.com"
-          git add -f lab/exp004/output/phase0_probe.json || true
+          git add -f lab/exp004/output/phase0_probe.json lab/exp004/output/phase0b_probe.json || true
           if git diff --cached --quiet; then echo "no change"; exit 0; fi
           git commit -m "lab: EXP-004 Phase 0 probe result"
           git push origin HEAD:claude/review-and-proceed-rir7n2
