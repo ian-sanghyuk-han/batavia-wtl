@@ -5,6 +5,20 @@ const T=localStorage.getItem('bp-theme')||'dark';
 const L=localStorage.getItem('bp-lang')||'en';
 const EN=L==='en';
 const h=document.querySelector('header');if(!h)return;
+/* unified tabs (canvas design): one nav on every page; hide the old one-way back link */
+const back=h.querySelector('a[href="./"]');if(back)back.style.display='none';
+const path=location.pathname.split('/').pop()||'index.html';
+const TABS=[['TODAY','index.html'],['OBSERVATORY','observatory.html'],['NEXT','next.html'],
+ ['LEDGER','ledger.html'],['CALENDAR','calendar.html'],['REPLAY','replay.html']];
+const nav=document.createElement('div');
+nav.style.cssText='display:flex;gap:4px;flex-wrap:wrap;max-width:1080px;margin:2px auto 0;padding:0 18px 8px';
+TABS.forEach(([lb,href])=>{const a=document.createElement('a');
+  a.textContent=lb;a.href=href==='index.html'?'./':href;
+  const on=(path===href)||(href==='index.html'&&(path===''||path==='index.html'));
+  a.style.cssText='font:600 10px Consolas,monospace;letter-spacing:2px;padding:6px 12px;border-radius:8px;text-decoration:none;'+
+    (on?'color:#06121c;background:var(--acc)':'color:var(--dim)');
+  nav.appendChild(a);});
+h.appendChild(nav);
 const btn=document.createElement('span');
 btn.id='pcset';btn.textContent='⚙';btn.title=EN?'Settings':'설정';
 btn.style.cssText='float:right;margin:2px 0 0 14px;cursor:pointer;color:var(--acc);font-size:13px;user-select:none';

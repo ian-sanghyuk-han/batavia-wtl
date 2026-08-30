@@ -7,7 +7,7 @@
      All figures est., with provenance; observations, never directives. -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>BATAVIA PROJECT — What Comes Next</title>
+<title>BATAVIA PROJECT — Next</title>
 <script>{const t=localStorage.getItem('bp-theme')||'dark';document.documentElement.dataset.theme=(t==='gundam'||t==='light')?'gundam':'dark';}</script>
 <style>
   :root{--acc:#7FD8FF;--ink:#EAF9FF;--dim:#93a7b8;--mut:#5b6b7a;
@@ -45,6 +45,17 @@
   .dots i{width:6px;height:6px;border-radius:2px;display:inline-block}
   .dots .h{background:var(--up)} .dots .m{background:var(--dn)} .dots .z{background:rgba(159,199,224,.25)}
   .dotcap{font:8.5px Consolas,monospace;color:var(--mut)}
+  .chain{display:flex;align-items:center;gap:7px;margin-top:6px;flex-wrap:wrap}
+  .chain .node{font:10px Consolas,monospace;border:1px solid var(--edge);border-radius:7px;
+    padding:3px 9px;color:var(--ink);background:rgba(159,199,224,.05);max-width:420px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .chain .arr{font:9px Consolas,monospace;color:var(--mut);letter-spacing:1px}
+  .chain .tgt{border-color:currentColor}
+  .med{font:9.5px Consolas,monospace;color:var(--dim);margin-top:4px}
+  .med b.up{color:var(--up)} .med b.dn{color:var(--dn)}
+  .livechip{font:600 9px Consolas,monospace;letter-spacing:1px;color:var(--up);
+    border:1px solid rgba(63,224,160,.45);border-radius:6px;padding:1px 8px;margin-left:8px}
+  html[data-theme="gundam"] .livechip{color:#1f9d63;border-color:rgba(31,157,99,.5)}
   .sec{font:600 10px Consolas,monospace;letter-spacing:2px;color:var(--acc);margin:20px 0 10px}
   .sec small{color:var(--mut);letter-spacing:0;font-weight:400}
   footer{max-width:1080px;margin:0 auto;padding:0 18px 30px;font:9px Consolas,monospace;color:var(--mut);line-height:1.7}
@@ -59,7 +70,7 @@
 <body>
 <header>
   <a href="./">← OBSERVATORY</a>
-  <b>BATAVIA PROJECT</b> · WHAT COMES NEXT
+  <b>BATAVIA PROJECT</b> · NEXT
   <small id="hsub">for every rule the machine watches: if it activates, what happened next — a probability that re-conditions live on the current regime · est. · observations, not instructions</small>
 </header>
 <main>
@@ -68,6 +79,8 @@
     <span class="cond" id="rgcond">loading the live regime…</span>
     <span class="live">● LIVE — re-conditions as the regime moves</span>
   </div>
+  <div class="sec" id="sec0">ACTIVE NOW <small id="sec0s">— the event side of the conditioning: these rules are live at this minute</small></div>
+  <div id="board0"></div>
   <div class="sec" id="sec1">STRONGEST CONDITIONAL EDGES <small id="sec1s">— n ≥ 30 only · P under the CURRENT regime column · distribution = every historical outcome</small></div>
   <div id="board"></div>
   <div class="sec" id="sec2">SMALL SAMPLES <small id="sec2s">— historical cases, not statistics (n &lt; 30)</small></div>
@@ -85,6 +98,8 @@ if(!EN){
   document.getElementById('hsub').textContent='기계가 지켜보는 모든 규칙에 대해: 활성되면 다음에 무슨 일이 있었나 — 현재 국면에 따라 실시간으로 다시 조건화되는 확률 · 추정 · 관찰이며 지시가 아님';
   document.getElementById('sec1').firstChild.textContent='가장 강한 조건부 우위 ';
   document.getElementById('sec1s').textContent='— n ≥ 30만 · 현재 국면 열의 P · 분포 = 과거의 모든 실제 결과';
+  document.getElementById('sec0').firstChild.textContent='지금 활성 ';
+  document.getElementById('sec0s').textContent='— 조건화의 사건 축: 이 분 현재 살아있는 규칙들';
   document.getElementById('sec2').firstChild.textContent='소표본 ';
   document.getElementById('sec2s').textContent='— 통계가 아니라 역사 사례 (n < 30)';
   document.getElementById('foot').textContent='모든 확률은 표본 수가 함께 표시되는 재구성 빈도(추정)이며, 실시간 수렴도 게이트로 조건화되어 오늘의 데이터가 변하면 함께 변합니다. 출처: 원장 카드 ID + 이론 코어 절. 어떤 것도 행동을 지시하지 않습니다.';
@@ -101,8 +116,11 @@ Promise.all([
  fetch('data/backtest/scorecard.json',NOC).then(r=>r.json()),
  fetch('data/backtest/fires.jsonl',NOC).then(r=>r.text()),
  fetch('data/regime.json',NOC).then(r=>r.json()).catch(()=>null),
- fetch('logic/ledger-full.json',NOC).then(r=>r.json())
-]).then(([score,ftxt,rg,led])=>{
+ fetch('logic/ledger-full.json',NOC).then(r=>r.json()),
+ fetch('data/event_card.json',NOC).then(r=>r.json()).catch(()=>null),
+ fetch('data/news.json',NOC).then(r=>r.json()).catch(()=>({events:[]})),
+ fetch('logic/ledger.json',NOC).then(r=>r.json()).catch(()=>null)
+]).then(([score,ftxt,rg,led,ev,news,led5])=>{
  const FIRES=ftxt.trim().split(/\r?\n/).map(l=>JSON.parse(l));
  const CARD={};led.cards.forEach(c=>CARD[c.id]=c);
  const conv=rg&&rg.conv?rg.conv.value:null;
@@ -112,6 +130,21 @@ Promise.all([
    ? (EN?'regime feed unavailable — showing unconditional P':'국면 피드 없음 — 무조건부 P 표시')
    : (EN?`convergence ${hi?'≥':'<'} 0.55 → using the ${hi?'STORM':'CALM'}-column probabilities`
        :`수렴도 ${hi?'≥':'<'} 0.55 → ${hi?'폭풍':'평온'} 열의 확률 사용`);
+ /* live activation flags — the event side of the conditioning */
+ const evs=(news&&news.events)||[];
+ const havKm=(a,b)=>{const R=6371,d2r=Math.PI/180;
+   const dLa=(b[0]-a[0])*d2r,dLo=(b[1]-a[1])*d2r;
+   const x=Math.sin(dLa/2)**2+Math.cos(a[0]*d2r)*Math.cos(b[0]*d2r)*Math.sin(dLo/2)**2;
+   return 2*R*Math.asin(Math.sqrt(x));};
+ const CHK=led5?Object.values(led5.chokepoints||{}):[];
+ const nearHit=evs.some(e=>['18','19','20'].includes(e.code)&&(e.sev||0)>=4
+   &&CHK.some(cp=>havKm([e.la,e.lo],[cp.la,cp.lo])<=700));
+ const polHit=evs.some(e=>['13','14'].includes(e.code)&&(e.sev||0)>=4);
+ const ACTIVE=new Set();
+ if(ev&&ev.event)ACTIVE.add('L-INF-001');
+ if(nearHit)ACTIVE.add('L-PHY-004');
+ if(polHit)ACTIVE.add('L-EVT-004');
+ if(hi)ACTIVE.add('L-MKT-001');
  /* per-card outcome dots from actual fires */
  const by={};FIRES.forEach(f=>{ (by[f.card]=by[f.card]||[]).push(f); });
  const rows=Object.keys(score.cards).map(id=>{
@@ -129,7 +162,8 @@ Promise.all([
  rows.sort((a,b)=>Math.abs(b.p-0.5)*Math.min(1,b.np/30)-Math.abs(a.p-0.5)*Math.min(1,a.np/30));
  const nameOf=r=>(EN&&r.meta.name_en)?r.meta.name_en:(r.meta.name||r.id);
  const ifOf=r=>{const d=(EN&&r.meta.desc_en)?r.meta.desc_en:(r.meta.desc||'');
-   const cut=d.split('→')[0].replace(/^-\s*/,'').trim();return cut||'';};
+   const cut=d.split('→')[0].replace(/^-\s*/,'').trim();
+   return cut||(EN?'trigger — see the ledger card':'트리거 — 원장 카드 참조');};
  const html=r=>{
    const col=FAMC[r.meta.family]||'#7FD8FF';
    const dir=r.last.dir==='down'?(EN?'downward':'하방'):r.last.dir==='up'?(EN?'upward':'상방'):r.last.dir||'';
@@ -140,10 +174,23 @@ Promise.all([
      const h=('hit01' in f&&f.hit01!=null)?f.hit01:f.hit;
      return `<i class="${h===true?'h':h===false?'m':'z'}"></i>`;}).join('');
    const lo=Math.min(r.p,0.5),w=Math.abs(r.p-0.5);
+   const rets=r.fs.map(f=>f.ret).filter(v=>v!=null);
+   const isbp=String(r.last.tgt||'').indexOf('fred')===0;
+   const fm=v=>isbp?(100*v).toFixed(0)+'bp':(100*v).toFixed(1)+'%';
+   const ups=rets.filter(v=>v>0).sort((a,b)=>a-b), dns=rets.filter(v=>v<0).sort((a,b)=>a-b);
+   const med=a=>a.length?a[Math.floor(a.length/2)]:null;
+   const mu=med(ups),md=med(dns);
    return `<div class="row glass" style="border-left-color:${col}">
      <div class="l">
-       <h4>${r.id} · ${nameOf(r)}<span class="gr">${r.meta.grade||''}</span></h4>
-       <div class="ifline">${ifOf(r)} → ${dir} · ${tgt} · ${win}</div>
+       <h4>${r.id} · ${nameOf(r)}<span class="gr">${r.meta.grade||''}</span>${
+         ACTIVE.has(r.id)?`<span class="livechip">● ${EN?'ACTIVE NOW':'지금 활성'}</span>`:''}</h4>
+       <div class="chain">
+         <span class="node">${ifOf(r)}</span>
+         <span class="arr">─ ${win} ▶</span>
+         <span class="node tgt" style="color:${col}">${dir} · ${tgt}</span>
+       </div>
+       <div class="med">${mu!=null?`${EN?'median up-move':'상승 중앙값'} <b class="up">+${fm(mu)}</b>`:''}${
+         md!=null?` · ${EN?'median down-move':'하락 중앙값'} <b class="dn">${fm(md)}</b>`:''}</div>
        <div class="meta">${String(r.meta.core||'').replace('코어',EN?'core':'코어')} · ${
          r.cond?(EN?`conditioned on the ${hi?'storm':'calm'} regime`:`${hi?'폭풍':'평온'} 국면 조건부`)
                :(EN?'unconditional (thin regime split)':'무조건부(국면 분할 표본 부족)')} · est.</div>
@@ -158,10 +205,14 @@ Promise.all([
          r.c.nulls01?` · ${r.c.nulls01} ${EN?'in-band':'밴드 내'}`:''}</div>
      </div>
    </div>`;};
- $('board').innerHTML=rows.filter(r=>r.np>=30).map(html).join('')||'—';
- $('board2').innerHTML=rows.filter(r=>r.np<30).map(html).join('')||'—';
+ const actRows=rows.filter(r=>ACTIVE.has(r.id));
+ $('board0').innerHTML=actRows.map(html).join('')||
+   `<div class="row glass" style="border-left-color:#3a4a58"><div class="l"><div class="ifline">${
+     EN?'Nothing active at this minute — the board below still conditions on the live regime.':'지금 이 순간 활성 없음 — 아래 보드는 여전히 실시간 국면으로 조건화됩니다.'}</div></div></div>`;
+ $('board').innerHTML=rows.filter(r=>r.np>=30&&!ACTIVE.has(r.id)).map(html).join('')||'—';
+ $('board2').innerHTML=rows.filter(r=>r.np<30&&!ACTIVE.has(r.id)).map(html).join('')||'—';
 });
 </script>
-<script src="page-chrome.js" defer></script>
+<script src="page-chrome.js?v=2" defer></script>
 </body>
 </html>
