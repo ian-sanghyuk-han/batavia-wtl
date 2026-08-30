@@ -48,6 +48,11 @@ jobs:
           cd lab/exp004
           python run_volume_rule.py --tickers ${{ inputs.tickers || 0 }} --outdir output/volrule
 
+      - name: Can delisting be seen coming from price alone
+        run: |
+          cd lab/exp004
+          python delisting_warning.py --tickers ${{ inputs.tickers || 0 }} --outdir output/delisting
+
       - name: Validate year by year, and test the delayed-move reading
         run: |
           cd lab/exp004
@@ -61,6 +66,7 @@ jobs:
             lab/exp004/output/timing/
             lab/exp004/output/validate/
             lab/exp004/output/volrule/
+            lab/exp004/output/delisting/
           retention-days: 30
 
       - name: Commit
@@ -69,7 +75,7 @@ jobs:
           git config user.name "batavia-pipeline"
           git config user.email "actions@users.noreply.github.com"
           git add -f lab/exp004/output/timing lab/exp004/output/validate \
-                     lab/exp004/output/volrule || true
+                     lab/exp004/output/volrule lab/exp004/output/delisting || true
           if git diff --cached --quiet; then echo "no change"; exit 0; fi
           git commit -m "lab: EXP-004 oscillator timing and volume-rule validation result"
           git pull --rebase
