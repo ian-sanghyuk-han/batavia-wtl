@@ -50,6 +50,14 @@ jobs:
           git config user.name "batavia-pipeline"
           git config user.email "actions@users.noreply.github.com"
           git add -f lab/exp004/output/pilot/report.md \
+                     lab/exp004/output/pilot/screen.md \
+                     lab/exp004/output/pilot/screen.csv \
+                     lab/exp004/output/pilot/short_horizon_summary.csv \
+                     lab/exp004/output/pilot/rule_trend.csv \
+                     lab/exp004/output/pilot/market_baseline_by_year.csv \
+                     lab/exp004/output/pilot/stock_vs_regime.csv \
+                     lab/exp004/output/pilot/regime_theory_check.csv \
+                     lab/exp004/output/pilot/heatmap_regime_part.csv \
                      lab/exp004/output/pilot/meta.json \
                      lab/exp004/output/pilot/rule_summary.csv \
                      lab/exp004/output/pilot/persistence.csv \
