@@ -14,6 +14,12 @@ on:
 permissions:
   contents: write
 
+# Two runs write the same output files, so a second one starting while the first is
+# mid-flight loses the race at the commit step. Queue them instead of racing.
+concurrency:
+  group: exp004-timing
+  cancel-in-progress: false
+
 jobs:
   timing:
     runs-on: ubuntu-latest
@@ -74,9 +80,15 @@ jobs:
         run: |
           git config user.name "batavia-pipeline"
           git config user.email "actions@users.noreply.github.com"
+          BR=claude/review-and-proceed-rir7n2
+          # These are generated files: whatever this run produced is the version to keep.
+          # Rebasing them against another run's output only produces conflicts in data
+          # nobody edits by hand, so the remote is taken as the base and the fresh outputs
+          # are committed on top of it.
+          git fetch origin "$BR"
+          git reset --mixed "origin/$BR"
           git add -f lab/exp004/output/timing lab/exp004/output/validate \
                      lab/exp004/output/volrule lab/exp004/output/delisting || true
           if git diff --cached --quiet; then echo "no change"; exit 0; fi
           git commit -m "lab: EXP-004 oscillator timing and volume-rule validation result"
-          git pull --rebase
-          git push origin HEAD:claude/review-and-proceed-rir7n2
+          git push origin "HEAD:$BR"
