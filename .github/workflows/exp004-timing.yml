@@ -1,0 +1,64 @@
+name: EXP-004 oscillator 70-breakout timing
+
+# Tests the owner's inverted reading of RSI/MFI: a cross UP through 70 with volume behind
+# it is a move starting, not ending. Reads the cached bars only; never contacts the venue.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tickers:
+        description: 'Number of stocks (0 = whole universe)'
+        required: false
+        default: '0'
+
+permissions:
+  contents: write
+
+jobs:
+  timing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: claude/review-and-proceed-rir7n2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r lab/exp004/requirements.txt finance-datareader
+
+      - name: Restore price cache
+        uses: actions/cache/restore@v4
+        with:
+          path: lab/exp004/data
+          key: exp004-ohlcv-
+          restore-keys: |
+            exp004-ohlcv-
+
+      - name: Unit tests must pass before any real-data run
+        run: cd lab/exp004 && python -m pytest tests/ -q
+
+      - name: Measure
+        run: |
+          cd lab/exp004
+          python rsi_mfi_timing.py --tickers ${{ inputs.tickers || 0 }} --outdir output/timing
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: exp004-timing
+          path: lab/exp004/output/timing/
+          retention-days: 30
+
+      - name: Commit
+        if: always()
+        run: |
+          git config user.name "batavia-pipeline"
+          git config user.email "actions@users.noreply.github.com"
+          git add -f lab/exp004/output/timing/timing.md \
+                     lab/exp004/output/timing/timing.json \
+                     lab/exp004/output/timing/timing_by_day.csv || true
+          if git diff --cached --quiet; then echo "no change"; exit 0; fi
+          git commit -m "lab: EXP-004 oscillator 70-breakout timing result"
+          git pull --rebase
+          git push origin HEAD:claude/review-and-proceed-rir7n2
