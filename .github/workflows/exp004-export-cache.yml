@@ -1,0 +1,48 @@
+name: EXP-004 export price cache
+
+# The price cache lives only in the Actions cache, which cannot be downloaded directly.
+# This packages it as an artifact so the whole experiment can be moved to a local machine
+# without re-fetching 3,216 tickers from KRX at 1.2 seconds each.
+#
+# Touches no venue: it only reads what earlier fetch runs already saved.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: claude/review-and-proceed-rir7n2
+
+      - name: Restore price cache
+        uses: actions/cache/restore@v4
+        with:
+          path: lab/exp004/data
+          key: exp004-ohlcv-
+          restore-keys: |
+            exp004-ohlcv-
+
+      - name: What is in it
+        run: |
+          cd lab/exp004
+          echo "총 용량:"; du -sh data/ || echo "  (비어 있음)"
+          echo "종목 파일 수:"; ls data/ohlcv/*.parquet 2>/dev/null | wc -l
+          echo "유니버스 캐시:"; ls -la data/universe.json 2>/dev/null || echo "  없음"
+          test -d data/ohlcv || { echo "::error::캐시가 비어 있습니다 — 먼저 exp004-fetch 를 돌리십시오"; exit 1; }
+
+      # Uploaded uncompressed: the parquet files are already zstd-compressed, so asking
+      # the uploader to zip them again costs minutes and saves nothing.
+      - name: Upload as a downloadable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: exp004-price-cache
+          path: lab/exp004/data
+          compression-level: 0
+          retention-days: 14
