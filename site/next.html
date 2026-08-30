@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- STATUS: NEXT v0 - pivot artifact 1. A conditional-odds board: for every mechanized
+     card, "if this activates, what happened next" as a LIVE probability that re-conditions
+     on the current regime (conv gate). Reads scorecard.json + fires.jsonl + regime.json.
+     All figures est., with provenance; observations, never directives. -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>BATAVIA PROJECT — What Comes Next</title>
+<script>{const t=localStorage.getItem('bp-theme')||'dark';document.documentElement.dataset.theme=(t==='gundam'||t==='light')?'gundam':'dark';}</script>
+<style>
+  :root{--acc:#7FD8FF;--ink:#EAF9FF;--dim:#93a7b8;--mut:#5b6b7a;
+    --glass:rgba(7,11,17,.60);--glass2:rgba(7,11,17,.74);--edge:rgba(159,199,224,.20);
+    --up:#3FE0A0;--dn:#FF6A6E}
+  *{box-sizing:border-box}
+  body{margin:0;background:#05070c;color:var(--ink);font-family:'Segoe UI',system-ui,sans-serif}
+  .glass{background:var(--glass);border:1px solid var(--edge);backdrop-filter:blur(9px);border-radius:11px}
+  header{padding:18px 18px 8px;max-width:1080px;margin:0 auto}
+  header b{font:600 14px Consolas,monospace;letter-spacing:3px}
+  header small{display:block;color:var(--mut);font:10px Consolas,monospace;margin-top:4px}
+  header a{color:var(--acc);text-decoration:none;font:10px Consolas,monospace;float:right;margin-top:4px}
+  main{max-width:1080px;margin:0 auto;padding:8px 18px 44px}
+  #regbar{display:flex;align-items:center;gap:14px;padding:13px 16px;margin-bottom:14px;flex-wrap:wrap}
+  #regbar .big{font:600 15px Consolas,monospace;letter-spacing:2px}
+  #regbar .cond{font:11px 'Segoe UI';color:var(--dim)}
+  #regbar .live{margin-left:auto;font:600 9px Consolas,monospace;letter-spacing:1px;color:var(--up)}
+  .row{display:flex;gap:14px;align-items:stretch;padding:13px 16px;margin-bottom:10px;
+    border-left:4px solid var(--acc)}
+  .row .l{flex:1;min-width:0}
+  .row h4{margin:0;font:600 12px Consolas,monospace;letter-spacing:1px;color:var(--ink)}
+  .row h4 .gr{color:var(--acc);font-weight:400;margin-left:6px}
+  .row .ifline{font:11.5px/1.6 'Segoe UI';color:#a9becd;margin-top:4px;overflow:hidden;
+    text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .row .meta{font:9.5px Consolas,monospace;color:var(--mut);margin-top:5px}
+  .row .r{flex:none;width:300px;display:flex;flex-direction:column;gap:6px;justify-content:center}
+  .pline{display:flex;align-items:baseline;gap:8px}
+  .pnow{font:600 24px Consolas,monospace;color:var(--ink)}
+  .plabel{font:9px Consolas,monospace;color:var(--mut);letter-spacing:1px}
+  .pbase{font:10px Consolas,monospace;color:var(--dim)}
+  .edge{position:relative;height:7px;border-radius:4px;background:rgba(159,199,224,.10)}
+  .edge i{position:absolute;top:0;bottom:0;border-radius:4px}
+  .edge em{position:absolute;top:-2px;bottom:-2px;left:50%;width:2px;background:var(--mut);opacity:.7}
+  .dots{display:flex;flex-wrap:wrap;gap:2px;margin-top:2px}
+  .dots i{width:6px;height:6px;border-radius:2px;display:inline-block}
+  .dots .h{background:var(--up)} .dots .m{background:var(--dn)} .dots .z{background:rgba(159,199,224,.25)}
+  .dotcap{font:8.5px Consolas,monospace;color:var(--mut)}
+  .sec{font:600 10px Consolas,monospace;letter-spacing:2px;color:var(--acc);margin:20px 0 10px}
+  .sec small{color:var(--mut);letter-spacing:0;font-weight:400}
+  footer{max-width:1080px;margin:0 auto;padding:0 18px 30px;font:9px Consolas,monospace;color:var(--mut);line-height:1.7}
+  html[data-theme="gundam"]{--acc:#2c52b3;--ink:#14283c;--dim:#3f5a7a;--mut:#5a708a;
+    --glass:rgba(252,253,255,.82);--glass2:rgba(248,250,253,.9);--edge:rgba(44,82,179,.28);
+    --up:#1f9d63;--dn:#fb2f38}
+  html[data-theme="gundam"] body{background:#e9edf3;color:var(--ink)}
+  html[data-theme="gundam"] .glass{box-shadow:0 2px 12px rgba(44,82,179,.10)}
+  html[data-theme="gundam"] .row .ifline{color:#37536e}
+</style>
+</head>
+<body>
+<header>
+  <a href="./">← OBSERVATORY</a>
+  <b>BATAVIA PROJECT</b> · WHAT COMES NEXT
+  <small id="hsub">for every rule the machine watches: if it activates, what happened next — a probability that re-conditions live on the current regime · est. · observations, not instructions</small>
+</header>
+<main>
+  <div id="regbar" class="glass">
+    <span class="big" id="rgword">—</span>
+    <span class="cond" id="rgcond">loading the live regime…</span>
+    <span class="live">● LIVE — re-conditions as the regime moves</span>
+  </div>
+  <div class="sec" id="sec1">STRONGEST CONDITIONAL EDGES <small id="sec1s">— n ≥ 30 only · P under the CURRENT regime column · distribution = every historical outcome</small></div>
+  <div id="board"></div>
+  <div class="sec" id="sec2">SMALL SAMPLES <small id="sec2s">— historical cases, not statistics (n &lt; 30)</small></div>
+  <div id="board2"></div>
+</main>
+<footer id="foot">
+  Every probability is a reconstructed frequency (est.) with its sample size shown, conditioned on the live
+  convergence gate; it changes as today's data changes. Provenance: ledger card id + theory core section.
+  Nothing here instructs anyone to act.
+</footer>
+<script>
+const EN=(localStorage.getItem('bp-lang')||'en')==='en';
+document.documentElement.lang=EN?'en':'ko';
+if(!EN){
+  document.getElementById('hsub').textContent='기계가 지켜보는 모든 규칙에 대해: 활성되면 다음에 무슨 일이 있었나 — 현재 국면에 따라 실시간으로 다시 조건화되는 확률 · 추정 · 관찰이며 지시가 아님';
+  document.getElementById('sec1').firstChild.textContent='가장 강한 조건부 우위 ';
+  document.getElementById('sec1s').textContent='— n ≥ 30만 · 현재 국면 열의 P · 분포 = 과거의 모든 실제 결과';
+  document.getElementById('sec2').firstChild.textContent='소표본 ';
+  document.getElementById('sec2s').textContent='— 통계가 아니라 역사 사례 (n < 30)';
+  document.getElementById('foot').textContent='모든 확률은 표본 수가 함께 표시되는 재구성 빈도(추정)이며, 실시간 수렴도 게이트로 조건화되어 오늘의 데이터가 변하면 함께 변합니다. 출처: 원장 카드 ID + 이론 코어 절. 어떤 것도 행동을 지시하지 않습니다.';
+}
+const NOC={cache:'no-store'};
+const $=id=>document.getElementById(id);
+const FAMC={'성장':'#4FD8C0','고용':'#7FD8FF','물가':'#FF5D6E','금리':'#FF8A93','유동성':'#5B8DEF',
+ '포지셔닝':'#C79BFF','물리':'#D9A441','시장구조':'#A79BFF','이벤트':'#E8A33D','달러·FX':'#4FB8D8'};
+const TGT_EN={'yh_SPY':'S&P 500','yh_QQQ':'Nasdaq-100','yh_XLY':'consumer','yh_XLE':'energy','yh_XLK':'tech',
+ 'yh_XME':'metals & mining','yh_GC_F':'gold','yh_CL_F':'crude oil','yh_BTC-USD':'bitcoin','yh_SB_F':'sugar',
+ 'fred_DGS2':'US 2Y yield','fred_DGS10':'US 10Y yield','USREC':'NBER recession flag',
+ 'sector 12-1 L/S':'sector momentum spread','IV vs fwd RV':'volatility premium','^VIX':'VIX'};
+Promise.all([
+ fetch('data/backtest/scorecard.json',NOC).then(r=>r.json()),
+ fetch('data/backtest/fires.jsonl',NOC).then(r=>r.text()),
+ fetch('data/regime.json',NOC).then(r=>r.json()).catch(()=>null),
+ fetch('logic/ledger-full.json',NOC).then(r=>r.json())
+]).then(([score,ftxt,rg,led])=>{
+ const FIRES=ftxt.trim().split(/\r?\n/).map(l=>JSON.parse(l));
+ const CARD={};led.cards.forEach(c=>CARD[c.id]=c);
+ const conv=rg&&rg.conv?rg.conv.value:null;
+ const hi=conv!=null&&conv>=0.55;
+ $('rgword').textContent=(EN?'REGIME ':'국면 ')+(conv==null?'—':conv.toFixed(3));
+ $('rgcond').textContent=conv==null
+   ? (EN?'regime feed unavailable — showing unconditional P':'국면 피드 없음 — 무조건부 P 표시')
+   : (EN?`convergence ${hi?'≥':'<'} 0.55 → using the ${hi?'STORM':'CALM'}-column probabilities`
+       :`수렴도 ${hi?'≥':'<'} 0.55 → ${hi?'폭풍':'평온'} 열의 확률 사용`);
+ /* per-card outcome dots from actual fires */
+ const by={};FIRES.forEach(f=>{ (by[f.card]=by[f.card]||[]).push(f); });
+ const rows=Object.keys(score.cards).map(id=>{
+   const c=score.cards[id],meta=CARD[id]||{};
+   const fs=(by[id]||[]);
+   const last=fs[fs.length-1]||{};
+   const base=c.rate01!=null?c.rate01:c.rate;
+   const nbase=c.graded01||c.graded;
+   const g=hi?c.gate.conv_hi:c.gate.conv_lo;
+   const useCond=g&&g[0]>=10;
+   const p=useCond?g[1]/g[0]:base;
+   const np=useCond?g[0]:nbase;
+   return {id,c,meta,fs,last,base,nbase,p,np,cond:useCond};
+ }).filter(r=>r.p!=null&&r.np>0);
+ rows.sort((a,b)=>Math.abs(b.p-0.5)*Math.min(1,b.np/30)-Math.abs(a.p-0.5)*Math.min(1,a.np/30));
+ const nameOf=r=>(EN&&r.meta.name_en)?r.meta.name_en:(r.meta.name||r.id);
+ const ifOf=r=>{const d=(EN&&r.meta.desc_en)?r.meta.desc_en:(r.meta.desc||'');
+   const cut=d.split('→')[0].replace(/^-\s*/,'').trim();return cut||'';};
+ const html=r=>{
+   const col=FAMC[r.meta.family]||'#7FD8FF';
+   const dir=r.last.dir==='down'?(EN?'downward':'하방'):r.last.dir==='up'?(EN?'upward':'상방'):r.last.dir||'';
+   const tgt=TGT_EN[r.last.tgt]||r.last.tgt||'';
+   const win=r.last.w?r.last.w[1]+(EN?' trading days':' 거래일'):'';
+   const pn=Math.round(100*r.p);
+   const dots=r.fs.filter(f=>f.hit01!=null||f.hit!=null).slice(-60).map(f=>{
+     const h=('hit01' in f&&f.hit01!=null)?f.hit01:f.hit;
+     return `<i class="${h===true?'h':h===false?'m':'z'}"></i>`;}).join('');
+   const lo=Math.min(r.p,0.5),w=Math.abs(r.p-0.5);
+   return `<div class="row glass" style="border-left-color:${col}">
+     <div class="l">
+       <h4>${r.id} · ${nameOf(r)}<span class="gr">${r.meta.grade||''}</span></h4>
+       <div class="ifline">${ifOf(r)} → ${dir} · ${tgt} · ${win}</div>
+       <div class="meta">${String(r.meta.core||'').replace('코어',EN?'core':'코어')} · ${
+         r.cond?(EN?`conditioned on the ${hi?'storm':'calm'} regime`:`${hi?'폭풍':'평온'} 국면 조건부`)
+               :(EN?'unconditional (thin regime split)':'무조건부(국면 분할 표본 부족)')} · est.</div>
+       <div class="dots">${dots}</div>
+       <div class="dotcap">${EN?'each square = one historical activation · green favorable / red against / gray ±0.1%':'네모 하나 = 과거 활성 1회 · 초록 유리 / 빨강 불리 / 회색 ±0.1%'}</div>
+     </div>
+     <div class="r">
+       <div class="pline"><span class="pnow">${pn}%</span>
+         <span class="plabel">${EN?`P · n=${r.np}`:`P · n=${r.np}`}</span></div>
+       <div class="edge"><em></em><i style="left:${lo*100}%;width:${w*100}%;background:${r.p>=0.5?'var(--up)':'var(--dn)'}"></i></div>
+       <div class="pbase">${EN?'all regimes':'전체 국면'} ${Math.round(100*r.base)}% · n=${r.nbase}${
+         r.c.nulls01?` · ${r.c.nulls01} ${EN?'in-band':'밴드 내'}`:''}</div>
+     </div>
+   </div>`;};
+ $('board').innerHTML=rows.filter(r=>r.np>=30).map(html).join('')||'—';
+ $('board2').innerHTML=rows.filter(r=>r.np<30).map(html).join('')||'—';
+});
+</script>
+<script src="page-chrome.js" defer></script>
+</body>
+</html>
