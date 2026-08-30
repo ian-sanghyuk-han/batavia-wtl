@@ -43,11 +43,18 @@ jobs:
           cd lab/exp004
           python rsi_mfi_timing.py --tickers ${{ inputs.tickers || 0 }} --outdir output/timing
 
+      - name: Validate year by year, and test the delayed-move reading
+        run: |
+          cd lab/exp004
+          python rsi_volume_validate.py --tickers ${{ inputs.tickers || 0 }} --outdir output/validate
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: exp004-timing
-          path: lab/exp004/output/timing/
+          path: |
+            lab/exp004/output/timing/
+            lab/exp004/output/validate/
           retention-days: 30
 
       - name: Commit
@@ -57,8 +64,10 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add -f lab/exp004/output/timing/timing.md \
                      lab/exp004/output/timing/timing.json \
-                     lab/exp004/output/timing/timing_by_day.csv || true
+                     lab/exp004/output/timing/timing_by_day.csv \
+                     lab/exp004/output/validate/validate.md \
+                     lab/exp004/output/validate/validate.json || true
           if git diff --cached --quiet; then echo "no change"; exit 0; fi
-          git commit -m "lab: EXP-004 oscillator 70-breakout timing result"
+          git commit -m "lab: EXP-004 oscillator timing and volume-rule validation result"
           git pull --rebase
           git push origin HEAD:claude/review-and-proceed-rir7n2
