@@ -89,6 +89,7 @@
   <div id="tabs">
     <a class="on" href="./">TODAY</a>
     <a href="observatory.html">OBSERVATORY</a>
+    <a href="ripple.html">RIPPLES</a>
     <a href="next.html">NEXT</a>
     <a href="ledger.html">LEDGER</a>
     <a href="calendar.html">CALENDAR</a>
@@ -121,7 +122,8 @@
   <div id="nextrows"></div>
 
   <div class="row2">
-    <a class="btn solid" href="observatory.html" id="btnGlobe">OPEN THE GLOBE</a>
+    <a class="btn solid" href="ripple.html" id="btnRip">TRACE A RIPPLE</a>
+    <a class="btn line" href="observatory.html" id="btnGlobe">OPEN THE GLOBE</a>
     <a class="btn line" href="policy.html" id="btnHow">HOW THIS IS GRADED</a>
   </div>
 </main>
@@ -134,6 +136,7 @@ if(!EN){
   $('secA').textContent='지금 활성';
   $('secG').firstChild.textContent='최근 채점 ';$('secGs').textContent='— 재구성 · 추정';
   $('secN').firstChild.textContent='지금 가장 강한 우위 ';$('secNs').textContent='— 실시간 국면 조건 · 추정';
+  $('btnRip').textContent='파급 추적하기';
   $('btnGlobe').textContent='지구본 열기';$('btnHow').textContent='채점 방식 보기';
 }
 $('setbtn').addEventListener('click',()=>{

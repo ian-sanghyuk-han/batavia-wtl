@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- STATUS: RIPPLES v0 - pivot artifact 2. Event -> forward economic scenario:
+     a live news event is classified into an archetype, and its transmission
+     stages (immediate / one week / one month) are unrolled FORWARD with
+     calendar dates, each target measured over historical analogue episodes.
+     All figures est. with n and the episode list as provenance.
+     Observations, never directives. -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>BATAVIA PROJECT — Ripples</title>
+<script>{const t=localStorage.getItem('bp-theme')||'dark';document.documentElement.dataset.theme=(t==='gundam'||t==='light')?'gundam':'dark';}</script>
+<style>
+  :root{--acc:#7FD8FF;--ink:#EAF9FF;--dim:#93a7b8;--mut:#5b6b7a;
+    --glass:rgba(7,11,17,.60);--edge:rgba(159,199,224,.20);--up:#3FE0A0;--dn:#FF6A6E}
+  *{box-sizing:border-box}
+  body{margin:0;background:#05070c;color:var(--ink);font-family:'Segoe UI',system-ui,sans-serif}
+  .glass{background:var(--glass);border:1px solid var(--edge);backdrop-filter:blur(9px);border-radius:11px}
+  header{padding:18px 18px 8px;max-width:980px;margin:0 auto}
+  header b{font:600 14px Consolas,monospace;letter-spacing:3px}
+  header small{display:block;color:var(--mut);font:10px Consolas,monospace;margin-top:4px}
+  main{max-width:980px;margin:0 auto;padding:8px 18px 44px}
+  .sec{font:600 10px Consolas,monospace;letter-spacing:2px;color:var(--acc);margin:18px 0 10px}
+  .sec small{color:var(--mut);letter-spacing:0;font-weight:400}
+  /* live matches + library selector */
+  #picks{display:flex;gap:8px;flex-wrap:wrap}
+  .pick{font:600 10.5px Consolas,monospace;letter-spacing:1px;padding:9px 14px;border-radius:9px;
+    border:1px solid var(--edge);color:var(--dim);cursor:pointer;background:var(--glass)}
+  .pick.on{color:#06121c;background:var(--acc);border-color:var(--acc)}
+  .pick .lv{color:var(--up);margin-right:6px}
+  .pick.on .lv{color:#06121c}
+  /* epicenter */
+  #epi{border-left:4px solid var(--acc);padding:15px 18px;margin-bottom:4px}
+  #epi h3{margin:0;font:600 13px Consolas,monospace;letter-spacing:1px}
+  #epi p{margin:6px 0 0;font:12px/1.6 'Segoe UI';color:#a9becd}
+  #epi .prov{font:9.5px Consolas,monospace;color:var(--mut);margin-top:7px}
+  #epi .prov a{color:var(--acc);text-decoration:none}
+  /* cascade */
+  .stage{display:flex;gap:16px;padding:15px 18px;margin-top:14px;position:relative}
+  .stage::before{content:'';position:absolute;left:34px;top:-14px;height:14px;width:2px;
+    background:linear-gradient(var(--acc),transparent);opacity:.5}
+  .when{flex:none;width:118px}
+  .when b{display:block;font:600 11px Consolas,monospace;letter-spacing:1px;color:var(--acc)}
+  .when span{display:block;font:9.5px Consolas,monospace;color:var(--mut);margin-top:3px}
+  .when .cal{color:var(--ink);font-weight:600}
+  .body{flex:1;min-width:0}
+  .body h4{margin:0;font:600 11px Consolas,monospace;letter-spacing:1px}
+  .body .mech{font:12px/1.65 'Segoe UI';color:#a9becd;margin:5px 0 9px}
+  .tgts{display:flex;gap:8px;flex-wrap:wrap}
+  .tgt{border:1px solid var(--edge);border-radius:9px;padding:8px 11px;min-width:150px}
+  .tgt .nm{font:600 10.5px Consolas,monospace;letter-spacing:.5px}
+  .tgt .nm i{font-style:normal;margin-right:5px}
+  .tgt .st{font:10px Consolas,monospace;color:var(--dim);margin-top:4px;line-height:1.6}
+  .tgt .st b{color:var(--ink)}
+  .tgt .bg{font:8.5px Consolas,monospace;letter-spacing:1px;border-radius:5px;padding:1px 6px;
+    border:1px solid var(--edge);color:var(--mut);float:right}
+  .tgt.meas .bg{color:var(--acc);border-color:rgba(127,216,255,.4)}
+  .agree{height:5px;border-radius:3px;background:rgba(159,199,224,.12);margin-top:6px;overflow:hidden}
+  .agree i{display:block;height:100%}
+  /* episodes */
+  #eps{padding:13px 16px;font:11px/1.9 'Segoe UI';color:#a9becd}
+  #eps b{font:600 10px Consolas,monospace;color:var(--mut);margin-right:8px}
+  footer{max-width:980px;margin:0 auto;padding:0 18px 30px;font:9px Consolas,monospace;color:var(--mut);line-height:1.7}
+  html[data-theme="gundam"]{--acc:#2c52b3;--ink:#14283c;--dim:#3f5a7a;--mut:#5a708a;
+    --glass:rgba(252,253,255,.82);--edge:rgba(44,82,179,.28);--up:#1f9d63;--dn:#fb2f38}
+  html[data-theme="gundam"] body{background:#e9edf3;color:var(--ink)}
+  html[data-theme="gundam"] .glass{box-shadow:0 2px 12px rgba(44,82,179,.10)}
+  html[data-theme="gundam"] .body .mech,html[data-theme="gundam"] #eps,html[data-theme="gundam"] #epi p{color:#37536e}
+</style>
+</head>
+<body>
+<header>
+  <b>BATAVIA PROJECT</b> · RIPPLES
+  <small id="hsub">one event, unrolled forward — where the theory says it travels, and what actually happened the last n times · est. · observations, not instructions</small>
+</header>
+<main>
+  <div class="sec" id="secL">HAPPENING NOW <small id="secLs">— live events the lens can classify · pick one, or browse an archetype</small></div>
+  <div id="picks"></div>
+
+  <div class="sec" id="secC">THE CASCADE <small id="secCs">— forward calendar dates assume the event is today · trading days</small></div>
+  <div id="epi" class="glass"></div>
+  <div id="cascade"></div>
+
+  <div class="sec" id="secE">THE ANALOGUE SET <small id="secEs">— every historical episode behind the numbers</small></div>
+  <div id="eps" class="glass"></div>
+</main>
+<footer id="foot">
+  Each stage's numbers are measured over the analogue episodes listed above (trading-day windows,
+  ±0.1% band, in-band excluded) — small samples are historical cases, not statistics. FRED-series
+  moves are % of the level. Scenario nodes are time-stamped observation hypotheses; nothing here
+  instructs anyone to act.
+</footer>
+<script>
+const EN=(localStorage.getItem('bp-lang')||'en')==='en';
+document.documentElement.lang=EN?'en':'ko';
+const $=id=>document.getElementById(id);
+if(!EN){
+  $('hsub').textContent='하나의 사건을 앞으로 펼칩니다 — 이론이 말하는 전파 경로, 그리고 지난 n번 실제로 일어난 일 · 추정 · 관찰이며 지시가 아님';
+  $('secL').firstChild.textContent='지금 일어나는 중 ';
+  $('secLs').textContent='— 렌즈가 분류할 수 있는 실시간 사건 · 하나를 고르거나 원형을 둘러보세요';
+  $('secC').firstChild.textContent='파급 연쇄 ';
+  $('secCs').textContent='— 앞의 달력 날짜는 사건이 오늘이라 가정 · 거래일 단위';
+  $('secE').firstChild.textContent='유사 사례 집합 ';
+  $('secEs').textContent='— 숫자 뒤에 있는 모든 역사적 사례';
+  $('foot').textContent='각 단계의 숫자는 위에 나열된 유사 사례들로 측정됩니다(거래일 창, ±0.1% 밴드, 밴드 내 제외) — 소표본은 통계가 아니라 역사 사례입니다. FRED 지표의 변화는 수준의 %입니다. 시나리오 노드는 시점이 찍힌 관찰 가설이며, 어떤 것도 행동을 지시하지 않습니다.';
+}
+const NOC={cache:'no-store'};
+Promise.all([
+ fetch('data/ripples.json',NOC).then(r=>r.json()),
+ fetch('data/news.json',NOC).then(r=>r.json()).catch(()=>({events:[]})),
+ fetch('data/event_card.json',NOC).then(r=>r.json()).catch(()=>null),
+]).then(([RIP,news,ev])=>{
+ const A=RIP.archetypes;
+ /* classify live events into archetypes */
+ const live={}; // key -> [event names]
+ (news.events||[]).forEach(e=>{
+   const txt=(e.name||'').toLowerCase();
+   for(const k in A){
+     const m=A[k].match;
+     const kw=m.kw&&new RegExp(m.kw,'i').test(txt);
+     const cd=(m.codes||[]).includes(e.code);
+     if(kw||(cd&&(e.sev||0)>=4)){(live[k]=live[k]||[]).push(e.name);break;}
+   }
+ });
+ if(ev&&ev.event&&/cpi|물가/i.test(ev.event.name||''))
+   (live.policy_shock=live.policy_shock||[]); // calendar events stay on TODAY; no force-match
+ /* picker: live matches first, then the rest of the library */
+ const KO_BTN={policy_shock:'정책 충격',ai_narrative:'AI 서사',disaster:'자연재해',
+   pandemic:'감염병',escalation:'군사 격화',chokepoint:'관문 차질'};
+ const EN_BTN={policy_shock:'POLICY SHOCK',ai_narrative:'AI NARRATIVE',disaster:'DISASTER',
+   pandemic:'OUTBREAK',escalation:'ESCALATION',chokepoint:'CHOKEPOINT'};
+ const order=Object.keys(A).sort((a,b)=>((live[b]||[]).length)-((live[a]||[]).length));
+ const q=new URLSearchParams(location.search).get('a');
+ let cur=(q&&A[q])?q:order[0];
+ const picks=$('picks');
+ order.forEach(k=>{
+   const b=document.createElement('div');b.className='pick'+(k===cur?' on':'');b.dataset.k=k;
+   b.innerHTML=((live[k]||[]).length?'<span class="lv">●</span>':'')+(EN?EN_BTN[k]:KO_BTN[k]);
+   b.onclick=()=>{cur=k;document.querySelectorAll('.pick').forEach(x=>x.classList.toggle('on',x.dataset.k===k));
+     render();history.replaceState(null,'','?a='+k);};
+   picks.appendChild(b);
+ });
+ /* forward calendar dates from today, skipping weekends (trading-day approx.) */
+ const tadd=n=>{const d=new Date();let c=0;while(c<n){d.setDate(d.getDate()+1);
+   if(d.getDay()!==0&&d.getDay()!==6)c++;}return d;};
+ const fdate=d=>EN?d.toLocaleDateString('en-US',{month:'short',day:'numeric'})
+   :`${d.getMonth()+1}월 ${d.getDate()}일`;
+ const pct=v=>v==null?'—':(v>0?'+':'')+(100*v).toFixed(1)+'%';
+ function render(){
+   const a=A[cur];
+   const evs=live[cur]||[];
+   $('epi').innerHTML=`<h3>${EN?a.name_en:a.name_ko}</h3>
+     <p>${evs.length
+       ? (EN?'Live match right now: ':'지금 실시간으로 잡힌 사건: ')+'<b>'+evs.slice(0,2).join(' · ')+'</b>'
+       : (EN?'No live event of this type at this minute — you are browsing the archetype itself.'
+            :'이 순간 이 유형의 실시간 사건은 없습니다 — 원형 자체를 둘러보는 중입니다.')}</p>
+     <div class="prov">${EN?'related ledger cards':'관련 원장 카드'}: ${
+       a.cards.map(c=>`<a href="ledger.html">${c}</a>`).join(' · ')} · ${
+       EN?'measured over':'측정 표본'} ${a.episodes.length}${EN?' analogue episodes':'개 유사 사례'} · est.</div>`;
+   $('cascade').innerHTML=a.stages.map(st=>{
+     const d0=tadd(st.lag[0]),d1=tadd(st.lag[1]);
+     return `<div class="stage glass">
+       <div class="when"><b>T+${st.lag[0]}–${st.lag[1]}</b>
+         <span>${EN?'trading days':'거래일'}</span>
+         <span class="cal">${evs.length?('→ ~'+fdate(d1)):('~'+fdate(d1))}</span></div>
+       <div class="body">
+         <h4>${EN?st.label_en:st.label_ko}</h4>
+         <div class="mech">${EN?st.mech_en:st.mech_ko}</div>
+         <div class="tgts">${st.targets.map(t=>{
+           const s=t.stat,meas=s&&s.n>0;
+           const agree=meas?(t.dir==='up'?s.up:s.dn):null;
+           const apct=meas?Math.round(100*agree/s.n):null;
+           const med=meas?(t.dir==='up'?s.mu:s.md):null;
+           const arrow=t.dir==='up'?'▲':'▼';
+           const col=t.dir==='up'?'var(--up)':'var(--dn)';
+           return `<div class="tgt ${meas?'meas':''}">
+             <div class="nm"><i style="color:${col}">${arrow}</i>${EN?t.name_en:t.name_ko}
+               <span class="bg">${meas?(EN?'MEASURED':'실측')+' n='+s.n:(EN?'THEORY':'이론')}</span></div>
+             <div class="st">${meas
+               ? (EN?`this way <b>${agree}/${s.n}</b> times (${apct}%)`:`이 방향 <b>${agree}/${s.n}</b>회 (${apct}%)`)
+                 +(med!=null?` · ${EN?'median':'중앙값'} <b>${pct(med)}</b>`:'')
+               : (EN?'no measurable history yet':'측정 가능한 이력 없음')}</div>
+             ${meas?`<div class="agree"><i style="width:${apct}%;background:${apct>=50?col:'var(--mut)'}"></i></div>`:''}
+           </div>`;}).join('')}</div>
+       </div></div>`;
+   }).join('');
+   $('eps').innerHTML=a.episodes.map(e=>`<div><b>${e.date}</b>${e.label}</div>`).join('');
+ }
+ render();
+}).catch(()=>{
+ $('epi').innerHTML='<p style="font:12px Segoe UI;color:var(--mut)">'+(EN?'data unavailable':'데이터를 불러올 수 없습니다')+'</p>';
+});
+</script>
+<script src="page-chrome.js?v=4" defer></script>
+</body>
+</html>

@@ -9,8 +9,8 @@ const h=document.querySelector('header');if(!h)return;
    navigation never scrolls away; hides the old one-way back link */
 const back=h.querySelector('a[href="./"]');if(back)back.style.display='none';
 const path=location.pathname.split('/').pop()||'index.html';
-const TABS=[['TODAY','index.html'],['OBSERVATORY','observatory.html'],['NEXT','next.html'],
- ['LEDGER','ledger.html'],['CALENDAR','calendar.html'],['REPLAY','replay.html']];
+const TABS=[['TODAY','index.html'],['OBSERVATORY','observatory.html'],['RIPPLES','ripple.html'],
+ ['NEXT','next.html'],['LEDGER','ledger.html'],['CALENDAR','calendar.html'],['REPLAY','replay.html']];
 const bar=document.createElement('div');
 bar.style.cssText='position:sticky;top:0;z-index:80;display:flex;align-items:center;gap:4px;flex-wrap:wrap;'+
  'padding:9px 16px;background:var(--glass);border-bottom:1px solid var(--edge);backdrop-filter:blur(9px)';
