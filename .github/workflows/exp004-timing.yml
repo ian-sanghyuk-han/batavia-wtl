@@ -43,6 +43,11 @@ jobs:
           cd lab/exp004
           python rsi_mfi_timing.py --tickers ${{ inputs.tickers || 0 }} --outdir output/timing
 
+      - name: Full simulation of the volume-filtered rule, with real costs
+        run: |
+          cd lab/exp004
+          python run_volume_rule.py --tickers ${{ inputs.tickers || 0 }} --outdir output/volrule
+
       - name: Validate year by year, and test the delayed-move reading
         run: |
           cd lab/exp004
@@ -55,6 +60,7 @@ jobs:
           path: |
             lab/exp004/output/timing/
             lab/exp004/output/validate/
+            lab/exp004/output/volrule/
           retention-days: 30
 
       - name: Commit
@@ -65,8 +71,10 @@ jobs:
           git add -f lab/exp004/output/timing/timing.md \
                      lab/exp004/output/timing/timing.json \
                      lab/exp004/output/timing/timing_by_day.csv \
-                     lab/exp004/output/validate/validate.md \
-                     lab/exp004/output/validate/validate.json || true
+                     lab/exp004/output/validate/
+            lab/exp004/output/volrule/validate.md \
+                     lab/exp004/output/validate/
+            lab/exp004/output/volrule/validate.json || true
           if git diff --cached --quiet; then echo "no change"; exit 0; fi
           git commit -m "lab: EXP-004 oscillator timing and volume-rule validation result"
           git pull --rebase
