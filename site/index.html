@@ -33,7 +33,11 @@
     padding:8px 15px;border-radius:9px;text-decoration:none}
   #setbtn{color:var(--acc);cursor:pointer;font-size:14px;user-select:none;padding:4px}
   /* body */
-  main{max-width:860px;margin:0 auto;padding:34px 20px 50px;display:flex;flex-direction:column;gap:16px;position:relative}
+  main{max-width:860px;margin:0 auto;padding:34px 20px 50px;display:flex;flex-direction:column;gap:16px;position:relative;z-index:1}
+  /* the living globe: canvas 2D orthographic spin (no WebGL — works everywhere) */
+  #mglobe{position:fixed;right:-140px;top:128px;width:640px;height:640px;cursor:pointer;z-index:0}
+  @media(max-width:1500px){#mglobe{right:-280px;opacity:.75}}
+  @media(max-width:1130px){#mglobe{position:static;display:block;width:min(58vw,270px);height:min(58vw,270px);margin:8px auto -4px;opacity:1}}
   #halo{position:fixed;right:-220px;top:110px;width:760px;height:760px;border-radius:50%;pointer-events:none;
     background:radial-gradient(circle at 40% 35%,rgba(159,199,224,.10),rgba(127,216,255,.04) 55%,rgba(5,7,12,0) 72%);
     border:1px solid rgba(159,199,224,.08)}
@@ -79,6 +83,7 @@
 </head>
 <body>
 <div id="halo"></div>
+<canvas id="mglobe" title="Open the Observatory"></canvas>
 <div id="nav">
   <a id="brand" href="./">BATAVIA<span> PROJECT</span></a>
   <div id="tabs">
@@ -239,6 +244,69 @@ Promise.all([
        <span class="p" style="color:${r.p>=.5?'var(--up)':'var(--dn)'}">${Math.round(100*r.p)}%</span></a>`;}).join('');
  }
 });
+</script>
+<script>
+/* mini globe — canvas 2D orthographic; coastlines + live news dots; click -> observatory */
+(function(){
+const cv=document.getElementById('mglobe');if(!cv||!cv.getContext)return;
+cv.addEventListener('click',()=>{location.href='observatory.html';});
+const ctx=cv.getContext('2d');
+let rings=[],dots=[];
+/* geo file format: [ [[lat,lon], ...ring], ... ] (see pipeline/geo_land.py) */
+fetch('data/geo/land-110m.json').then(r=>r.json()).then(t=>{
+  rings=t.filter(rg=>rg.length>2)
+    .map(rg=>rg.map(q=>[q[1]*Math.PI/180,q[0]*Math.PI/180]));
+  draw(performance.now());
+}).catch(()=>{});
+fetch('data/news.json',{cache:'no-store'}).then(r=>r.json()).then(n=>{
+  dots=(n.events||[]).filter(e=>(e.sev||0)>=3)
+    .map(e=>({lo:e.lo*Math.PI/180,la:e.la*Math.PI/180,sev:e.sev}));
+  draw(performance.now());
+}).catch(()=>{});
+const DPR=Math.min(2,window.devicePixelRatio||1);
+function size(){const r=cv.getBoundingClientRect();
+  cv.width=Math.max(2,r.width*DPR);cv.height=Math.max(2,r.height*DPR);}
+size();addEventListener('resize',size);
+const tilt=0.32,s0=Math.sin(tilt),c0=Math.cos(tilt);
+const SPIN=matchMedia('(prefers-reduced-motion: reduce)').matches?0:(2*Math.PI/80);
+let last=0;
+function frame(t){
+  requestAnimationFrame(frame);
+  if(t-last<50)return;last=t;
+  draw(t);
+}
+function draw(t){
+  const W=cv.width,H=cv.height;if(W<4)return;
+  const R=Math.min(W,H)/2*0.86,cx=W/2,cy=H/2,lam=t/1000*SPIN;
+  const acc=(getComputedStyle(document.documentElement).getPropertyValue('--acc')||'#7FD8FF').trim();
+  const g=ctx;g.clearRect(0,0,W,H);
+  g.beginPath();g.arc(cx,cy,R,0,7);
+  g.fillStyle=acc;g.globalAlpha=.045;g.fill();
+  g.strokeStyle=acc;g.globalAlpha=.28;g.lineWidth=1*DPR;g.stroke();
+  g.globalAlpha=.5;g.lineWidth=0.7*DPR;
+  for(const ring of rings){
+    let pen=false;g.beginPath();
+    for(const pt of ring){
+      const dl=pt[0]+lam,cl=Math.cos(pt[1]),sl=Math.sin(pt[1]),cd=Math.cos(dl);
+      if(s0*sl+c0*cl*cd<=0.02){pen=false;continue;}
+      const x=cx+R*cl*Math.sin(dl),y=cy-R*(c0*sl-s0*cl*cd);
+      pen?g.lineTo(x,y):g.moveTo(x,y);pen=true;
+    }
+    g.stroke();
+  }
+  const pulse=0.6+0.4*Math.sin(t/380);
+  for(const d of dots){
+    const dl=d.lo+lam,cl=Math.cos(d.la),sl=Math.sin(d.la),cd=Math.cos(dl);
+    if(s0*sl+c0*cl*cd<=0.05)continue;
+    const x=cx+R*cl*Math.sin(dl),y=cy-R*(c0*sl-s0*cl*cd);
+    g.beginPath();g.arc(x,y,(d.sev>=4?3.1:2.1)*DPR,0,7);
+    g.fillStyle=d.sev>=4?'#FFB347':acc;
+    g.globalAlpha=d.sev>=4?0.5+0.4*pulse:0.5;g.fill();
+  }
+  g.globalAlpha=1;
+}
+requestAnimationFrame(frame);
+})();
 </script>
 </body>
 </html>

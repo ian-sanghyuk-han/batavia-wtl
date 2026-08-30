@@ -67,6 +67,53 @@ OUT = os.path.join(HERE, "..", "site", "data", "news.json")
 LASTUPDATE = "http://data.gdeltproject.org/gdeltv2/lastupdate.txt"
 NONLATIN = re.compile(r"[Ѐ-ӿ؀-ۿऀ-ॿ฀-๿぀-ヿ㐀-鿿가-힣]")
 
+# Market-relevance gate (P-pivot): scored on the REAL headline after enrichment.
+# ECON boosts, GEOPOL boosts less; LOCAL (crime/accident/sport/celebrity) stories
+# with no econ/geopol signal are dropped — a market lens, not a police blotter.
+ECON_RX = re.compile(
+    r"\btariff|\bsanction|\bopec\b|\b(?:crude|oil) (?:price|export|output|supply|market)|\bcrude\b"
+    r"|\blng\b|gas price|\bpipeline\b|\brefinery\b|energy (?:price|crisis|market|deal)"
+    r"|\bfed\b|federal reserve|\becb\b|\bboj\b|central bank|interest rate|rate (?:cut|hike|rise|decision)"
+    r"|\binflation\b|\bcpi\b|\bppi\b|\bgdp\b|jobs report|\bpayroll|\bunemployment\b"
+    r"|\bbond (?:market|yield|sale)|\byield(?:s)?\b|\btreasur(?:y|ies)\b|\bcurrenc|\bdevaluat"
+    r"|\bdollar\b|\byuan\b|\brenminbi\b|\beurozone\b|\bforex\b"
+    r"|\bexport(?:s|ers)?\b|\bimport(?:s|ers)?\b|trade (?:deal|war|talks|deficit|surplus|pact)"
+    r"|\bshipping\b|\bfreight\b|port of |\bcanal\b|\bstrait\b|\bblockade\b|\bembargo\b|\bchokepoint"
+    r"|\bsemiconductor|\bchipmaker|chip (?:ban|export|war|plant|sector|curb)|supply chain"
+    r"|rare earth|\blithium\b|\bcopper\b|\bwheat\b|grain (?:deal|export|harvest|price|corridor)"
+    r"|\bdebt\b|\bdefault\b|\bbailout\b|\bimf\b|stock market|\bstocks\b|\bequit(?:y|ies) market"
+    r"|market(?:s)? (?:fall|fell|rall|drop|surge|plunge|tumble|slump)"
+    r"|\brecession\b|\bstimulus\b|\bfiscal\b|budget (?:deficit|cut|bill|crisis)"
+    r"|bank(?:ing)? (?:crisis|collapse|run)|\bcrypto|\bbitcoin\b", re.I)
+GEOPOL_RX = re.compile(
+    r"\bwar\b|\binvasion\b|\bmissile|drone (?:strike|attack)|air ?strike|strike(?:s)? on\b"
+    r"|\bshelling\b|\bbombard|\boffensive\b|\bartillery\b|ammunition depot|\bnuclear\b"
+    r"|\btroops\b|\bmilitary\b|\bceasefire\b|\bcoup\b|martial law|\belection|\bimpeach"
+    r"|\bpresident\b|prime minister|\bparliament\b|\bkremlin\b|\bpentagon\b"
+    r"|border (?:clash|dispute|closure)|\bmobiliz|\bannex|\boccupation\b|peace (?:deal|talks)"
+    r"|\bnato\b|un security|\bsummit\b|\bhostage|\binsurgen|rebels? (?:seize|captur)"
+    r"|\bflood(?:s|ing)?\b|\bearthquake\b|\btyphoon\b|\bhurricane\b|\bcyclone\b|\btsunami\b"
+    r"|\bvolcan|\bwildfire|\bdrought\b|\blandslide\b|\bepidemic\b|\boutbreak\b", re.I)
+LOCAL_RX = re.compile(
+    r"\bmurder|\bhomicide\b|\bstabb|\bshooting\b|shot dead|\bgunman\b|\bmanhunt\b"
+    r"|police (?:probe|investigat|appeal|hunt)|\barrest|\bsuspect\b|\bassault|\brape\b"
+    r"|\brobbery\b|\bburglar|\bkidnap|\babduct|\binquest\b|\bcustody\b"
+    r"|\bsentenced\b|\bjailed\b|court (?:hears|told)|charged with|\bcrash(?:es|ed)?\b|\bcollision\b"
+    r"|\bdrown|house fire|missing (?:girl|boy|woman|man|teen)|\bshot\b"
+    r"|road (?:accident|rage|crash)|traffic accident|bus (?:crash|plunge)|\btrain crash\b"
+    r"|\bfootball\b|\bsoccer\b|premier league|champions league|cup (?:final|tie)|\btennis\b"
+    r"|\bcricket\b|\brugby\b|\bolympic|\bathlete\b|\bcelebrit|\bsinger\b|\bmovie\b"
+    r"|(?:film|adult|reality|tv|pop) star|festival lineup|\bconcert\b|\bbirth of\b|\bwedding\b", re.I)
+
+
+def relevance(e):
+    """0 = local noise, 1 = geopolitics, 2 = econ/markets, 3 = both."""
+    text = f"{e['name']} {e.get('region','')}"
+    r = (2 if ECON_RX.search(text) else 0) + (1 if GEOPOL_RX.search(text) else 0)
+    if r == 0 and LOCAL_RX.search(text):
+        return -1  # positively identified local noise -> drop
+    return r
+
 # CAMEO event root codes -> English labels (product base locale; clients localize via "code")
 ROOT_EN = {
     "01": "public statement", "02": "appeal", "03": "intent to cooperate", "04": "talks",
@@ -79,9 +126,18 @@ ROOT_EN = {
 txt = urllib.request.urlopen(LASTUPDATE, timeout=30).read().decode()
 export_url = next(l.split()[2] for l in txt.strip().splitlines()
                   if l.split()[2].endswith(".export.CSV.zip"))
-raw = urllib.request.urlopen(export_url, timeout=120).read()
-z = zipfile.ZipFile(io.BytesIO(raw))
-lines = z.read(z.namelist()[0]).decode("utf-8", errors="replace").splitlines()
+# one 15-min batch is sparse off-hours: merge the last 8 batches (2 h of events)
+latest = datetime.datetime.strptime(export_url.rsplit("/", 1)[-1].split(".")[0], "%Y%m%d%H%M%S")
+lines = []
+for i in range(8):
+    ts = (latest - datetime.timedelta(minutes=15 * i)).strftime("%Y%m%d%H%M%S")
+    url = f"http://data.gdeltproject.org/gdeltv2/{ts}.export.CSV.zip"
+    try:
+        raw = urllib.request.urlopen(url, timeout=60).read()
+        z = zipfile.ZipFile(io.BytesIO(raw))
+        lines += z.read(z.namelist()[0]).decode("utf-8", errors="replace").splitlines()
+    except Exception:
+        continue
 
 events, seen = [], set()
 for line in lines:
@@ -129,7 +185,8 @@ quality = [e for e in events if urlparse(e["url"]).netloc.lower().removeprefix("
 others = [e for e in events if e not in quality]
 for pool in (quality, others):
     pool.sort(key=lambda e: (e["sev"], e["arts"]), reverse=True)
-events = (quality + others)[:25]
+# keep a wide candidate pool: relevance is judged on the REAL headline, post-enrich
+events = (quality + others)[:60]
 
 # 기사 원문에서 실제 헤드라인·발행 시각 추출 (병렬, 실패 시 CAMEO 라벨 유지)
 with ThreadPoolExecutor(max_workers=8) as ex:
@@ -157,6 +214,19 @@ for e in events:
     seen_urls.add(k)
     uniq.append(e)
 events = uniq
+# relevance gate on real headlines: drop local noise, rank market stories first;
+# unclassified stories need real coverage (arts) to stay. Refill only if starved.
+for e in events:
+    e["rel"] = relevance(e)
+dropped = [e for e in events if e["rel"] < 0 or (e["rel"] == 0 and e["arts"] < 12)]
+kept = [e for e in events if e not in dropped]
+kept.sort(key=lambda e: (e["rel"], e["sev"], e["arts"]), reverse=True)
+if len(kept) < 8:  # a quiet batch may refill, but only with high-impact non-noise
+    dropped.sort(key=lambda e: (e["sev"], e["arts"]), reverse=True)
+    kept += [e for e in dropped if e["rel"] >= 1 and e["sev"] >= 4][:8 - len(kept)]
+for e in kept:
+    e["rel"] = max(0, e["rel"])
+events = kept[:25]
 enriched = sum(1 for e in events if e.get("ts_pub"))
 
 out = {
@@ -168,5 +238,6 @@ out = {
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 json.dump(out, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
 print(f"news.json written: {len(events)} events (quality={len([e for e in events if e['src'] in OUTLETS.values()])}, "
-      f"enriched={enriched}), batch={out['batch']}, "
+      f"enriched={enriched}, dropped_local={len(dropped)}), batch={out['batch']}, "
+      f"rel2+={sum(1 for e in events if e['rel']>=2)}, rel1={sum(1 for e in events if e['rel']==1)}, "
       f"sev5={sum(1 for e in events if e['sev']==5)}, sev4={sum(1 for e in events if e['sev']==4)}")

@@ -25,7 +25,7 @@
   #regbar .big{font:600 15px Consolas,monospace;letter-spacing:2px}
   #regbar .cond{font:11px 'Segoe UI';color:var(--dim)}
   #regbar .live{margin-left:auto;font:600 9px Consolas,monospace;letter-spacing:1px;color:var(--up)}
-  .row{display:flex;gap:14px;align-items:stretch;padding:13px 16px;margin-bottom:10px;
+  .row{cursor:pointer;display:flex;gap:14px;align-items:stretch;padding:13px 16px;margin-bottom:10px;
     border-left:4px solid var(--acc)}
   .row .l{flex:1;min-width:0}
   .row h4{margin:0;font:600 12px Consolas,monospace;letter-spacing:1px;color:var(--ink)}
@@ -34,6 +34,11 @@
     text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
   .row .meta{font:9.5px Consolas,monospace;color:var(--mut);margin-top:5px}
   .row .r{flex:none;width:300px;display:flex;flex-direction:column;gap:6px;justify-content:center}
+  /* proof panel: opens on row click — the visual evidence behind the P */
+  .proof{margin-top:10px;padding-top:9px;border-top:1px dashed var(--edge)}
+  .proof canvas{display:block;width:100%;max-width:560px;height:auto}
+  .proof .plab{font:600 9px Consolas,monospace;letter-spacing:1px;color:var(--acc);margin:6px 0 3px}
+  .proof .pcap{font:9.5px Consolas,monospace;color:var(--mut);margin-top:5px}
   .pline{display:flex;align-items:baseline;gap:8px}
   .pnow{font:600 24px Consolas,monospace;color:var(--ink)}
   .plabel{font:9px Consolas,monospace;color:var(--mut);letter-spacing:1px}
@@ -180,7 +185,7 @@ Promise.all([
    const ups=rets.filter(v=>v>0).sort((a,b)=>a-b), dns=rets.filter(v=>v<0).sort((a,b)=>a-b);
    const med=a=>a.length?a[Math.floor(a.length/2)]:null;
    const mu=med(ups),md=med(dns);
-   return `<div class="row glass" style="border-left-color:${col}">
+   return `<div class="row glass" data-id="${r.id}" style="border-left-color:${col}">
      <div class="l">
        <h4>${r.id} · ${nameOf(r)}<span class="gr">${r.meta.grade||''}</span>${
          ACTIVE.has(r.id)?`<span class="livechip">● ${EN?'ACTIVE NOW':'지금 활성'}</span>`:''}</h4>
@@ -211,8 +216,71 @@ Promise.all([
      EN?'Nothing active at this minute — the board below still conditions on the live regime.':'지금 이 순간 활성 없음 — 아래 보드는 여전히 실시간 국면으로 조건화됩니다.'}</div></div></div>`;
  $('board').innerHTML=rows.filter(r=>r.np>=30&&!ACTIVE.has(r.id)).map(html).join('')||'—';
  $('board2').innerHTML=rows.filter(r=>r.np<30&&!ACTIVE.has(r.id)).map(html).join('')||'—';
+
+ /* proof panel — click a row to see every historical activation and what followed */
+ const REG={};rows.forEach(r=>REG[r.id]=r);
+ const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+ function drawProof(p,r){
+   const up=css('--up')||'#3FE0A0',dn=css('--dn')||'#FF6A6E',mut=css('--mut')||'#5b6b7a';
+   const graded=r.fs.filter(f=>f.hit01!=null||f.hit!=null||f.ret!=null);
+   if(!graded.length)return false;
+   const W=560;
+   /* 1. activation timeline: one tick per historical activation, colored by verdict */
+   const tl=p.querySelector('.tl'),H1=46;tl.width=W*2;tl.height=H1*2;
+   let g=tl.getContext('2d');g.scale(2,2);
+   const ds=graded.map(f=>+new Date(f.date));
+   const t0=Math.min.apply(null,ds),t1=Math.max.apply(null,ds);
+   g.strokeStyle=mut;g.globalAlpha=.35;g.beginPath();g.moveTo(0,H1-13);g.lineTo(W,H1-13);g.stroke();g.globalAlpha=1;
+   graded.forEach((f,i)=>{const x=4+(ds[i]-t0)/((t1-t0)||1)*(W-8);
+     const h=('hit01'in f&&f.hit01!=null)?f.hit01:f.hit;
+     g.fillStyle=h===true?up:h===false?dn:mut;
+     g.fillRect(x-1,7,2,H1-22);});
+   g.fillStyle=mut;g.font='9px Consolas,monospace';
+   g.fillText(new Date(t0).getFullYear(),2,H1-3);
+   g.textAlign='right';g.fillText(new Date(t1).getFullYear(),W-2,H1-3);
+   /* 2. outcome histogram: window-close returns across all activations */
+   const rets=graded.map(f=>f.ret).filter(v=>v!=null);
+   const hg=p.querySelector('.hg'),H2=74;hg.width=W*2;hg.height=H2*2;
+   g=hg.getContext('2d');g.scale(2,2);
+   if(rets.length>=5){
+     const mn=Math.min.apply(null,rets),mx=Math.max.apply(null,rets),span=(mx-mn)||1;
+     const NB=21,bins=new Array(NB).fill(0);
+     rets.forEach(v=>bins[Math.min(NB-1,Math.floor((v-mn)/span*NB))]++);
+     const peak=Math.max.apply(null,bins),bw=W/NB;
+     bins.forEach((n,i)=>{if(!n)return;
+       const midv=mn+(i+0.5)/NB*span,h=(H2-18)*n/peak;
+       g.fillStyle=midv>=0?up:dn;g.globalAlpha=.75;
+       g.fillRect(i*bw+1,H2-12-h,bw-2,h);});
+     g.globalAlpha=1;
+     const zx=(0-mn)/span*W;
+     if(zx>=0&&zx<=W){g.strokeStyle=mut;g.setLineDash([3,3]);g.beginPath();
+       g.moveTo(zx,3);g.lineTo(zx,H2-10);g.stroke();g.setLineDash([]);}
+     const isbp=String(r.last.tgt||'').indexOf('fred')===0;
+     const fmt=v=>isbp?(100*v).toFixed(0)+'bp':(100*v).toFixed(1)+'%';
+     g.fillStyle=mut;g.font='9px Consolas,monospace';g.textAlign='left';
+     g.fillText(fmt(mn),2,H2-2);g.textAlign='right';g.fillText('+'+fmt(mx),W-2,H2-2);
+     g.textAlign='center';if(zx>24&&zx<W-24)g.fillText('0',zx,H2-2);
+   }else{g.fillStyle=mut;g.font='10px Consolas,monospace';
+     g.fillText(EN?'too few resolved returns to draw':'수익률 표본이 적어 생략',4,H2/2);}
+   return true;
+ }
+ const boards=document.querySelectorAll('#board0,#board,#board2');
+ boards.forEach(b=>b.addEventListener('click',e=>{
+   if(e.target.closest('a'))return;
+   const row=e.target.closest('.row');if(!row||!row.dataset.id)return;
+   const old=row.querySelector('.proof');if(old){old.remove();return;}
+   const r=REG[row.dataset.id];if(!r)return;
+   const p=document.createElement('div');p.className='proof';
+   p.innerHTML=`<div class="plab">${EN?'EVERY HISTORICAL ACTIVATION':'과거 활성 전체'}</div><canvas class="tl"></canvas>
+     <div class="plab">${EN?'WHAT THE TARGET DID BY WINDOW CLOSE':'창 마감 시점의 대상 움직임 분포'}</div><canvas class="hg"></canvas>
+     <div class="pcap">${EN
+       ?`${r.fs.length} activations · verdicts use the ±0.1% rule · reconstructed backtest · est. — tap again to close`
+       :`활성 ${r.fs.length}회 · 판정은 ±0.1% 규칙 · 과거 재구성(백테스트) · 추정 — 다시 누르면 닫힘`}</div>`;
+   row.querySelector('.l').appendChild(p);
+   if(!drawProof(p,r))p.querySelector('.plab').textContent=EN?'no graded history yet':'채점 이력 없음';
+ }));
 });
 </script>
-<script src="page-chrome.js?v=2" defer></script>
+<script src="page-chrome.js?v=3" defer></script>
 </body>
 </html>
